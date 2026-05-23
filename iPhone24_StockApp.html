@@ -711,9 +711,15 @@ let currentPage  = 'dashboard';
 //  NAVIGATION
 // ═══════════════════════════════════════
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Hide all pages with inline style (overrides everything)
+  document.querySelectorAll('.page').forEach(function(p) {
+    p.style.display = 'none';
+    p.classList.remove('active');
+  });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
+  // Show target page
+  var target = document.getElementById('page-' + id);
+  if (target) { target.style.display = 'block'; target.classList.add('active'); }
   const navItems = document.querySelectorAll('.nav-item');
   const labels = ['dashboard','stock','receive','sell','installment'];
   navItems[labels.indexOf(id)]?.classList.add('active');
