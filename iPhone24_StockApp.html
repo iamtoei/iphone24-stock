@@ -612,11 +612,11 @@ tbody tr:hover .row-actions { opacity:1; }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" style="display:flex;flex-direction:row;height:100vh;overflow:hidden;width:100%;">
 
   <!-- ══ SIDEBAR ══════════════════════════ -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
+  <aside class="sidebar" style="width:220px;min-width:220px;max-width:220px;background:#ffffff;border-right:1px solid #e8e8ec;display:flex;flex-direction:column;height:100vh;overflow:hidden;flex-shrink:0;">
+    <div class="sidebar-logo" style="padding:20px;border-bottom:1px solid #e8e8ec;flex-shrink:0;">
       <div class="logo-mark">
         <div class="logo-dot">
           <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
@@ -631,7 +631,7 @@ tbody tr:hover .row-actions { opacity:1; }
       </div>
     </div>
 
-    <nav class="nav">
+    <nav class="nav" style="padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:2px;overflow-y:auto;">
       <div class="nav-item active" onclick="showPage('dashboard')">
         <span class="nav-icon">◈</span> Dashboard
       </div>
@@ -650,7 +650,7 @@ tbody tr:hover .row-actions { opacity:1; }
       </div>
     </nav>
 
-    <div class="sidebar-bottom">
+    <div class="sidebar-bottom" style="padding:12px 10px;border-top:1px solid #e8e8ec;flex-shrink:0;">
       <select class="branch-selector" id="branch-filter" onchange="applyBranchFilter()">
         <option value="all">ทุกสาขา</option>
         <option value="สันติธรรม">สันติธรรม</option>
@@ -662,10 +662,10 @@ tbody tr:hover .row-actions { opacity:1; }
   </aside>
 
   <!-- ══ MAIN ═════════════════════════════ -->
-  <main class="main">
+  <main class="main" style="flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;">
 
     <!-- TOPBAR -->
-    <div class="topbar">
+    <div class="topbar" style="height:56px;min-height:56px;border-bottom:1px solid #e8e8ec;display:flex;align-items:center;padding:0 24px;gap:12px;background:#ffffff;flex-shrink:0;">
       <div class="page-title" id="page-title">Dashboard</div>
       <div class="topbar-actions" id="topbar-actions">
         <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()" style="padding:7px 10px;font-size:18px;line-height:1;border-radius:10px" title="สลับธีม">☀️</button>
@@ -673,7 +673,7 @@ tbody tr:hover .row-actions { opacity:1; }
       </div>
     </div>
 
-    <div class="content">
+    <div class="content" style="flex:1;overflow-y:auto;padding:24px;background:#f2f2f4;">
 
       <!-- ════ PAGE: DASHBOARD ═══════════════ -->
       <div class="page active" id="page-dashboard" style="display:block">
