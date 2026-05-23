@@ -678,103 +678,256 @@ input[type=range] { accent-color:#007aff; width:100%; }
 
   <!-- รับเครื่องเข้า -->
   <div class="page" id="page-receive" style="display:none;">
-    <div class="receive-layout" style="display:grid;grid-template-columns:1fr 320px;gap:16px;">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;">
+
+      <!-- LEFT: Full Form -->
       <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
-        <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;">
-          <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">รับเครื่องเข้าระบบ</span>
+        <div style="padding:14px 18px;border-bottom:1px solid #f2f2f7;">
+          <span style="font-size:13px;font-weight:600;color:#1d1d1f;">รับเครื่องเข้าระบบ</span>
         </div>
         <div style="padding:20px;">
-          <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
-              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">รหัส Stock</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+            <!-- รหัส Stock -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">รหัส STOCK</label>
               <input id="f-code" type="text" placeholder="MC-26-0001" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+
+            <!-- แหล่งที่มา (แยกร้าน/ลูกค้า) -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
               <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">แหล่งที่มา</label>
-              <input id="f-source" type="text" placeholder="Manz, Krit..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <div style="display:flex;gap:4px;margin-bottom:6px;">
+                <button id="fsrc-shop" onclick="setReceiveSource('shop')" style="flex:1;padding:6px 8px;border-radius:8px;border:1.5px solid #1d1d1f;background:#1d1d1f;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">🏪 ร้านค้า</button>
+                <button id="fsrc-cust" onclick="setReceiveSource('cust')" style="flex:1;padding:6px 8px;border-radius:8px;border:1.5px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">👤 ลูกค้า</button>
+              </div>
+              <input type="hidden" id="f-source-type" value="shop">
+              <input id="f-source" type="text" placeholder="ชื่อร้านค้า / Supplier" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
-            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+
+            <!-- ประเภทสินค้า -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ประเภทสินค้า</label>
+              <select id="f-category" onchange="receiveFilterModels(this.value)" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                <option value="">เลือกประเภท...</option>
+                <option value="iPhone">iPhone</option>
+                <option value="iPad">iPad</option>
+                <option value="MacBook">MacBook</option>
+                <option value="Android">Android</option>
+                <option value="Acc">Acc</option>
+              </select>
+            </div>
+
+            <!-- รุ่น (dropdown + พิมพ์เอง) -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
               <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">รุ่น</label>
-              <input id="f-model" type="text" placeholder="iPhone 16 Pro, MacBook Air M3..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <select id="f-model-sel" onchange="if(this.value) document.getElementById('f-model').value=this.value;" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;margin-bottom:4px;">
+                <option value="">-- เลือกประเภทก่อน --</option>
+              </select>
+              <input id="f-model" type="text" placeholder="หรือพิมพ์รุ่นเองได้เลย..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+
+            <!-- ความจุ -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
               <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ความจุ</label>
-              <input id="f-storage" type="text" placeholder="256GB" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <select id="f-storage" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                <option value="">เลือก...</option>
+                <option>64GB</option><option>128GB</option><option>256GB</option>
+                <option>512GB</option><option>1TB</option><option>2TB</option>
+              </select>
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+
+            <!-- สี (ปุ่ม + พิมพ์เอง) -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
               <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สี</label>
-              <input id="f-color" type="text" placeholder="Natural Titanium" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;" id="f-color-btns">
+                <button onclick="toggleReceiveColor('W',this)"  style="padding:5px 12px;border-radius:7px;border:1.5px solid #e5e5ea;background:#f5f5f7;font-size:12px;font-weight:700;cursor:pointer;">W</button>
+                <button onclick="toggleReceiveColor('B',this)"  style="padding:5px 12px;border-radius:7px;border:1.5px solid #e5e5ea;background:#f5f5f7;font-size:12px;font-weight:700;cursor:pointer;">B</button>
+                <button onclick="toggleReceiveColor('Pi',this)" style="padding:5px 12px;border-radius:7px;border:1.5px solid #e5e5ea;background:#f5f5f7;font-size:12px;font-weight:700;cursor:pointer;">Pi</button>
+                <button onclick="toggleReceiveColor('N',this)"  style="padding:5px 12px;border-radius:7px;border:1.5px solid #e5e5ea;background:#f5f5f7;font-size:12px;font-weight:700;cursor:pointer;">N</button>
+                <button onclick="toggleReceiveColor('D',this)"  style="padding:5px 12px;border-radius:7px;border:1.5px solid #e5e5ea;background:#f5f5f7;font-size:12px;font-weight:700;cursor:pointer;">D</button>
+                <button onclick="clearReceiveColor()" style="padding:5px 10px;border-radius:7px;border:1.5px solid #e5e5ea;background:#f5f5f7;font-size:12px;color:#8e8e93;cursor:pointer;">✕</button>
+              </div>
+              <input id="f-color" type="text" placeholder="หรือพิมพ์เอง เช่น BL/G" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
-              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">IMEI / Serial</label>
+
+            <!-- MacBook extra: RAM + KB -->
+            <div id="f-mac-extra" style="display:none;grid-column:1/-1;display:none;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">RAM</label>
+                  <select id="f-mac-ram" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                    <option value="">เลือก...</option>
+                    <option>8GB</option><option>16GB</option><option>24GB</option><option>32GB</option><option>48GB</option><option>64GB</option>
+                  </select>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">Keyboard</label>
+                  <select id="f-mac-kb" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                    <option value="">เลือก...</option>
+                    <option>TH (ไทย)</option><option>EN (อังกฤษ)</option><option>TH/EN</option><option>JP (ญี่ปุ่น)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- iPad extra: Connectivity -->
+            <div id="f-ipad-extra" style="display:none;grid-column:1/-1;">
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ประเภทการเชื่อมต่อ</label>
+                <select id="f-ipad-conn" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                  <option value="">เลือก...</option>
+                  <option>Wifi</option><option>Cellular</option><option>Wifi + Cellular</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- IMEI/SN -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">IMEI / Serial Number</label>
               <input id="f-sn" type="text" placeholder="SN หรือ IMEI" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+
+            <!-- ประเภท -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ประเภท</label>
+              <select id="f-type" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                <option value="มือสอง">มือสอง</option>
+                <option value="มือหนึ่ง">มือหนึ่ง</option>
+                <option value="New">New</option>
+              </select>
+            </div>
+
+            <!-- ราคาทุน -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
               <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ราคาทุน (฿)</label>
               <input id="f-cost" type="number" placeholder="0" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+
+            <!-- สาขา -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
               <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สาขา</label>
-              <select id="f-branch" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;background:#fff;">
+              <select id="f-branch" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
                 <option>สันติธรรม</option><option>แจ่มฟ้า</option><option>หน้ามอ</option><option>ศึกษา</option>
               </select>
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+
+            <!-- วันที่รับเข้า -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
               <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">วันที่รับเข้า</label>
               <input id="f-date" type="date" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
-            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
-              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ประเภท</label>
-              <select id="f-type" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;background:#fff;">
-                <option>มือสอง</option><option>มือหนึ่ง</option>
-              </select>
-            </div>
-            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
-              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">เกรดเครื่อง</label>
-              <div class="grade-picker" style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button class="grade-btn" onclick="selectGrade(this,'A++')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A++</button>
-                <button class="grade-btn" onclick="selectGrade(this,'A+')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A+</button>
-                <button class="grade-btn" onclick="selectGrade(this,'A')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A</button>
-                <button class="grade-btn" onclick="selectGrade(this,'B')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">B</button>
-                <button class="grade-btn" onclick="selectGrade(this,'C')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">C</button>
-                <button class="grade-btn" onclick="selectGrade(this,'D')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">D</button>
-              </div>
-              <input type="hidden" id="f-grade" value="">
-            </div>
-            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
-              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">แบตเตอรี่ %</label>
-              <input type="range" id="f-bat" min="0" max="100" value="100" oninput="updateBat(this.value)" style="width:100%;accent-color:#007aff;">
-              <div class="bat-display" style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-                <div class="bat-display-bar" style="flex:1;height:6px;background:#e5e5ea;border-radius:3px;overflow:hidden;">
-                  <div class="bat-display-fill" id="bat-fill" style="height:100%;border-radius:3px;background:#34c759;width:100%;transition:width .2s,background .2s;"></div>
+
+            <!-- ─── ผลการตรวจเช็ค ─── -->
+            <div style="grid-column:1/-1;padding-top:8px;border-top:1px solid #f2f2f7;margin-top:4px;">
+              <div style="font-size:12px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">ผลการตรวจเช็ค</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+                <!-- เกรด -->
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">⭐ เกรด</label>
+                  <div style="display:flex;gap:6px;" id="f-grade-btns">
+                    <button onclick="selectGrade(this,'A++')" style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A++</button>
+                    <button onclick="selectGrade(this,'A+')"  style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A+</button>
+                    <button onclick="selectGrade(this,'A')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A</button>
+                    <button onclick="selectGrade(this,'B')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">B</button>
+                    <button onclick="selectGrade(this,'C')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">C</button>
+                    <button onclick="selectGrade(this,'D')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">D</button>
+                  </div>
+                  <input type="hidden" id="f-grade" value="">
                 </div>
-                <span class="bat-val" id="bat-val" style="font-size:13px;font-family:SF Mono,Courier New,monospace;color:#3a3a3c;min-width:36px;">100%</span>
+
+                <!-- แบต % -->
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">แบตเตอรี่ %</label>
+                  <input type="number" id="f-bat" min="0" max="100"
+                    placeholder="85"
+                    oninput="this.value=Math.min(100,Math.max(0,this.value||'')); updateBat(this.value)"
+                    style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:18px;font-weight:700;color:#1d1d1f;text-align:center;outline:none;font-family:SF Mono,Courier New,monospace;">
+                  <div id="bat-fill" style="height:5px;border-radius:3px;background:#34c759;width:89%;margin-top:4px;transition:width .2s,background .2s;"></div>
+                </div>
+
+                <!-- CC รอบชาร์จ -->
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">CC (รอบชาร์จ)</label>
+                  <input id="f-cc" type="number" placeholder="เช่น 50" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                </div>
+
+                <!-- สถานะแบต -->
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สถานะแบต</label>
+                  <select id="f-bat-st" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                    <option value="">เลือก...</option>
+                    <option>แบตแท้</option><option>เปลี่ยนแท้</option>
+                    <option>เปลี่ยนมาใช้แล้ว</option><option>ไม่ทราบ</option>
+                  </select>
+                </div>
+
+                <!-- ประกันศูนย์ -->
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ประกันศูนย์</label>
+                  <select id="f-warranty" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                    <option value="">เลือก...</option>
+                    <option>มีประกันศูนย์</option><option>หมดประกัน</option><option>ไม่มีประกัน</option>
+                  </select>
+                </div>
+
+                <!-- วันหมดประกัน -->
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">วันหมดประกัน</label>
+                  <input id="f-warranty-date" type="text" placeholder="เช่น 13/05/2027" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                </div>
+
               </div>
             </div>
-            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
-              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">หมายเหตุ</label>
-              <textarea id="f-note" placeholder="รอยขนแมว, ประกัน, อุปกรณ์..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;resize:vertical;min-height:60px;"></textarea>
+
+            <!-- ─── สภาพเครื่อง ─── -->
+            <div style="grid-column:1/-1;padding-top:8px;border-top:1px solid #f2f2f7;margin-top:4px;">
+              <div style="font-size:12px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">สภาพเครื่อง</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สภาพจอ</label>
+                  <input id="f-screen" type="text" placeholder="สวยไร้รอย / รอยขนแมว" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สภาพบอดี้</label>
+                  <input id="f-body" type="text" placeholder="สวย / รอยสะกิดเล็กน้อย" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+                  <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">หมายเหตุ / อื่นๆ</label>
+                  <textarea id="f-note" placeholder="รอยขนแมว, ประกัน, อุปกรณ์, ถาดซิมแดง..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;resize:vertical;min-height:60px;"></textarea>
+                </div>
+              </div>
             </div>
-            <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;">
-              <button class="btn btn-secondary" onclick="clearReceiveForm()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ล้าง</button>
-              <button class="btn btn-primary" onclick="saveDevice()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">บันทึกเครื่อง →</button>
+
+            <!-- Buttons -->
+            <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+              <button onclick="clearReceiveForm()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ล้าง</button>
+              <button onclick="saveDevice()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">บันทึกเครื่อง →</button>
             </div>
+
           </div>
         </div>
       </div>
+
+      <!-- RIGHT: Today list -->
       <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
-        <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;">
-          <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">รับเข้าวันนี้</span>
+        <div style="padding:14px 18px;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;">
+          <span style="font-size:13px;font-weight:600;color:#1d1d1f;">รับเข้าวันนี้</span>
           <span id="today-count" style="font-size:12px;color:#8e8e93;margin-left:auto;">(0 เครื่อง)</span>
         </div>
         <div style="padding:14px;" id="today-list">
-          <div class="empty" style="padding:30px 0;text-align:center;"><div style="font-size:28px;margin-bottom:8px;">📥</div><div style="font-size:12px;color:#8e8e93;">ยังไม่มีเครื่องเข้าวันนี้</div></div>
+          <div style="text-align:center;padding:30px 0;">
+            <div style="font-size:28px;margin-bottom:8px;">📥</div>
+            <div style="font-size:12px;color:#8e8e93;">ยังไม่มีเครื่องเข้าวันนี้</div>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- SELL -->
+<!-- SELL -->
   <div class="page" id="page-sell" style="display:none;">
     <div class="sell-layout" style="display:grid;grid-template-columns:1fr 340px;gap:16px;">
       <div class="sell-left" style="display:flex;flex-direction:column;gap:14px;">
@@ -1938,6 +2091,76 @@ function markPaid(instId) {
 
 
 
+
+
+// ── RECEIVE FORM HELPERS ─────────────────────────────────────────────────
+var receiveColorSelected = [];
+
+function setReceiveSource(type) {
+  document.getElementById('f-source-type').value = type;
+  var shopBtn = document.getElementById('fsrc-shop');
+  var custBtn = document.getElementById('fsrc-cust');
+  if (shopBtn && custBtn) {
+    if (type === 'shop') {
+      shopBtn.style.cssText = shopBtn.style.cssText.replace('background:#f5f5f7;color:#3a3a3c;border:1.5px solid #e5e5ea', 'background:#1d1d1f;color:#fff;border:1.5px solid #1d1d1f');
+      custBtn.style.cssText = custBtn.style.cssText.replace('background:#1d1d1f;color:#fff;border:1.5px solid #1d1d1f', 'background:#f5f5f7;color:#3a3a3c;border:1.5px solid #e5e5ea');
+    } else {
+      custBtn.style.cssText = custBtn.style.cssText.replace('background:#f5f5f7;color:#3a3a3c;border:1.5px solid #e5e5ea', 'background:#1d1d1f;color:#fff;border:1.5px solid #1d1d1f');
+      shopBtn.style.cssText = shopBtn.style.cssText.replace('background:#1d1d1f;color:#fff;border:1.5px solid #1d1d1f', 'background:#f5f5f7;color:#3a3a3c;border:1.5px solid #e5e5ea');
+    }
+    document.getElementById('f-source').placeholder = type === 'shop' ? 'ชื่อร้านค้า / Supplier' : 'ชื่อลูกค้า / เบอร์โทร';
+  }
+}
+
+var RECEIVE_MODELS = {
+  iPhone: ['iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone 12','iPhone 12 mini','iPhone 12 Pro','iPhone 12 Pro Max','iPhone 13','iPhone 13 mini','iPhone 13 Pro','iPhone 13 Pro Max','iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max','iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max','iPhone 16','iPhone 16e','iPhone 16 Plus','iPhone 16 Pro','iPhone 16 Pro Max','iPhone 17','iPhone Air','iPhone 17 Pro','iPhone 17 Pro Max','iPhone SE1','iPhone SE2','iPhone SE3','iPhone 7','iPhone 7 Plus','iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max'],
+  iPad: ['iPad 6','iPad 7','iPad 8','iPad 9','iPad 10','iPad 11 A16','iPad mini 4','iPad mini 5','iPad mini 6','iPad mini 7','iPad Air 3','iPad Air 4','iPad Air M1','iPad Air M2 11','iPad Air M2 13','iPad Air M3 11','iPad Air M3 13','iPad Pro 11 M1','iPad Pro 12.9 M1','iPad Pro 11 M2','iPad Pro 12.9 M2','iPad Pro 11 M4','iPad Pro 13 M4','iPad Pro 11 M5','iPad Pro 13 M5'],
+  MacBook: ['MB Air 13 M1','MB Air 13 M2','MB Air 15 M2','MB Air 13 M3','MB Air 15 M3','MB Air 13 M4','MB Air 15 M4','MB Pro 13 M1','MB Pro 14 M1 Pro/Max','MB Pro 16 M1 Pro/Max','MB Pro 13 M2','MB Pro 14 M2 Pro/Max','MB Pro 16 M2 Pro/Max','MB Pro 14 M3','MB Pro 14 M3 Pro/Max','MB Pro 16 M3 Pro/Max','MB Pro 14 M4','MB Pro 14 M4 Pro/Max','MB Pro 16 M4 Pro/Max','MB Pro 14 M5','MB Pro 14 M5 Pro/Max','MB Pro 16 M5 Pro/Max'],
+  Android: ['SS S25 Ultra','SS S24 Ultra','SS S23 Ultra','SS Z Fold 7','SS Z Fold 6','SS Z Flip 7','SS Z Flip 6'],
+  Acc: ['AW Ultra 3','AW Ultra 2','AW Series 11','AW Series 10','AW Series 9','AW Series 8','AirPods Pro 3','AirPods Pro 2','AirPods 4 ANC','AirPods 4','AirPods Max 2','Apple Pencil Pro','Apple Pencil 2','AirTag 2'],
+};
+
+function receiveFilterModels(cat) {
+  var sel = document.getElementById('f-model-sel');
+  sel.innerHTML = '<option value="">-- เลือกรุ่น ' + (cat||'') + ' --</option>';
+  (RECEIVE_MODELS[cat] || []).forEach(function(m) {
+    var opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    sel.appendChild(opt);
+  });
+  var macExtra  = document.getElementById('f-mac-extra');
+  var ipadExtra = document.getElementById('f-ipad-extra');
+  if (macExtra)  macExtra.style.display  = cat === 'MacBook' ? 'block' : 'none';
+  if (ipadExtra) ipadExtra.style.display = cat === 'iPad'    ? 'block' : 'none';
+}
+
+function toggleReceiveColor(val, btn) {
+  var idx = receiveColorSelected.indexOf(val);
+  if (idx >= 0) {
+    receiveColorSelected.splice(idx, 1);
+    btn.style.background = '#f5f5f7';
+    btn.style.color = '#3a3a3c';
+    btn.style.borderColor = '#e5e5ea';
+  } else {
+    receiveColorSelected.push(val);
+    btn.style.background = '#1d1d1f';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#1d1d1f';
+  }
+  var el = document.getElementById('f-color');
+  if (el) el.value = receiveColorSelected.join('/');
+}
+
+function clearReceiveColor() {
+  receiveColorSelected = [];
+  document.querySelectorAll('#f-color-btns button:not(:last-child)').forEach(function(b) {
+    b.style.background = '#f5f5f7';
+    b.style.color = '#3a3a3c';
+    b.style.borderColor = '#e5e5ea';
+  });
+  var el = document.getElementById('f-color');
+  if (el) el.value = '';
+}
 
 </script>
 </body>
