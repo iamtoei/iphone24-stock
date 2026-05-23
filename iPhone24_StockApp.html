@@ -826,12 +826,12 @@ input[type=range] { accent-color:#007aff; width:100%; }
                 <div style="display:flex;flex-direction:column;gap:4px;">
                   <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">⭐ เกรด</label>
                   <div style="display:flex;gap:6px;" id="f-grade-btns">
-                    <button onclick="selectGrade(this,'A++')" style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A++</button>
-                    <button onclick="selectGrade(this,'A+')"  style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A+</button>
-                    <button onclick="selectGrade(this,'A')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A</button>
-                    <button onclick="selectGrade(this,'B')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">B</button>
-                    <button onclick="selectGrade(this,'C')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">C</button>
-                    <button onclick="selectGrade(this,'D')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:11px;font-weight:700;cursor:pointer;font-family:SF Mono,Courier New,monospace;">D</button>
+                    <button onclick="selectGrade(this,'A++')" style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">A++</button>
+                    <button onclick="selectGrade(this,'A+')"  style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">A+</button>
+                    <button onclick="selectGrade(this,'A')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">A</button>
+                    <button onclick="selectGrade(this,'B')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">B</button>
+                    <button onclick="selectGrade(this,'C')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">C</button>
+                    <button onclick="selectGrade(this,'D')"   style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">D</button>
                   </div>
                   <input type="hidden" id="f-grade" value="">
                 </div>
@@ -2183,7 +2183,7 @@ function clearReceiveColor() {
 // ══════════════════════════════════════
 //  RECEIPT & CONTRACT
 // ══════════════════════════════════════
-var INSTALLMENT_FORM_URL = 'https://docs.google.com/forms/d/e/1DyIYKcgLUb6i7M8i8pzeb9TRiu_GuKxZSufpyv_KVXA/viewform';
+var INSTALLMENT_FORM_URL = 'https://docs.google.com/forms/d/e/PASTE_YOUR_FORM_ID_HERE/viewform';
 var lastSale = null; // เก็บข้อมูลการขายล่าสุดสำหรับออกใบเสร็จ
 
 function openInstallmentForm() {
@@ -2196,138 +2196,289 @@ function printReceipt() {
   var s = lastSale;
   var d = s.device || {};
   var today = new Date();
-  var dateStr = today.getDate() + '/' + (today.getMonth()+1) + '/' + (today.getFullYear()+543);
-  
-  // สร้าง receipt HTML
+  var dd = today.getDate();
+  var mm = today.getMonth() + 1;
+  var yyyy = today.getFullYear() + 543;
+  var dateStr = dd + '/' + mm + '/' + yyyy;
+  var dateEn = today.toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+
+  // Warranty by grade+type
+  var grade = d.grade || '';
+  var devType = (d.model||'').includes('MB') || (d.model||'').includes('Mac') ? 'Mac'
+              : (d.model||'').includes('iPad') ? 'iPad'
+              : (d.model||'').includes('Watch') ? 'Watch'
+              : (d.model||'').includes('AirPods') || (d.model||'').includes('Pencil') ? 'Acc'
+              : 'iPhone';
+  var isNew = (d.type||'').includes('หนึ่ง') || (d.type||'').includes('New') || (d.type||'').includes('new');
+  var gradeGroup = ['A++','A+','A','B'].indexOf(grade) >= 0 ? 'AB' : grade === 'C' ? 'C' : 'D';
+
+  var warranty = { apple:'–', machine:'–', shop:'–', screen:'–', battery:'–', after:'3 ปี / 3 ครั้งต่อปี' };
+
+  if (isNew) {
+    warranty.apple   = '1 ปี'; warranty.machine = '2 ปี'; warranty.shop = '2 ปี';
+    warranty.screen  = '6 เดือน / 1 ครั้ง'; warranty.battery = '3 ปี / 1 ครั้ง';
+  } else if (gradeGroup === 'AB') {
+    if (devType === 'iPhone') {
+      warranty.machine = '30 วัน'; warranty.shop = '1 ปี'; warranty.battery = '2 ปี / 1 ครั้ง';
+      warranty.screen = '3 เดือน / 1 ครั้ง';
+    } else if (devType === 'iPad') {
+      warranty.machine = '30 วัน'; warranty.shop = '1 ปี';
+    } else if (devType === 'Mac') {
+      warranty.machine = '7 วัน'; warranty.shop = '1 ปี';
+    }
+  } else if (gradeGroup === 'C') {
+    if (devType === 'iPhone') { warranty.battery = '7 วัน / 1 ครั้ง'; }
+    warranty.shop = '7 วัน';
+  } else { // D
+    warranty.machine = '–'; warranty.shop = '–';
+  }
+  if (devType === 'Watch') { warranty.shop = '30 วัน'; warranty.machine = '–'; }
+  if (devType === 'Acc')   { warranty.shop = '7 วัน';  warranty.machine = '–'; }
+
+  var productDesc = d.model || s.model || '–';
+  var detail = [d.storage, d.color, d.sn ? 'SN: '+d.sn : ''].filter(Boolean).join(' / ') || '–';
+  var priceStr = Number(s.price||0).toLocaleString() + ' ฿';
+
   var w = window.open('', '_blank');
   w.document.write(`<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ใบเสร็จรับเงิน - ${s.deviceCode}</title>
+<title>ใบเสร็จ - ${s.deviceCode}</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Sarabun',Arial,sans-serif; font-size:13px; color:#1d1d1f; background:#f5f5f7; }
-  .page { background:#fff; max-width:700px; margin:20px auto; padding:28px 32px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
-  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; padding-bottom:16px; border-bottom:2px solid #1d1d1f; }
-  .shop-name { font-size:20px; font-weight:700; }
-  .shop-info { font-size:11px; color:#8e8e93; margin-top:3px; }
+  body { font-family:'Sarabun',Arial,sans-serif; font-size:13px; color:#1d1d1f; background:#f0f0f0; }
+  .page { background:#fff; max-width:720px; margin:20px auto; padding:32px 36px; border-radius:10px; box-shadow:0 2px 20px rgba(0,0,0,.1); }
+
+  /* HEADER */
+  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; padding-bottom:14px; border-bottom:2.5px solid #1d1d1f; }
+  .shop-brand { font-size:22px; font-weight:700; letter-spacing:-.5px; }
+  .shop-sub { font-size:11px; color:#8e8e93; margin-top:2px; }
   .receipt-title { text-align:right; }
-  .receipt-title h2 { font-size:16px; font-weight:700; }
-  .receipt-title p { font-size:11px; color:#8e8e93; margin-top:2px; }
-  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-  .info-box { background:#f5f5f7; border-radius:8px; padding:10px 14px; }
-  .info-label { font-size:10px; color:#8e8e93; font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
+  .receipt-title h2 { font-size:18px; font-weight:700; }
+  .receipt-title .en { font-size:11px; color:#8e8e93; }
+  .receipt-no { margin-top:6px; font-size:12px; }
+  .receipt-no strong { font-size:14px; }
+
+  /* INFO BOXES */
+  .info-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .info-box { background:#f7f7f9; border-radius:8px; padding:9px 12px; }
+  .info-label { font-size:10px; color:#8e8e93; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
   .info-value { font-size:13px; font-weight:500; margin-top:2px; }
-  table { width:100%; border-collapse:collapse; margin-bottom:16px; }
-  thead th { background:#1d1d1f; color:#fff; text-align:left; padding:8px 12px; font-size:11px; font-weight:600; text-transform:uppercase; }
-  tbody td { padding:10px 12px; border-bottom:1px solid #f2f2f7; font-size:13px; }
-  tbody tr:last-child td { border-bottom:none; }
-  .total-row { background:#f5f5f7; font-weight:700; font-size:14px; }
-  .warranty-table { width:100%; border-collapse:collapse; margin-bottom:16px; font-size:12px; }
-  .warranty-table th { background:#f5f5f7; text-align:left; padding:6px 10px; font-size:11px; color:#8e8e93; }
-  .warranty-table td { padding:7px 10px; border-bottom:1px solid #f2f2f7; vertical-align:top; }
-  .warranty-table tr:last-child td { border-bottom:none; }
-  .sign-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:24px; }
-  .sign-box { text-align:center; padding-top:40px; border-top:1px solid #1d1d1f; font-size:12px; color:#3a3a3c; }
-  .check-list { margin-bottom:16px; }
-  .check-item { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:12px; }
-  .check-box { width:14px; height:14px; border:1.5px solid #1d1d1f; border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; }
-  @media print { body { background:#fff; } .page { box-shadow:none; margin:0; border-radius:0; } .no-print { display:none; } }
-  .print-btn { position:fixed; top:20px; right:20px; padding:10px 20px; background:#1d1d1f; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px; }
+  .info-full { grid-column:1/-1; }
+
+  /* PRODUCT TABLE */
+  .section-title { font-size:10px; font-weight:700; color:#8e8e93; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  table.product { width:100%; border-collapse:collapse; margin-bottom:14px; border-radius:8px; overflow:hidden; }
+  table.product thead th { background:#1d1d1f; color:#fff; text-align:left; padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+  table.product thead th:last-child { text-align:right; }
+  table.product tbody td { padding:10px 12px; border-bottom:1px solid #f2f2f7; font-size:13px; vertical-align:top; }
+  table.product tbody tr:last-child td { border-bottom:none; }
+  table.product .total-row td { background:#f7f7f9; font-weight:700; font-size:14px; }
+  .price-cell { text-align:right; font-weight:600; white-space:nowrap; }
+
+  /* WARRANTY TABLE */
+  table.warranty { width:100%; border-collapse:collapse; margin-bottom:10px; }
+  table.warranty thead th { background:#f7f7f9; text-align:left; padding:7px 10px; font-size:10px; font-weight:600; color:#8e8e93; text-transform:uppercase; letter-spacing:.3px; border-bottom:2px solid #e5e5ea; }
+  table.warranty tbody td { padding:7px 10px; border-bottom:1px solid #f2f2f7; font-size:12px; vertical-align:top; }
+  table.warranty tbody tr:last-child td { border-bottom:none; }
+  table.warranty .row-label { font-weight:500; color:#1d1d1f; }
+  table.warranty .row-en { font-size:10px; color:#8e8e93; }
+  .w-period { font-weight:600; color:#1d1d1f; white-space:nowrap; }
+
+  /* WARRANTY CONDITIONS */
+  .conditions { background:#f7f7f9; border-radius:8px; padding:14px 16px; margin-bottom:14px; }
+  .cond-item { display:flex; gap:8px; margin-bottom:8px; font-size:11px; line-height:1.5; color:#3a3a3c; }
+  .cond-item:last-child { margin-bottom:0; }
+  .cond-num { font-weight:700; color:#1d1d1f; min-width:16px; }
+
+  /* CHECKLIST */
+  .checklist { margin-bottom:14px; }
+  .check-item { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:12px; color:#3a3a3c; }
+  .checkbox { width:14px; height:14px; border:1.5px solid #1d1d1f; border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
+
+  /* SIGNATURE */
+  .sign-row { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:20px; }
+  .sign-box { text-align:center; }
+  .sign-line { border-top:1px solid #1d1d1f; padding-top:8px; margin-top:40px; font-size:12px; }
+  .sign-label { font-size:11px; color:#8e8e93; margin-top:2px; }
+
+  /* FOOTER */
+  .footer { text-align:center; margin-top:18px; padding-top:12px; border-top:1px solid #f2f2f7; font-size:10px; color:#8e8e93; }
+
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; border-radius:0; padding:20px 24px; }
+    .no-print { display:none !important; }
+  }
 </style>
 </head>
 <body>
-<button class="print-btn no-print" onclick="window.print()">🖨️ พิมพ์</button>
+<button class="no-print" onclick="window.print()" style="position:fixed;top:20px;right:20px;padding:10px 20px;background:#1d1d1f;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-family:Sarabun,Arial,sans-serif;z-index:99;">🖨️ พิมพ์ / Print</button>
+
 <div class="page">
+
   <!-- HEADER -->
   <div class="header">
     <div>
-      <div class="shop-name">iPhone 24</div>
-      <div class="shop-info">32/1 ถนนทองกวาว ตำบลช้างเผือก อำเภอเมือง เชียงใหม่ 50300</div>
-      <div class="shop-info">+66 92 482 0567</div>
+      <div class="shop-brand">iPhone 24</div>
+      <div class="shop-sub">ใบเสร็จรับเงิน & รายละเอียดการรับประกัน</div>
+      <div class="shop-sub" style="margin-top:3px;">32/1 ถนนทองกวาว ตำบลช้างเผือก อำเภอเมือง เชียงใหม่ 50300</div>
+      <div class="shop-sub">+66 92 482 0567</div>
     </div>
     <div class="receipt-title">
       <h2>ใบเสร็จรับเงิน</h2>
-      <p>Receipt</p>
-      <p style="margin-top:6px;font-size:12px;">เลขที่ <strong>${s.deviceCode}</strong></p>
-      <p style="font-size:12px;">วันที่ ${dateStr}</p>
+      <div class="en">Receipt</div>
+      <div class="receipt-no" style="margin-top:8px;">เลขที่ <strong>${s.deviceCode}</strong></div>
+      <div style="font-size:11px;color:#8e8e93;margin-top:2px;">วันที่ ${dateStr}</div>
+      <div style="font-size:10px;color:#8e8e93;">${dateEn}</div>
     </div>
   </div>
 
   <!-- CUSTOMER INFO -->
-  <div class="info-grid">
+  <div class="info-row">
     <div class="info-box">
-      <div class="info-label">ชื่อลูกค้า</div>
-      <div class="info-value">${s.customer || '-'}</div>
+      <div class="info-label">ชื่อลูกค้า / Customer</div>
+      <div class="info-value">${s.customer || '–'}</div>
     </div>
     <div class="info-box">
-      <div class="info-label">เบอร์โทร</div>
-      <div class="info-value">${s.phone || '-'}</div>
+      <div class="info-label">เบอร์โทร / Phone</div>
+      <div class="info-value">${s.phone || '–'}</div>
     </div>
-    <div class="info-box" style="grid-column:1/-1;">
-      <div class="info-label">ช่องทาง / พนักงานขาย</div>
-      <div class="info-value">${s.channel || '-'} / ${s.staff || '-'}</div>
+    <div class="info-box info-full" style="grid-column:1/-1;">
+      <div class="info-label">ช่องทาง / Channel &nbsp;·&nbsp; พนักงานขาย / Staff</div>
+      <div class="info-value">${s.channel || '–'} &nbsp;·&nbsp; ${s.staff || '–'}</div>
     </div>
   </div>
 
   <!-- PRODUCT TABLE -->
-  <table>
+  <div class="section-title">รายการสินค้า / Product</div>
+  <table class="product">
     <thead>
       <tr>
-        <th>#</th>
-        <th>สินค้า</th>
-        <th>รายละเอียด</th>
-        <th style="text-align:right;">ราคา</th>
+        <th style="width:32px;">#</th>
+        <th>สินค้า / Product</th>
+        <th>รายละเอียด / Details</th>
+        <th>ราคา / Price</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td>1</td>
-        <td>${s.model || '-'}</td>
-        <td style="font-size:11px;color:#8e8e93;">${[d.storage, d.color, d.sn ? 'SN: '+d.sn : ''].filter(Boolean).join(' / ') || '-'}</td>
-        <td style="text-align:right;font-weight:600;font-family:SF Mono,Courier New,monospace;">${Number(s.price||0).toLocaleString()} ฿</td>
+        <td><strong>${productDesc}</strong></td>
+        <td style="font-size:11px;color:#8e8e93;">${detail}</td>
+        <td class="price-cell">${priceStr}</td>
       </tr>
-      ${s.type === 'installment' ? `<tr><td></td><td colspan="2" style="font-size:12px;color:#8e8e93;">เงินดาวน์</td><td style="text-align:right;font-size:12px;">${Number(s.down||0).toLocaleString()} ฿</td></tr>
-      <tr><td></td><td colspan="2" style="font-size:12px;color:#8e8e93;">ค่างวด ${s.months} เดือน × ${Number(s.monthly||0).toLocaleString()} ฿</td><td style="text-align:right;font-size:12px;">${Number((s.price||0)-(s.down||0)).toLocaleString()} ฿</td></tr>` : ''}
+      ${s.type === 'installment' ? `
+      <tr>
+        <td></td>
+        <td colspan="2" style="font-size:12px;color:#8e8e93;">เงินดาวน์ / Down payment</td>
+        <td class="price-cell" style="font-size:12px;">${Number(s.down||0).toLocaleString()} ฿</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td colspan="2" style="font-size:12px;color:#8e8e93;">ผ่อน ${s.months} งวด × ${Number(s.monthly||0).toLocaleString()} ฿/เดือน</td>
+        <td class="price-cell" style="font-size:12px;">${Number((s.price||0)-(s.down||0)).toLocaleString()} ฿</td>
+      </tr>` : ''}
       <tr class="total-row">
-        <td colspan="3" style="text-align:right;">รวมทั้งสิ้น (Total)</td>
-        <td style="text-align:right;font-family:SF Mono,Courier New,monospace;">${Number(s.price||0).toLocaleString()} ฿</td>
+        <td colspan="3" style="text-align:right;">รวมทั้งสิ้น / Total</td>
+        <td class="price-cell">${priceStr}</td>
       </tr>
     </tbody>
   </table>
 
   <!-- WARRANTY TABLE -->
-  <div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">รายการประกัน / Warranty</div>
-  <table class="warranty-table">
+  <div class="section-title">รายการประกัน / Warranty</div>
+  <table class="warranty">
     <thead>
-      <tr><th>#</th><th>รายการประกัน</th><th>ระยะเวลา</th><th>รายละเอียด</th></tr>
+      <tr>
+        <th style="width:28px;">#</th>
+        <th>รายการประกัน / Warranty Type</th>
+        <th style="width:130px;">ระยะเวลา / Period</th>
+        <th style="width:130px;">รายละเอียด / Detail</th>
+      </tr>
     </thead>
     <tbody>
-      <tr><td>1</td><td>การรับประกัน Apple</td><td>…………</td><td>ความคุ้มครอง ………… วัน</td></tr>
-      <tr><td>2</td><td>ประกันเครื่อง</td><td>…………</td><td>–</td></tr>
-      <tr><td>3</td><td>ประกันร้าน</td><td>…………</td><td>–</td></tr>
-      <tr><td>4</td><td>หน้าจอเสียหาย</td><td>–</td><td>ภายใน ………… เดือน</td></tr>
-      <tr><td>5</td><td>แบตเตอรี่เสื่อม</td><td>–</td><td>ภายใน ………… เดือน</td></tr>
-      <tr><td></td><td>บริการหลังการขาย</td><td>3 ปี</td><td>3 ครั้ง/ปี</td></tr>
+      <tr>
+        <td>1</td>
+        <td><span class="row-label">การรับประกัน Apple</span><br><span class="row-en">Apple Warranty</span></td>
+        <td class="w-period">${warranty.apple}</td>
+        <td style="font-size:11px;color:#8e8e93;">ตามเงื่อนไข apple.com</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><span class="row-label">ประกันเครื่อง</span><br><span class="row-en">Coverage machine warranty</span></td>
+        <td class="w-period">${warranty.machine}</td>
+        <td style="font-size:11px;color:#8e8e93;">–</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><span class="row-label">ประกันร้าน</span><br><span class="row-en">Shop Warranty</span></td>
+        <td class="w-period">${warranty.shop}</td>
+        <td style="font-size:11px;color:#8e8e93;">–</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><span class="row-label">หน้าจอเสียหาย</span><br><span class="row-en">Screen damage</span></td>
+        <td class="w-period">${warranty.screen}</td>
+        <td style="font-size:11px;color:#8e8e93;">ส่วนลดสูงสุด 1,000 ฿</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><span class="row-label">แบตเตอรี่เสื่อม</span><br><span class="row-en">Battery deterioration</span></td>
+        <td class="w-period">${warranty.battery}</td>
+        <td style="font-size:11px;color:#8e8e93;">ส่วนลดสูงสุด 1,000 ฿</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><span class="row-label">บริการหลังการขาย</span><br><span class="row-en">After Sale Services</span></td>
+        <td class="w-period">${warranty.after}</td>
+        <td style="font-size:11px;color:#8e8e93;">–</td>
+      </tr>
     </tbody>
   </table>
-  <div style="font-size:10px;color:#8e8e93;margin-bottom:16px;">* พนักงานกรอกระยะเวลาประกันตามเกรดเครื่อง ดูจากตารางอ้างอิง</div>
+  <div style="font-size:10px;color:#8e8e93;margin-bottom:14px;">* ระยะเวลาประกันคำนวณอัตโนมัติตามเกรดและประเภทเครื่อง &nbsp;·&nbsp; พนักงานตรวจสอบได้จากตารางอ้างอิงในระบบ</div>
+
+  <!-- WARRANTY CONDITIONS -->
+  <div class="section-title">รายละเอียดการรับประกัน / Warranty Details</div>
+  <div class="conditions">
+    <div class="cond-item"><span class="cond-num">1.</span><span><strong>การรับประกันจาก Apple (Apple Warranty)</strong> — ตามเงื่อนไขที่ระบุไว้ใน apple.com/legal/warranty</span></div>
+    <div class="cond-item"><span class="cond-num">2.</span><span><strong>ประกันเครื่อง (Coverage machine warranty)</strong> — คุ้มครองความเสียหายจากการผลิตเท่านั้น ไม่รวมอุบัติเหตุ ตกหล่น กระแทก ตกน้ำ ไฟไหม้ หรือการใช้งานผิดวิธี</span></div>
+    <div class="cond-item"><span class="cond-num">3.</span><span><strong>ประกันร้าน (Shop Warranty)</strong> — คุ้มครอง Software ตามระยะเวลาที่กำหนด ซ่อม Hardware ลูกค้าชำระค่าอะไหล่ ร้านไม่คิดค่า Service การรับประกันสิ้นสุดทันทีหากซ่อมที่ร้านอื่น</span></div>
+    <div class="cond-item"><span class="cond-num">4.</span><span><strong>หน้าจอ/แบตเตอรี่เสียหาย</strong> — รับส่วนลดสูงสุด 1,000 บาท 1 ครั้ง เมื่อเปลี่ยนกับทางร้าน หากเปลี่ยนที่ศูนย์ Apple รับเครดิตเงินคืนเพื่อใช้เป็นส่วนลดการซื้อครั้งต่อไป</span></div>
+    <div class="cond-item"><span class="cond-num">5.</span><span><strong>บริการหลังการขาย (After-sales Service)</strong> — ตลอดระยะเวลาที่กำหนด รับคำแนะนำผ่าน Line / Facebook / IG หรือเข้าร้านโดยไม่มีค่าใช้จ่าย Mac ทุกรุ่นรับส่วนลด 50% ค่าลงระบบและทำความสะอาดภายใน</span></div>
+    <div class="cond-item"><span class="cond-num">6.</span><span><strong>นโยบายการคืนสินค้า (Return Policy)</strong> — สินค้าซื้อแล้วไม่รับเปลี่ยนคืนหรือคืนเป็นเงินสดในทุกกรณี รวมถึงเงินมัดจำ</span></div>
+    <div class="cond-item"><span class="cond-num">7.</span><span><strong>เงื่อนไขการชำระเงิน (Payment &amp; Warranty)</strong> — การรับประกันทั้งหมดมีผลเมื่อชำระค่าสินค้าครบถ้วนแล้วเท่านั้น หากผิดนัดชำระ ทางร้านขอสงวนสิทธิ์ระงับการรับประกันทันที</span></div>
+  </div>
 
   <!-- CHECKLIST -->
-  <div class="check-list">
-    <div class="check-item"><div class="check-box">✓</div>ได้รับสินค้าตามรายการข้างต้นครบถ้วนถูกต้องเรียบร้อย และพึงพอใจในสินค้า</div>
-    <div class="check-item"><div class="check-box">✓</div>ได้ตรวจเช็คสินค้าว่าอยู่ในสภาพที่สมบูรณ์เรียบร้อย</div>
-    <div class="check-item"><div class="check-box">✓</div>ได้ตรวจเช็คอุปกรณ์ว่าใช้งานได้ปกติ</div>
-    <div class="check-item"><div class="check-box">✓</div>ลูกค้ารับทราบเรื่องประกันเครื่องทั้งหมดเรียบร้อย</div>
+  <div class="checklist">
+    <div class="check-item"><div class="checkbox">✓</div>ได้รับสินค้าตามรายการข้างต้นครบถ้วนถูกต้องเรียบร้อย และพึงพอใจในสินค้า</div>
+    <div class="check-item"><div class="checkbox">✓</div>ได้ตรวจเช็คสินค้าว่าอยู่ในสภาพที่สมบูรณ์เรียบร้อย</div>
+    <div class="check-item"><div class="checkbox">✓</div>ได้ตรวจเช็คอุปกรณ์ว่าใช้งานได้ปกติ</div>
+    <div class="check-item"><div class="checkbox">✓</div>ลูกค้ารับทราบเรื่องประกันเครื่องทั้งหมดเรียบร้อย</div>
   </div>
 
   <!-- SIGNATURE -->
-  <div class="sign-grid">
-    <div class="sign-box">ผู้รับสินค้า / Received by<br><span style="font-size:11px;color:#8e8e93;">ลายมือชื่อ / Signature</span></div>
-    <div class="sign-box">ผู้ขาย / Delivered by<br><span style="font-size:11px;color:#8e8e93;">ลายมือชื่อ / Signature</span></div>
+  <div class="sign-row">
+    <div class="sign-box">
+      <div class="sign-line">ผู้รับสินค้า / Received by</div>
+      <div class="sign-label">ลายมือชื่อ / Signature</div>
+    </div>
+    <div class="sign-box">
+      <div class="sign-line">ผู้ขาย / Delivered by</div>
+      <div class="sign-label">ลายมือชื่อ / Signature</div>
+    </div>
   </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    iPhone 24 &nbsp;·&nbsp; 32/1 ถนนทองกวาว ตำบลช้างเผือก อำเภอเมือง เชียงใหม่ 50300 &nbsp;·&nbsp; +66 92 482 0567<br>
+    ขอบคุณที่ใช้บริการ / Thank you for your purchase
+  </div>
+
 </div>
 </body></html>`);
   w.document.close();
