@@ -610,6 +610,510 @@ tbody tr:hover .row-actions { opacity:1; }
 .overdue-badge { color:var(--red); font-size:11px; font-weight:500; }
 
 </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ SIDEBAR ══════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-dot">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+            <rect x="5" y="2" width="14" height="20" rx="3"/>
+            <line x1="12" y1="18" x2="12" y2="18.5" stroke-width="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">iPhone 24</div>
+          <div class="logo-sub">STOCK SYSTEM</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">◈</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('stock')">
+        <span class="nav-icon">▦</span> Stock
+        <span class="nav-badge" id="nav-stock-count">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('receive')">
+        <span class="nav-icon">↓</span> รับเครื่องเข้า
+      </div>
+      <div class="nav-item" onclick="showPage('sell')">
+        <span class="nav-icon">↗</span> ขาย
+      </div>
+      <div class="nav-item" onclick="showPage('installment')">
+        <span class="nav-icon">📋</span> ผ่อนชำระ
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <select class="branch-selector" id="branch-filter" onchange="applyBranchFilter()">
+        <option value="all">ทุกสาขา</option>
+        <option value="สันติธรรม">สันติธรรม</option>
+        <option value="แจ่มฟ้า">แจ่มฟ้า</option>
+        <option value="หน้ามอ">หน้ามอ</option>
+        <option value="ศึกษา">ศึกษา</option>
+      </select>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ═════════════════════════════ -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions" id="topbar-actions">
+        <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()" style="padding:7px 10px;font-size:18px;line-height:1;border-radius:10px" title="สลับธีม">☀️</button>
+        <button class="btn btn-primary" onclick="openModal('receive-modal')">+ รับเครื่องเข้า</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ════ PAGE: DASHBOARD ═══════════════ -->
+      <div class="page active" id="page-dashboard">
+
+        <div class="stats-grid">
+          <div class="stat-card accent-card">
+            <div class="stat-label">พร้อมขาย</div>
+            <div class="stat-value" id="stat-ready">0</div>
+            <div class="stat-sub">เครื่อง ทุกสาขา</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">ขายแล้ว (เดือนนี้)</div>
+            <div class="stat-value" id="stat-sold">0</div>
+            <div class="stat-sub">เครื่อง</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">รอเช็คเครื่อง</div>
+            <div class="stat-value" id="stat-arrived" style="color:var(--amber)">0</div>
+            <div class="stat-sub">เครื่อง</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Stock ทั้งหมด</div>
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-sub">เครื่องในระบบ</div>
+          </div>
+        </div>
+
+        <!-- Branch overview -->
+        <div class="branch-grid">
+          <div class="branch-card" id="bc-st">
+            <div class="branch-name">สันติธรรม</div>
+            <div class="branch-stats">
+              <div class="bstat"><div class="bstat-num" id="bst-st-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-st-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-st-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
+            </div>
+          </div>
+          <div class="branch-card">
+            <div class="branch-name">แจ่มฟ้า</div>
+            <div class="branch-stats">
+              <div class="bstat"><div class="bstat-num" id="bst-jf-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-jf-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-jf-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
+            </div>
+          </div>
+          <div class="branch-card">
+            <div class="branch-name">หน้ามอ</div>
+            <div class="branch-stats">
+              <div class="bstat"><div class="bstat-num" id="bst-hm-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-hm-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-hm-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
+            </div>
+          </div>
+          <div class="branch-card">
+            <div class="branch-name">ศึกษา</div>
+            <div class="branch-stats">
+              <div class="bstat"><div class="bstat-num" id="bst-sk-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-sk-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
+              <div class="bstat"><div class="bstat-num" id="bst-sk-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">รับเข้าล่าสุด</div>
+          </div>
+          <table>
+            <thead><tr>
+              <th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th>
+            </tr></thead>
+            <tbody id="recent-table-body">
+              <tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ยังไม่มีข้อมูล — กด "รับเครื่องเข้า" เพื่อเริ่ม</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════ PAGE: STOCK ═══════════════════ -->
+      <div class="page" id="page-stock">
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Stock ทั้งหมด</div>
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="ค้นหา รุ่น / SN / รหัส..." id="search-input" oninput="filterStock()">
+            </div>
+          </div>
+          <div class="filter-row">
+            <button class="filter-chip active" onclick="setStatusFilter('all',this)">ทั้งหมด</button>
+            <button class="filter-chip" onclick="setStatusFilter('พร้อมขาย',this)">พร้อมขาย</button>
+            <button class="filter-chip" onclick="setStatusFilter('ขายแล้ว',this)">ขายแล้ว</button>
+            <button class="filter-chip" onclick="setStatusFilter('ของถึง',this)">รอเช็ค</button>
+            <button class="filter-chip" onclick="setStatusFilter('iPhone',this,'type')">iPhone</button>
+            <button class="filter-chip" onclick="setStatusFilter('MacBook',this,'type')">MacBook</button>
+            <button class="filter-chip" onclick="setStatusFilter('iPad',this,'type')">iPad</button>
+            <button class="filter-chip" onclick="setStatusFilter('Watch',this,'type')">Watch</button>
+          </div>
+          <table>
+            <thead><tr>
+              <th>รหัส</th><th>รุ่น</th><th>ความจุ</th><th>สี</th><th>เกรด</th><th>แบต%</th><th>สาขา</th><th>ราคาทุน</th><th>สถานะ</th><th></th>
+            </tr></thead>
+            <tbody id="stock-table-body">
+              <tr><td colspan="10"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ยังไม่มี stock</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════ PAGE: รับเครื่องเข้า ════════ -->
+      <div class="page" id="page-receive">
+        <div class="received-layout">
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">รับเครื่องเข้าระบบ</div>
+
+              <div class="step-row">
+                <div class="step done" id="step1"><div class="step-num">1</div> <span>ข้อมูลเครื่อง</span></div>
+                <div class="step-divider"></div>
+                <div class="step active" id="step2"><div class="step-num">2</div> <span>เกรด & เช็ค</span></div>
+                <div class="step-divider"></div>
+                <div class="step" id="step3"><div class="step-num">3</div> <span>ยืนยัน</span></div>
+              </div>
+
+              <div class="form-grid" id="receive-form">
+                <div class="field">
+                  <label>รหัส Stock (MC-XXXX)</label>
+                  <input type="text" id="f-code" placeholder="MC-26-0001">
+                </div>
+                <div class="field">
+                  <label>แหล่งที่มา / ร้านค้า</label>
+                  <input type="text" id="f-source" placeholder="Manz, Krit...">
+                </div>
+                <div class="field form-full">
+                  <label>รุ่น</label>
+                  <input type="text" id="f-model" placeholder="iPhone 16 Pro, MacBook Air M3...">
+                </div>
+                <div class="field">
+                  <label>ความจุ</label>
+                  <input type="text" id="f-storage" placeholder="256GB">
+                </div>
+                <div class="field">
+                  <label>สี</label>
+                  <input type="text" id="f-color" placeholder="Natural Titanium">
+                </div>
+                <div class="field">
+                  <label>IMEI / Serial Number</label>
+                  <input type="text" id="f-sn" placeholder="SN หรือ IMEI">
+                </div>
+                <div class="field">
+                  <label>ประเภท</label>
+                  <select id="f-type">
+                    <option>มือสอง</option>
+                    <option>มือหนึ่ง</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>ราคาทุน (บาท)</label>
+                  <input type="number" id="f-cost" placeholder="0">
+                </div>
+                <div class="field">
+                  <label>สาขารับเข้า</label>
+                  <select id="f-branch">
+                    <option>สันติธรรม</option>
+                    <option>แจ่มฟ้า</option>
+                    <option>หน้ามอ</option>
+                    <option>ศึกษา</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>วันที่รับเข้า</label>
+                  <input type="date" id="f-date">
+                </div>
+
+                <!-- เกรด -->
+                <div class="field form-full">
+                  <label>เกรดเครื่อง</label>
+                  <div class="grade-picker">
+                    <button class="grade-btn" onclick="selectGrade(this,'A++')">A++</button>
+                    <button class="grade-btn" onclick="selectGrade(this,'A+')">A+</button>
+                    <button class="grade-btn" onclick="selectGrade(this,'A')">A</button>
+                    <button class="grade-btn" onclick="selectGrade(this,'B')">B</button>
+                    <button class="grade-btn" onclick="selectGrade(this,'C')">C</button>
+                    <button class="grade-btn" onclick="selectGrade(this,'D')">D</button>
+                  </div>
+                  <input type="hidden" id="f-grade" value="">
+                </div>
+
+                <!-- แบต -->
+                <div class="field form-full">
+                  <label>แบตเตอรี่ %</label>
+                  <input type="range" id="f-bat" min="0" max="100" value="100"
+                    oninput="updateBat(this.value)" style="width:100%;accent-color:var(--accent)">
+                  <div class="bat-display">
+                    <div class="bat-bar"><div class="bat-fill" id="bat-fill" style="width:100%"></div></div>
+                    <span class="bat-val" id="bat-val">100%</span>
+                  </div>
+                </div>
+
+                <!-- หมายเหตุ -->
+                <div class="field form-full">
+                  <label>หมายเหตุ / ผลเช็คเครื่อง</label>
+                  <textarea id="f-note" placeholder="รอยขนแมว, ประกัน, อุปกรณ์..."></textarea>
+                </div>
+
+                <div class="field form-full" style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+                  <button class="btn btn-ghost" onclick="clearReceiveForm()">ล้าง</button>
+                  <button class="btn btn-primary" onclick="saveDevice()">บันทึกเครื่อง →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: recent received -->
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">รับเข้าวันนี้ <span id="today-count" style="color:var(--text3);font-weight:400;font-size:13px">(0 เครื่อง)</span></div>
+              <div class="recent-list" id="today-list">
+                <div class="empty" style="padding:30px 0">
+                  <div class="empty-icon" style="font-size:28px">📥</div>
+                  <div class="empty-text" style="font-size:12px">ยังไม่มีเครื่องเข้าวันนี้</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ PAGE: ขาย ══════════════════ -->
+      <div class="page" id="page-sell">
+        <div class="sell-layout">
+
+          <!-- LEFT: เลือกเครื่อง + ฟอร์ม -->
+          <div class="sell-left">
+
+            <!-- Tabs สด/ผ่อน -->
+            <div class="sell-tabs">
+              <button class="sell-tab active" id="tab-cash" onclick="setSellMode('cash')">💵 ขายสด</button>
+              <button class="sell-tab" id="tab-inst" onclick="setSellMode('installment')">📋 ขายผ่อน</button>
+            </div>
+
+            <!-- เลือกเครื่อง -->
+            <div class="device-picker">
+              <div class="device-picker-header">
+                <div class="device-picker-title">เลือกเครื่อง (พร้อมขาย)</div>
+                <div class="device-search">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" placeholder="ค้นหา..." id="sell-search" oninput="renderSellDeviceList()">
+                </div>
+              </div>
+              <div class="device-list" id="sell-device-list"></div>
+            </div>
+
+            <!-- ฟอร์มขาย -->
+            <div class="sell-form-card">
+              <div class="sell-form-title">ข้อมูลการขาย</div>
+
+              <!-- เครื่องที่เลือก -->
+              <div id="selected-device-display" class="selected-device-empty">
+                ← เลือกเครื่องจากรายการด้านบน
+              </div>
+
+              <!-- กำไร/ขาดทุน -->
+              <div class="profit-banner" id="profit-banner" style="display:none">
+                <div>
+                  <div class="profit-label">กำไรประมาณ</div>
+                  <div class="profit-value" id="profit-value">0 บาท</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="profit-label">ราคาทุน</div>
+                  <div style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text2)" id="cost-display">0 บาท</div>
+                </div>
+              </div>
+
+              <!-- ราคา -->
+              <div class="price-row">
+                <span class="price-label">ราคาขาย</span>
+                <input class="price-input" type="number" id="s-price" placeholder="0" oninput="calcProfit()">
+                <span class="price-tag">บาท</span>
+              </div>
+              <div class="price-row" id="row-down" style="display:none">
+                <span class="price-label">เงินดาวน์</span>
+                <input class="price-input" type="number" id="s-down" placeholder="0" oninput="calcInstallment()">
+                <span class="price-tag">บาท</span>
+              </div>
+              <div class="price-row" id="row-installment" style="display:none">
+                <span class="price-label">ค่างวด/เดือน</span>
+                <input class="price-input" type="number" id="s-monthly" placeholder="0" oninput="calcInstallment()">
+                <span class="price-tag">บาท</span>
+              </div>
+              <div class="price-row" id="row-months" style="display:none">
+                <span class="price-label">จำนวนงวด</span>
+                <input class="price-input" type="number" id="s-months" placeholder="12" oninput="calcInstallment()">
+                <span class="price-tag">เดือน</span>
+              </div>
+
+              <div class="form-grid" style="margin-top:14px">
+                <div class="field form-full">
+                  <label>ชื่อลูกค้า</label>
+                  <input type="text" id="s-customer" placeholder="ชื่อ-นามสกุล">
+                </div>
+                <div class="field">
+                  <label>เบอร์โทร</label>
+                  <input type="text" id="s-phone" placeholder="08x-xxx-xxxx">
+                </div>
+                <div class="field">
+                  <label>ช่องทางลูกค้า</label>
+                  <select id="s-channel">
+                    <option>Walk in</option><option>FB</option><option>Line</option>
+                    <option>Instagram</option><option>ลูกค้าเก่า</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>พนักงานขาย</label>
+                  <input type="text" id="s-staff" placeholder="ชื่อพนักงาน">
+                </div>
+                <div class="field">
+                  <label>วันที่ขาย</label>
+                  <input type="date" id="s-date">
+                </div>
+              </div>
+
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+                <button class="btn btn-ghost" onclick="clearSellForm()">ล้าง</button>
+                <button class="btn btn-primary" onclick="confirmSell()">✓ ยืนยันการขาย</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: สรุป + ประวัติ -->
+          <div class="sell-right">
+            <!-- สรุปผ่อน (แสดงเมื่อโหมดผ่อน) -->
+            <div class="summary-card" id="inst-summary" style="display:none">
+              <div style="font-size:13px;font-weight:500;margin-bottom:14px">สรุปการผ่อน</div>
+              <div class="summary-row"><span class="summary-key">ราคาขาย</span><span class="summary-val" id="sum-price">-</span></div>
+              <div class="summary-row"><span class="summary-key">เงินดาวน์</span><span class="summary-val" id="sum-down">-</span></div>
+              <div class="summary-row"><span class="summary-key">ยอดผ่อนรวม</span><span class="summary-val" id="sum-total">-</span></div>
+              <div class="summary-row"><span class="summary-key">ค่างวด/เดือน</span><span class="summary-val" id="sum-monthly">-</span></div>
+              <div class="summary-row" style="border:none"><span class="summary-key">จำนวนงวด</span><span class="summary-val" id="sum-months">-</span></div>
+            </div>
+
+            <!-- ประวัติขาย -->
+            <div class="sales-section">
+              <div class="sales-header">
+                <div class="table-title">ขายล่าสุด</div>
+                <span id="sales-count" style="font-size:12px;color:var(--text3)">(0 รายการ)</span>
+              </div>
+              <table style="width:100%;border-collapse:collapse">
+                <thead><tr>
+                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">รุ่น</th>
+                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ลูกค้า</th>
+                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ราคา</th>
+                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ประเภท</th>
+                </tr></thead>
+                <tbody id="sales-history-body">
+                  <tr><td colspan="4" style="padding:30px;text-align:center;color:var(--text3);font-size:13px">ยังไม่มีประวัติการขาย</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ════ PAGE: ผ่อนชำระ ════════════ -->
+      <div class="page" id="page-installment">
+
+        <div class="inst-grid">
+          <div class="inst-card">
+            <div class="inst-card-title">สัญญาทั้งหมด</div>
+            <div class="inst-card-val" id="inst-total-count">0</div>
+          </div>
+          <div class="inst-card">
+            <div class="inst-card-title">เกินกำหนด</div>
+            <div class="inst-card-val" id="inst-overdue-count" style="color:var(--red)">0</div>
+          </div>
+          <div class="inst-card">
+            <div class="inst-card-title">ยอดค้างรับรวม</div>
+            <div class="inst-card-val" id="inst-pending-amount" style="color:var(--blue);font-size:18px">0 ฿</div>
+          </div>
+          <div class="inst-card">
+            <div class="inst-card-title">ชำระแล้วเดือนนี้</div>
+            <div class="inst-card-val" id="inst-paid-month" style="color:var(--green);font-size:18px">0 ฿</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">รายการผ่อนชำระ</div>
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="ค้นหาลูกค้า..." id="inst-search" oninput="renderInstallmentList()">
+            </div>
+          </div>
+          <div id="installment-list">
+            <div class="empty" style="padding:50px"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีสัญญาผ่อน — ขายผ่อนจากหน้า "ขาย" ก่อนค่ะ</div></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<!-- ══ MODAL: QUICK RECEIVE ════════════════ -->
+<div class="overlay" id="receive-modal" onclick="closeModalOnBg(event,'receive-modal')">
+  <div class="modal">
+    <div class="modal-title">รับเครื่องเข้าด่วน</div>
+    <div class="modal-sub">กรอกข้อมูลพื้นฐาน เพื่อเพิ่มเข้า Stock</div>
+    <div class="form-grid">
+      <div class="field"><label>รหัส Stock</label><input type="text" id="m-code" placeholder="MC-26-xxxx"></div>
+      <div class="field"><label>แหล่งที่มา</label><input type="text" id="m-source" placeholder="ชื่อร้าน/คน"></div>
+      <div class="field form-full"><label>รุ่น</label><input type="text" id="m-model" placeholder="iPhone 16 Pro Max 256GB"></div>
+      <div class="field"><label>SN / IMEI</label><input type="text" id="m-sn" placeholder="Serial Number"></div>
+      <div class="field"><label>ราคาทุน</label><input type="number" id="m-cost" placeholder="0"></div>
+      <div class="field"><label>สาขา</label>
+        <select id="m-branch">
+          <option>สันติธรรม</option><option>แจ่มฟ้า</option><option>หน้ามอ</option><option>ศึกษา</option>
+        </select>
+      </div>
+      <div class="field"><label>เกรด</label>
+        <select id="m-grade">
+          <option>A++</option><option>A+</option><option>A</option><option>B</option><option>C</option><option>D</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('receive-modal')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveModalDevice()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-dot" id="toast-dot"></div>
+  <span id="toast-msg">บันทึกแล้ว</span>
+</div>
 <script>
 
 
@@ -1371,509 +1875,5 @@ function markPaid(instId) {
 
 
 </script>
-</head>
-<body>
-<div class="app">
-
-  <!-- ══ SIDEBAR ══════════════════════════ -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-mark">
-        <div class="logo-dot">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
-            <rect x="5" y="2" width="14" height="20" rx="3"/>
-            <line x1="12" y1="18" x2="12" y2="18.5" stroke-width="3"/>
-          </svg>
-        </div>
-        <div>
-          <div class="logo-text">iPhone 24</div>
-          <div class="logo-sub">STOCK SYSTEM</div>
-        </div>
-      </div>
-    </div>
-
-    <nav class="nav">
-      <div class="nav-item active" onclick="showPage('dashboard')">
-        <span class="nav-icon">◈</span> Dashboard
-      </div>
-      <div class="nav-item" onclick="showPage('stock')">
-        <span class="nav-icon">▦</span> Stock
-        <span class="nav-badge" id="nav-stock-count">0</span>
-      </div>
-      <div class="nav-item" onclick="showPage('receive')">
-        <span class="nav-icon">↓</span> รับเครื่องเข้า
-      </div>
-      <div class="nav-item" onclick="showPage('sell')">
-        <span class="nav-icon">↗</span> ขาย
-      </div>
-      <div class="nav-item" onclick="showPage('installment')">
-        <span class="nav-icon">📋</span> ผ่อนชำระ
-      </div>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <select class="branch-selector" id="branch-filter" onchange="applyBranchFilter()">
-        <option value="all">ทุกสาขา</option>
-        <option value="สันติธรรม">สันติธรรม</option>
-        <option value="แจ่มฟ้า">แจ่มฟ้า</option>
-        <option value="หน้ามอ">หน้ามอ</option>
-        <option value="ศึกษา">ศึกษา</option>
-      </select>
-    </div>
-  </aside>
-
-  <!-- ══ MAIN ═════════════════════════════ -->
-  <main class="main">
-
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div class="page-title" id="page-title">Dashboard</div>
-      <div class="topbar-actions" id="topbar-actions">
-        <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()" style="padding:7px 10px;font-size:18px;line-height:1;border-radius:10px" title="สลับธีม">☀️</button>
-        <button class="btn btn-primary" onclick="openModal('receive-modal')">+ รับเครื่องเข้า</button>
-      </div>
-    </div>
-
-    <div class="content">
-
-      <!-- ════ PAGE: DASHBOARD ═══════════════ -->
-      <div class="page active" id="page-dashboard">
-
-        <div class="stats-grid">
-          <div class="stat-card accent-card">
-            <div class="stat-label">พร้อมขาย</div>
-            <div class="stat-value" id="stat-ready">0</div>
-            <div class="stat-sub">เครื่อง ทุกสาขา</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">ขายแล้ว (เดือนนี้)</div>
-            <div class="stat-value" id="stat-sold">0</div>
-            <div class="stat-sub">เครื่อง</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">รอเช็คเครื่อง</div>
-            <div class="stat-value" id="stat-arrived" style="color:var(--amber)">0</div>
-            <div class="stat-sub">เครื่อง</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Stock ทั้งหมด</div>
-            <div class="stat-value" id="stat-total">0</div>
-            <div class="stat-sub">เครื่องในระบบ</div>
-          </div>
-        </div>
-
-        <!-- Branch overview -->
-        <div class="branch-grid">
-          <div class="branch-card" id="bc-st">
-            <div class="branch-name">สันติธรรม</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-st-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-st-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-st-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
-            </div>
-          </div>
-          <div class="branch-card">
-            <div class="branch-name">แจ่มฟ้า</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-jf-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-jf-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-jf-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
-            </div>
-          </div>
-          <div class="branch-card">
-            <div class="branch-name">หน้ามอ</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-hm-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-hm-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-hm-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
-            </div>
-          </div>
-          <div class="branch-card">
-            <div class="branch-name">ศึกษา</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-sk-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-sk-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-sk-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recent activity -->
-        <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">รับเข้าล่าสุด</div>
-          </div>
-          <table>
-            <thead><tr>
-              <th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th>
-            </tr></thead>
-            <tbody id="recent-table-body">
-              <tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ยังไม่มีข้อมูล — กด "รับเครื่องเข้า" เพื่อเริ่ม</div></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ════ PAGE: STOCK ═══════════════════ -->
-      <div class="page" id="page-stock">
-        <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">Stock ทั้งหมด</div>
-            <div class="search-box">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="ค้นหา รุ่น / SN / รหัส..." id="search-input" oninput="filterStock()">
-            </div>
-          </div>
-          <div class="filter-row">
-            <button class="filter-chip active" onclick="setStatusFilter('all',this)">ทั้งหมด</button>
-            <button class="filter-chip" onclick="setStatusFilter('พร้อมขาย',this)">พร้อมขาย</button>
-            <button class="filter-chip" onclick="setStatusFilter('ขายแล้ว',this)">ขายแล้ว</button>
-            <button class="filter-chip" onclick="setStatusFilter('ของถึง',this)">รอเช็ค</button>
-            <button class="filter-chip" onclick="setStatusFilter('iPhone',this,'type')">iPhone</button>
-            <button class="filter-chip" onclick="setStatusFilter('MacBook',this,'type')">MacBook</button>
-            <button class="filter-chip" onclick="setStatusFilter('iPad',this,'type')">iPad</button>
-            <button class="filter-chip" onclick="setStatusFilter('Watch',this,'type')">Watch</button>
-          </div>
-          <table>
-            <thead><tr>
-              <th>รหัส</th><th>รุ่น</th><th>ความจุ</th><th>สี</th><th>เกรด</th><th>แบต%</th><th>สาขา</th><th>ราคาทุน</th><th>สถานะ</th><th></th>
-            </tr></thead>
-            <tbody id="stock-table-body">
-              <tr><td colspan="10"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ยังไม่มี stock</div></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ════ PAGE: รับเครื่องเข้า ════════ -->
-      <div class="page" id="page-receive">
-        <div class="received-layout">
-          <div>
-            <div class="form-card">
-              <div class="form-card-title">รับเครื่องเข้าระบบ</div>
-
-              <div class="step-row">
-                <div class="step done" id="step1"><div class="step-num">1</div> <span>ข้อมูลเครื่อง</span></div>
-                <div class="step-divider"></div>
-                <div class="step active" id="step2"><div class="step-num">2</div> <span>เกรด & เช็ค</span></div>
-                <div class="step-divider"></div>
-                <div class="step" id="step3"><div class="step-num">3</div> <span>ยืนยัน</span></div>
-              </div>
-
-              <div class="form-grid" id="receive-form">
-                <div class="field">
-                  <label>รหัส Stock (MC-XXXX)</label>
-                  <input type="text" id="f-code" placeholder="MC-26-0001">
-                </div>
-                <div class="field">
-                  <label>แหล่งที่มา / ร้านค้า</label>
-                  <input type="text" id="f-source" placeholder="Manz, Krit...">
-                </div>
-                <div class="field form-full">
-                  <label>รุ่น</label>
-                  <input type="text" id="f-model" placeholder="iPhone 16 Pro, MacBook Air M3...">
-                </div>
-                <div class="field">
-                  <label>ความจุ</label>
-                  <input type="text" id="f-storage" placeholder="256GB">
-                </div>
-                <div class="field">
-                  <label>สี</label>
-                  <input type="text" id="f-color" placeholder="Natural Titanium">
-                </div>
-                <div class="field">
-                  <label>IMEI / Serial Number</label>
-                  <input type="text" id="f-sn" placeholder="SN หรือ IMEI">
-                </div>
-                <div class="field">
-                  <label>ประเภท</label>
-                  <select id="f-type">
-                    <option>มือสอง</option>
-                    <option>มือหนึ่ง</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>ราคาทุน (บาท)</label>
-                  <input type="number" id="f-cost" placeholder="0">
-                </div>
-                <div class="field">
-                  <label>สาขารับเข้า</label>
-                  <select id="f-branch">
-                    <option>สันติธรรม</option>
-                    <option>แจ่มฟ้า</option>
-                    <option>หน้ามอ</option>
-                    <option>ศึกษา</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>วันที่รับเข้า</label>
-                  <input type="date" id="f-date">
-                </div>
-
-                <!-- เกรด -->
-                <div class="field form-full">
-                  <label>เกรดเครื่อง</label>
-                  <div class="grade-picker">
-                    <button class="grade-btn" onclick="selectGrade(this,'A++')">A++</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'A+')">A+</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'A')">A</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'B')">B</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'C')">C</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'D')">D</button>
-                  </div>
-                  <input type="hidden" id="f-grade" value="">
-                </div>
-
-                <!-- แบต -->
-                <div class="field form-full">
-                  <label>แบตเตอรี่ %</label>
-                  <input type="range" id="f-bat" min="0" max="100" value="100"
-                    oninput="updateBat(this.value)" style="width:100%;accent-color:var(--accent)">
-                  <div class="bat-display">
-                    <div class="bat-bar"><div class="bat-fill" id="bat-fill" style="width:100%"></div></div>
-                    <span class="bat-val" id="bat-val">100%</span>
-                  </div>
-                </div>
-
-                <!-- หมายเหตุ -->
-                <div class="field form-full">
-                  <label>หมายเหตุ / ผลเช็คเครื่อง</label>
-                  <textarea id="f-note" placeholder="รอยขนแมว, ประกัน, อุปกรณ์..."></textarea>
-                </div>
-
-                <div class="field form-full" style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-                  <button class="btn btn-ghost" onclick="clearReceiveForm()">ล้าง</button>
-                  <button class="btn btn-primary" onclick="saveDevice()">บันทึกเครื่อง →</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right: recent received -->
-          <div>
-            <div class="form-card">
-              <div class="form-card-title">รับเข้าวันนี้ <span id="today-count" style="color:var(--text3);font-weight:400;font-size:13px">(0 เครื่อง)</span></div>
-              <div class="recent-list" id="today-list">
-                <div class="empty" style="padding:30px 0">
-                  <div class="empty-icon" style="font-size:28px">📥</div>
-                  <div class="empty-text" style="font-size:12px">ยังไม่มีเครื่องเข้าวันนี้</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ════ PAGE: ขาย ══════════════════ -->
-      <div class="page" id="page-sell">
-        <div class="sell-layout">
-
-          <!-- LEFT: เลือกเครื่อง + ฟอร์ม -->
-          <div class="sell-left">
-
-            <!-- Tabs สด/ผ่อน -->
-            <div class="sell-tabs">
-              <button class="sell-tab active" id="tab-cash" onclick="setSellMode('cash')">💵 ขายสด</button>
-              <button class="sell-tab" id="tab-inst" onclick="setSellMode('installment')">📋 ขายผ่อน</button>
-            </div>
-
-            <!-- เลือกเครื่อง -->
-            <div class="device-picker">
-              <div class="device-picker-header">
-                <div class="device-picker-title">เลือกเครื่อง (พร้อมขาย)</div>
-                <div class="device-search">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input type="text" placeholder="ค้นหา..." id="sell-search" oninput="renderSellDeviceList()">
-                </div>
-              </div>
-              <div class="device-list" id="sell-device-list"></div>
-            </div>
-
-            <!-- ฟอร์มขาย -->
-            <div class="sell-form-card">
-              <div class="sell-form-title">ข้อมูลการขาย</div>
-
-              <!-- เครื่องที่เลือก -->
-              <div id="selected-device-display" class="selected-device-empty">
-                ← เลือกเครื่องจากรายการด้านบน
-              </div>
-
-              <!-- กำไร/ขาดทุน -->
-              <div class="profit-banner" id="profit-banner" style="display:none">
-                <div>
-                  <div class="profit-label">กำไรประมาณ</div>
-                  <div class="profit-value" id="profit-value">0 บาท</div>
-                </div>
-                <div style="text-align:right">
-                  <div class="profit-label">ราคาทุน</div>
-                  <div style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text2)" id="cost-display">0 บาท</div>
-                </div>
-              </div>
-
-              <!-- ราคา -->
-              <div class="price-row">
-                <span class="price-label">ราคาขาย</span>
-                <input class="price-input" type="number" id="s-price" placeholder="0" oninput="calcProfit()">
-                <span class="price-tag">บาท</span>
-              </div>
-              <div class="price-row" id="row-down" style="display:none">
-                <span class="price-label">เงินดาวน์</span>
-                <input class="price-input" type="number" id="s-down" placeholder="0" oninput="calcInstallment()">
-                <span class="price-tag">บาท</span>
-              </div>
-              <div class="price-row" id="row-installment" style="display:none">
-                <span class="price-label">ค่างวด/เดือน</span>
-                <input class="price-input" type="number" id="s-monthly" placeholder="0" oninput="calcInstallment()">
-                <span class="price-tag">บาท</span>
-              </div>
-              <div class="price-row" id="row-months" style="display:none">
-                <span class="price-label">จำนวนงวด</span>
-                <input class="price-input" type="number" id="s-months" placeholder="12" oninput="calcInstallment()">
-                <span class="price-tag">เดือน</span>
-              </div>
-
-              <div class="form-grid" style="margin-top:14px">
-                <div class="field form-full">
-                  <label>ชื่อลูกค้า</label>
-                  <input type="text" id="s-customer" placeholder="ชื่อ-นามสกุล">
-                </div>
-                <div class="field">
-                  <label>เบอร์โทร</label>
-                  <input type="text" id="s-phone" placeholder="08x-xxx-xxxx">
-                </div>
-                <div class="field">
-                  <label>ช่องทางลูกค้า</label>
-                  <select id="s-channel">
-                    <option>Walk in</option><option>FB</option><option>Line</option>
-                    <option>Instagram</option><option>ลูกค้าเก่า</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>พนักงานขาย</label>
-                  <input type="text" id="s-staff" placeholder="ชื่อพนักงาน">
-                </div>
-                <div class="field">
-                  <label>วันที่ขาย</label>
-                  <input type="date" id="s-date">
-                </div>
-              </div>
-
-              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-                <button class="btn btn-ghost" onclick="clearSellForm()">ล้าง</button>
-                <button class="btn btn-primary" onclick="confirmSell()">✓ ยืนยันการขาย</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- RIGHT: สรุป + ประวัติ -->
-          <div class="sell-right">
-            <!-- สรุปผ่อน (แสดงเมื่อโหมดผ่อน) -->
-            <div class="summary-card" id="inst-summary" style="display:none">
-              <div style="font-size:13px;font-weight:500;margin-bottom:14px">สรุปการผ่อน</div>
-              <div class="summary-row"><span class="summary-key">ราคาขาย</span><span class="summary-val" id="sum-price">-</span></div>
-              <div class="summary-row"><span class="summary-key">เงินดาวน์</span><span class="summary-val" id="sum-down">-</span></div>
-              <div class="summary-row"><span class="summary-key">ยอดผ่อนรวม</span><span class="summary-val" id="sum-total">-</span></div>
-              <div class="summary-row"><span class="summary-key">ค่างวด/เดือน</span><span class="summary-val" id="sum-monthly">-</span></div>
-              <div class="summary-row" style="border:none"><span class="summary-key">จำนวนงวด</span><span class="summary-val" id="sum-months">-</span></div>
-            </div>
-
-            <!-- ประวัติขาย -->
-            <div class="sales-section">
-              <div class="sales-header">
-                <div class="table-title">ขายล่าสุด</div>
-                <span id="sales-count" style="font-size:12px;color:var(--text3)">(0 รายการ)</span>
-              </div>
-              <table style="width:100%;border-collapse:collapse">
-                <thead><tr>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">รุ่น</th>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ลูกค้า</th>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ราคา</th>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ประเภท</th>
-                </tr></thead>
-                <tbody id="sales-history-body">
-                  <tr><td colspan="4" style="padding:30px;text-align:center;color:var(--text3);font-size:13px">ยังไม่มีประวัติการขาย</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ════ PAGE: ผ่อนชำระ ════════════ -->
-      <div class="page" id="page-installment">
-
-        <div class="inst-grid">
-          <div class="inst-card">
-            <div class="inst-card-title">สัญญาทั้งหมด</div>
-            <div class="inst-card-val" id="inst-total-count">0</div>
-          </div>
-          <div class="inst-card">
-            <div class="inst-card-title">เกินกำหนด</div>
-            <div class="inst-card-val" id="inst-overdue-count" style="color:var(--red)">0</div>
-          </div>
-          <div class="inst-card">
-            <div class="inst-card-title">ยอดค้างรับรวม</div>
-            <div class="inst-card-val" id="inst-pending-amount" style="color:var(--blue);font-size:18px">0 ฿</div>
-          </div>
-          <div class="inst-card">
-            <div class="inst-card-title">ชำระแล้วเดือนนี้</div>
-            <div class="inst-card-val" id="inst-paid-month" style="color:var(--green);font-size:18px">0 ฿</div>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">รายการผ่อนชำระ</div>
-            <div class="search-box">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="ค้นหาลูกค้า..." id="inst-search" oninput="renderInstallmentList()">
-            </div>
-          </div>
-          <div id="installment-list">
-            <div class="empty" style="padding:50px"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีสัญญาผ่อน — ขายผ่อนจากหน้า "ขาย" ก่อนค่ะ</div></div>
-          </div>
-        </div>
-
-      </div>
-
-    </div><!-- /content -->
-  </main>
-</div>
-
-<!-- ══ MODAL: QUICK RECEIVE ════════════════ -->
-<div class="overlay" id="receive-modal" onclick="closeModalOnBg(event,'receive-modal')">
-  <div class="modal">
-    <div class="modal-title">รับเครื่องเข้าด่วน</div>
-    <div class="modal-sub">กรอกข้อมูลพื้นฐาน เพื่อเพิ่มเข้า Stock</div>
-    <div class="form-grid">
-      <div class="field"><label>รหัส Stock</label><input type="text" id="m-code" placeholder="MC-26-xxxx"></div>
-      <div class="field"><label>แหล่งที่มา</label><input type="text" id="m-source" placeholder="ชื่อร้าน/คน"></div>
-      <div class="field form-full"><label>รุ่น</label><input type="text" id="m-model" placeholder="iPhone 16 Pro Max 256GB"></div>
-      <div class="field"><label>SN / IMEI</label><input type="text" id="m-sn" placeholder="Serial Number"></div>
-      <div class="field"><label>ราคาทุน</label><input type="number" id="m-cost" placeholder="0"></div>
-      <div class="field"><label>สาขา</label>
-        <select id="m-branch">
-          <option>สันติธรรม</option><option>แจ่มฟ้า</option><option>หน้ามอ</option><option>ศึกษา</option>
-        </select>
-      </div>
-      <div class="field"><label>เกรด</label>
-        <select id="m-grade">
-          <option>A++</option><option>A+</option><option>A</option><option>B</option><option>C</option><option>D</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('receive-modal')">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="saveModalDevice()">บันทึก</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <div class="toast-dot" id="toast-dot"></div>
-  <span id="toast-msg">บันทึกแล้ว</span>
-</div>
 </body>
 </html>
