@@ -159,8 +159,8 @@ body {
 .content { flex:1; overflow-y:visible; padding:24px; min-height:0; }
 
 /* ── PAGES ────────────────────────────── */
-.page { display:none; }
-.page.active { display:block; }
+.page { display:none !important; }
+.page.active { display:block !important; }
 
 /* ── STAT CARDS ─────────────────────── */
 .stats-grid {
@@ -614,15 +614,7 @@ tbody tr:hover .row-actions { opacity:1; }
 
 
 // ═══════════════════════════════════════
-//  CONFIG — ใส่ Apps Script Web App URL ตรงนี้
-// ═══════════════════════════════════════
-var APPS_SCRIPT_URL = ''; // ← วาง URL ของ Apps Script ตรงนี้
-// เช่น: 'https://script.google.com/macros/s/AKfyc.../exec'
-
-// ═══════════════════════════════════════
-//  API LAYER
-//  - ถ้าตั้ง APPS_SCRIPT_URL → fetch ไปที่ Apps Script จริง
-//  - ถ้าไม่มี URL → demo mode (localStorage)
+//  API LAYER — Apps Script / Demo mode
 // ═══════════════════════════════════════
 const IS_APPS_SCRIPT = (function() {
   try { return typeof google !== 'undefined' && typeof google.script !== 'undefined' && typeof google.script.run !== 'undefined'; }
@@ -632,7 +624,6 @@ const IS_APPS_SCRIPT = (function() {
 function api(action, payload) {
   return new Promise(function(resolve, reject) {
     if (IS_APPS_SCRIPT) {
-      // รันใน Apps Script โดยตรง
       google.script.run
         .withSuccessHandler(function(res) {
           if (res && res.ok) resolve(res.data);
@@ -640,35 +631,10 @@ function api(action, payload) {
         })
         .withFailureHandler(function(err) { reject(new Error(err.message || 'Script error')); })
         .callServer(action, payload || {});
-
-    } else if (APPS_SCRIPT_URL) {
-      // รันจาก GitHub Pages → fetch ไป Apps Script
-      fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: action, payload: payload || {} }),
-        mode: 'no-cors'
-      }).then(function(res) {
-        // no-cors → opaque response, ไม่อ่าน body ได้
-        // ใช้ GET แทนสำหรับ read, POST สำหรับ write
-        return fetchApi(action, payload);
-      }).catch(function(err) { reject(err); });
-
     } else {
-      // Demo mode — localStorage
       try { resolve(localFallback(action, payload || {})); }
       catch(e) { reject(e); }
     }
-  });
-}
-
-function fetchApi(action, payload) {
-  // GET request พร้อม params สำหรับ CORS-friendly
-  var url = APPS_SCRIPT_URL + '?action=' + encodeURIComponent(action)
-    + '&payload=' + encodeURIComponent(JSON.stringify(payload || {}));
-  return fetch(url).then(function(r) { return r.json(); }).then(function(res) {
-    if (res && res.ok) return res.data;
-    throw new Error(res ? res.error : 'API error');
   });
 }
 
