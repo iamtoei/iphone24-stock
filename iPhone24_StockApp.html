@@ -5,1116 +5,862 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iPhone 24 — Stock System</title>
 <style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+html, body { height:100%; background:#f5f5f7; color:#1d1d1f; font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif; font-size:14px; }
 
+/* ── LAYOUT ─────────────────────── */
+.app { display:flex; height:100vh; overflow:hidden; }
 
-/* Force override Apps Script iframe wrapper */
-html { height: 100% !important; overflow: auto !important; }
-body { height: 100% !important; overflow: auto !important; margin: 0 !important; }
-* { box-sizing: border-box; }
-
-:root {
-  --bg:        #f2f2f4;
-  --bg2:       #ffffff;
-  --bg3:       #f7f7f9;
-  --border:    #e8e8ec;
-  --border2:   #d8d8de;
-  --text:      #0d0d0f;
-  --text2:     #6b6b75;
-  --text3:     #a8a8b0;
-  --accent:    #0d0d0f;
-  --accent2:   #2c2c30;
-  --blue:      #1869ff;
-  --green:     #00915a;
-  --amber:     #b86800;
-  --red:       #d62b2b;
-  --purple:    #6d28d9;
-  --radius:   10px;
-  --radius-lg:16px;
-}
-
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system,'Helvetica Neue',Arial,sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  height: 100%;
-}
-
-/* ── LAYOUT ───────────────────────────── */
-.app { display:flex; min-height:600px; width:100%; }
-
-/* SIDEBAR */
+/* ── SIDEBAR ────────────────────── */
 .sidebar {
-  width: 220px;
-  min-width: 220px;
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-}
-.sidebar-logo {
-  padding: 24px 20px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.logo-mark {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.logo-dot {
-  width: 28px; height: 28px;
-  background: #0d0d0f;
-  border-radius: 8px;
-  display: flex; align-items:center; justify-content:center;
-}
-.logo-dot svg { width:16px; height:16px; }
-.logo-text { font-size:15px; font-weight:600; letter-spacing:-.3px; }
-.logo-sub  { font-size:11px; color:var(--text3); margin-top:2px; font-family:'SF Mono','Courier New',monospace; }
-
-.nav { padding: 12px 10px; flex:1; display:flex; flex-direction:column; gap:2px; }
-.nav-item {
-  display: flex; align-items:center; gap:10px;
-  padding: 9px 12px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  color: var(--text2);
-  font-size: 13px;
-  font-weight: 400;
-  transition: all .15s;
-  border: 1px solid transparent;
-  user-select: none;
-}
-.nav-item:hover { background:var(--bg3); color:var(--text); }
-.nav-item.active {
-  background: var(--bg3);
-  color: var(--text);
-  border-color: var(--border2);
-}
-.nav-item.active .nav-icon { color: var(--blue); }
-.nav-icon { font-size:15px; width:18px; text-align:center; }
-{.nav-badge-x {
-  margin-left:auto;
-  background:var(--accent);
-  color:#000;
-  font-size:10px;
-  font-weight:600;
-  padding:1px 6px;
-  border-radius:20px;
-  font-family:'SF Mono','Courier New',monospace;
-}
-
-.sidebar-bottom {
-  padding:12px 10px;
-  border-top:1px solid var(--border);
-}
-.branch-selector {
-  width:100%;
-  background:var(--bg3);
-  border:1px solid var(--border2);
-  color:var(--text);
-  padding:8px 10px;
-  border-radius:var(--radius);
-  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
-  font-size:12px;
-  cursor:pointer;
-}
-
-/* MAIN */
-.main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:auto; }
-
-.topbar {
-  height:56px;
-  border-bottom:1px solid var(--border);
-  display:flex; align-items:center;
-  padding:0 24px;
-  gap:12px;
-  background:var(--bg2);
-}
-.page-title { font-size:15px; font-weight:500; }
-.topbar-actions { margin-left:auto; display:flex; gap:8px; }
-
-/* BUTTONS */
-.btn {
-  display:inline-flex; align-items:center; gap:6px;
-  padding:7px 14px;
-  border-radius:var(--radius);
-  font-size:13px; font-weight:500;
-  cursor:pointer; border:none;
-  transition:all .15s;
-  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
-}
-.btn-primary { background:var(--accent); color:var(--bg); }
-.btn-primary:hover { background:var(--accent2); color:var(--bg); }
-.btn-ghost {
-  background:transparent; color:var(--text2);
-  border:1px solid var(--border2);
-}
-.btn-ghost:hover { color:var(--text); border-color:var(--border); background:var(--bg3); }
-.btn-sm { padding:5px 10px; font-size:12px; }
-
-.content { flex:1; overflow-y:visible; padding:24px; min-height:0; }
-
-/* ── PAGES ────────────────────────────── */
-.page { display:none !important; }
-.page.active { display:block !important; }
-
-/* ── STAT CARDS ─────────────────────── */
-.stats-grid {
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  margin-bottom:24px;
-}
-.stat-card {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:var(--radius-lg);
-  padding:18px 20px;
-}
-.stat-label { font-size:12px; color:var(--text2); margin-bottom:8px; }
-.stat-value { font-size:26px; font-weight:600; letter-spacing:-1px; font-family:'SF Mono','Courier New',monospace; }
-.stat-sub   { font-size:11px; color:var(--text3); margin-top:4px; }
-.stat-card.accent-card { border-color: color-mix(in srgb, var(--blue) 30%, transparent); }
-.stat-card.accent-card .stat-value { color:var(--blue); }
-
-/* ── TABLE ───────────────────────────── */
-.table-wrap {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:var(--radius-lg);
+  width:240px; min-width:240px; height:100vh;
+  background:#fff; border-right:1px solid #e5e5ea;
+  display:flex; flex-direction:column; flex-shrink:0;
   overflow:hidden;
 }
-.table-header {
-  display:flex; align-items:center;
-  padding:14px 18px;
-  border-bottom:1px solid var(--border);
-  gap:10px;
+.sidebar-logo {
+  padding:20px 18px 16px;
+  border-bottom:1px solid #f2f2f7;
 }
-.table-title { font-size:14px; font-weight:500; }
-.search-box {
+.logo-wrap { display:flex; align-items:center; gap:10px; }
+.logo-icon {
+  width:32px; height:32px; background:#1d1d1f; border-radius:9px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.logo-icon svg { width:18px; height:18px; }
+.logo-name { font-size:15px; font-weight:600; color:#1d1d1f; letter-spacing:-.3px; }
+.logo-sub { font-size:10px; color:#8e8e93; letter-spacing:.5px; text-transform:uppercase; margin-top:1px; }
+
+.nav { padding:10px 10px; flex:1; overflow-y:auto; }
+.nav-section { margin-bottom:6px; }
+.nav-label { font-size:10px; font-weight:600; color:#8e8e93; letter-spacing:.5px; text-transform:uppercase; padding:8px 10px 4px; }
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 10px; border-radius:9px; cursor:pointer;
+  color:#3a3a3c; font-size:13px; font-weight:400;
+  transition:background .12s; margin-bottom:1px;
+  border:none; background:transparent; width:100%; text-align:left;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+}
+.nav-item:hover { background:#f5f5f7; }
+.nav-item.active { background:#f5f5f7; color:#1d1d1f; font-weight:500; }
+.nav-icon { font-size:15px; width:22px; text-align:center; opacity:.7; }
+.nav-item.active .nav-icon { opacity:1; }
+.nav-badge {
+  margin-left:auto; background:#1d1d1f; color:#fff;
+  font-size:10px; font-weight:600; padding:1px 6px;
+  border-radius:20px; min-width:18px; text-align:center;
+}
+
+.sidebar-bottom { padding:12px 10px; border-top:1px solid #f2f2f7; }
+.branch-select {
+  width:100%; padding:7px 10px; border-radius:8px;
+  border:1px solid #e5e5ea; background:#f5f5f7;
+  font-size:12px; color:#3a3a3c;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+  cursor:pointer; outline:none;
+}
+
+/* ── MAIN ───────────────────────── */
+.main { flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; min-width:0; }
+.topbar {
+  height:52px; min-height:52px; background:#fff;
+  border-bottom:1px solid #e5e5ea;
+  display:flex; align-items:center; padding:0 24px; gap:12px; flex-shrink:0;
+}
+.topbar-title { font-size:15px; font-weight:600; color:#1d1d1f; }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+
+.content { flex:1; overflow-y:auto; padding:24px; }
+
+/* ── BUTTONS ────────────────────── */
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; border-radius:8px;
+  font-size:13px; font-weight:500; cursor:pointer;
+  border:none; transition:all .12s;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+  white-space:nowrap;
+}
+.btn-primary { background:#1d1d1f; color:#fff; }
+.btn-primary:hover { background:#3a3a3c; }
+.btn-secondary { background:#f5f5f7; color:#1d1d1f; border:1px solid #e5e5ea; }
+.btn-secondary:hover { background:#e5e5ea; }
+.btn-sm { padding:5px 10px; font-size:12px; }
+.btn-icon { padding:7px; border-radius:8px; }
+
+/* ── PAGES ──────────────────────── */
+.page { display:none; }
+.page.show { display:block; }
+
+/* ── STAT CARDS ─────────────────── */
+.stats-row { display:flex; gap:12px; margin-bottom:20px; }
+.stat-card {
+  flex:1; background:#fff; border-radius:14px;
+  border:1px solid #e5e5ea; padding:18px 20px;
+}
+.stat-label { font-size:12px; color:#8e8e93; margin-bottom:8px; font-weight:500; }
+.stat-num { font-size:28px; font-weight:700; color:#1d1d1f; letter-spacing:-1px; line-height:1; }
+.stat-sub { font-size:11px; color:#8e8e93; margin-top:4px; }
+.stat-card.green .stat-num { color:#34c759; }
+.stat-card.blue .stat-num { color:#007aff; }
+.stat-card.orange .stat-num { color:#ff9500; }
+
+/* ── BRANCH CARDS ────────────────── */
+.branch-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:20px; }
+.branch-card { background:#fff; border-radius:14px; border:1px solid #e5e5ea; padding:18px 20px; }
+.branch-name {
+  font-size:12px; font-weight:600; color:#8e8e93; text-transform:uppercase;
+  letter-spacing:.5px; margin-bottom:14px;
+  display:flex; align-items:center; gap:6px;
+}
+.branch-dot { width:6px; height:6px; border-radius:50%; background:#34c759; }
+.branch-stats { display:flex; gap:0; }
+.bstat { flex:1; text-align:center; }
+.bstat + .bstat { border-left:1px solid #f2f2f7; }
+.bstat-num { font-size:20px; font-weight:700; color:#1d1d1f; letter-spacing:-.5px; }
+.bstat-label { font-size:10px; color:#8e8e93; margin-top:3px; }
+.bstat-num.green { color:#34c759; }
+.bstat-num.orange { color:#ff9500; }
+
+/* ── SECTION CARD ────────────────── */
+.card { background:#fff; border-radius:14px; border:1px solid #e5e5ea; overflow:hidden; }
+.card-header {
+  padding:14px 18px; border-bottom:1px solid #f2f2f7;
+  display:flex; align-items:center; gap:10px;
+}
+.card-title { font-size:13px; font-weight:600; color:#1d1d1f; }
+.card-count { font-size:12px; color:#8e8e93; margin-left:auto; }
+
+/* ── SEARCH & FILTER ─────────────── */
+.search-wrap {
   display:flex; align-items:center; gap:8px;
-  background:var(--bg3);
-  border:1px solid var(--border2);
-  border-radius:var(--radius);
-  padding:6px 12px;
-  margin-left:auto;
+  background:#f5f5f7; border-radius:8px; padding:7px 12px;
+  border:1px solid transparent; transition:border .12s;
 }
-.search-box input {
-  background:none; border:none; color:var(--text);
-  font-size:13px; font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
-  outline:none; width:180px;
+.search-wrap:focus-within { border-color:#007aff; background:#fff; }
+.search-wrap input {
+  background:none; border:none; outline:none;
+  font-size:13px; color:#1d1d1f; width:180px;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
 }
-.search-box input::placeholder { color:var(--text3); }
+.search-wrap input::placeholder { color:#c7c7cc; }
 
-.filter-row {
-  display:flex; gap:8px;
-  padding:10px 18px;
-  border-bottom:1px solid var(--border);
-  background:var(--bg);
-  overflow-x:auto;
+.filter-bar { display:flex; gap:6px; padding:12px 18px; border-bottom:1px solid #f2f2f7; overflow-x:auto; }
+.chip {
+  padding:4px 12px; border-radius:20px; font-size:12px;
+  border:1px solid #e5e5ea; color:#3a3a3c; cursor:pointer;
+  white-space:nowrap; background:#fff; transition:all .12s;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
 }
-.filter-chip {
-  padding:4px 12px;
-  border-radius:20px;
-  border:1px solid var(--border2);
-  font-size:12px;
-  color:var(--text2);
-  cursor:pointer;
-  white-space:nowrap;
-  transition:all .15s;
-  background:transparent;
-  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
-}
-.filter-chip:hover { border-color:var(--border); color:var(--text); }
-.filter-chip.active {
-  background:var(--text); color:var(--bg);
-  border-color:var(--text); font-weight:500;
-}
+.chip:hover { background:#f5f5f7; }
+.chip.active { background:#1d1d1f; color:#fff; border-color:#1d1d1f; font-weight:500; }
 
+/* ── TABLE ───────────────────────── */
 table { width:100%; border-collapse:collapse; }
-thead tr { background:var(--bg); }
-th {
-  text-align:left;
-  font-size:11px; font-weight:500;
-  color:var(--text3);
-  padding:10px 14px;
-  border-bottom:1px solid var(--border);
-  white-space:nowrap;
-  letter-spacing:.5px;
-  text-transform:uppercase;
+thead th {
+  text-align:left; font-size:11px; font-weight:600;
+  color:#8e8e93; padding:10px 16px; letter-spacing:.3px;
+  text-transform:uppercase; border-bottom:1px solid #f2f2f7;
+  background:#fafafa; white-space:nowrap;
 }
-td {
-  padding:12px 14px;
-  border-bottom:1px solid var(--border);
-  font-size:13px;
-  vertical-align:middle;
+tbody td {
+  padding:12px 16px; border-bottom:1px solid #f2f2f7;
+  font-size:13px; color:#1d1d1f; vertical-align:middle;
 }
 tbody tr:last-child td { border-bottom:none; }
-tbody tr:hover { background:var(--bg3); }
+tbody tr:hover { background:#fafafa; }
+.mono { font-family:'SF Mono','Courier New',monospace; font-size:12px; color:#3a3a3c; }
 
-.mono { font-family:'SF Mono','Courier New',monospace; font-size:12px; color:var(--text2); }
-
-/* STATUS BADGES */
+/* ── BADGES ──────────────────────── */
 .badge {
-  display:inline-flex; align-items:center;
-  padding:3px 9px;
-  border-radius:20px;
-  font-size:11px; font-weight:500;
-  gap:4px;
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 8px; border-radius:6px; font-size:11px; font-weight:500;
 }
-.badge::before { content:'●'; font-size:7px; }
-.badge-ready   { background:color-mix(in srgb,var(--green) 12%,transparent); color:var(--green); }
-.badge-sold    { background:color-mix(in srgb,var(--text3) 18%,transparent); color:var(--text2); }
-.badge-arrived { background:color-mix(in srgb,var(--amber) 14%,transparent); color:var(--amber); }
-.badge-ordered { background:color-mix(in srgb,var(--blue) 14%,transparent); color:var(--blue); }
+.badge-green { background:#e8f8ec; color:#1a7f37; }
+.badge-gray  { background:#f5f5f7; color:#6e6e73; }
+.badge-orange{ background:#fff4e6; color:#c45000; }
+.badge-blue  { background:#e8f0fe; color:#1a56db; }
 
-/* GRADE */
+/* ── GRADE ───────────────────────── */
 .grade {
   display:inline-flex; align-items:center; justify-content:center;
-  width:28px; height:28px;
-  border-radius:6px;
-  font-size:11px; font-weight:600; font-family:'SF Mono','Courier New',monospace;
+  width:30px; height:22px; border-radius:5px;
+  font-size:11px; font-weight:700; font-family:'SF Mono','Courier New',monospace;
 }
-.grade-app  { background:color-mix(in srgb,var(--purple) 12%,transparent); color:var(--purple); }
-.grade-ap   { background:color-mix(in srgb,var(--green) 12%,transparent); color:var(--green); }
-.grade-a    { background:color-mix(in srgb,var(--blue) 14%,transparent); color:var(--blue); }
-.grade-b    { background:color-mix(in srgb,var(--amber) 14%,transparent); color:var(--amber); }
-.grade-c    { background:color-mix(in srgb,var(--red) 15%,transparent); color:var(--red); }
-.grade-d    { background:color-mix(in srgb,var(--text3) 15%,transparent); color:var(--text3); }
+.g-app { background:#fff4e6; color:#c45000; }
+.g-ap  { background:#e8f8ec; color:#1a7f37; }
+.g-a   { background:#e8f0fe; color:#1a56db; }
+.g-b   { background:#fef9e7; color:#7d6608; }
+.g-c   { background:#fdecea; color:#c0392b; }
+.g-d   { background:#f5f5f7; color:#6e6e73; }
 
-/* ROW ACTIONS */
-.row-actions { display:flex; gap:4px; opacity:0; transition:opacity .15s; }
+/* ── BAT BAR ─────────────────────── */
+.bat-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:12px; font-family:'SF Mono','Courier New',monospace;
+}
+.bat-bar { width:32px; height:4px; background:#e5e5ea; border-radius:2px; overflow:hidden; }
+.bat-fill { height:100%; border-radius:2px; }
+
+/* ── ROW ACTIONS ─────────────────── */
+.row-actions { display:flex; gap:4px; opacity:0; transition:opacity .12s; }
 tbody tr:hover .row-actions { opacity:1; }
 
-/* ── FORM MODAL ──────────────────────── */
-.overlay {
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.7);
-  backdrop-filter:blur(4px);
-  z-index:100;
-  display:none; align-items:center; justify-content:center;
-}
-.overlay.open { display:flex; }
-
-.modal {
-  background:var(--bg2);
-  border:1px solid var(--border2);
-  border-radius:var(--radius-lg);
-  width:600px; max-width:95vw;
-  max-height:90vh;
-  overflow-y:auto;
-  padding:28px;
-}
-.modal-title { font-size:18px; font-weight:600; margin-bottom:4px; }
-.modal-sub   { font-size:13px; color:var(--text2); margin-bottom:24px; }
-
+/* ── FORM STYLES ─────────────────── */
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .form-full { grid-column:1/-1; }
 
-.field label {
-  display:block;
-  font-size:11px; font-weight:500;
-  color:var(--text2);
-  margin-bottom:6px;
-  letter-spacing:.5px;
-  text-transform:uppercase;
-}
+.field { display:flex; flex-direction:column; gap:5px; }
+.field label { font-size:11px; font-weight:600; color:#8e8e93; letter-spacing:.3px; text-transform:uppercase; }
 .field input, .field select, .field textarea {
-  width:100%;
-  background:var(--bg3);
-  border:1px solid var(--border2);
-  color:var(--text);
-  padding:9px 12px;
-  border-radius:var(--radius);
-  font-size:13px;
-  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
-  outline:none;
-  transition:border-color .15s;
+  padding:9px 12px; border-radius:9px;
+  border:1px solid #e5e5ea; background:#fff;
+  font-size:13px; color:#1d1d1f; outline:none;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+  transition:border .12s;
 }
 .field input:focus, .field select:focus, .field textarea:focus {
-  border-color:var(--accent);
+  border-color:#007aff; box-shadow:0 0 0 3px rgba(0,122,255,.1);
 }
-.field textarea { resize:vertical; min-height:80px; }
-.field select option { background:var(--bg2); }
+.field textarea { resize:vertical; min-height:70px; }
 
-.modal-actions {
-  display:flex; justify-content:flex-end; gap:8px;
-  margin-top:24px; padding-top:20px;
-  border-top:1px solid var(--border);
-}
-
-/* ── BRANCH OVERVIEW CARDS ────────────── */
-.branch-grid {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  margin-bottom:24px;
-}
-.branch-card {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:var(--radius-lg);
-  padding:20px;
-}
-.branch-name {
-  font-size:13px; font-weight:500; color:var(--text2);
-  margin-bottom:14px;
-  display:flex; align-items:center; gap:8px;
-}
-.branch-name::before {
-  content:'';
-  width:6px; height:6px;
-  border-radius:50%;
-  background:var(--green);
-}
-.branch-stats { display:flex; gap:16px; }
-.bstat { text-align:center; }
-.bstat-num  { font-size:20px; font-weight:600; font-family:'SF Mono','Courier New',monospace; }
-.bstat-label { font-size:11px; color:var(--text3); margin-top:2px; }
-
-/* ── RECEIVED PAGE ────────────────────── */
-.received-layout { display:grid; grid-template-columns:1fr 360px; gap:16px; }
-.form-card {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:var(--radius-lg);
-  padding:24px;
-}
-.form-card-title { font-size:15px; font-weight:500; margin-bottom:20px; }
-
-.step-row {
-  display:flex; align-items:center; gap:8px;
-  margin-bottom:20px;
-}
-.step {
-  display:flex; align-items:center; gap:6px;
-  font-size:12px; color:var(--text3);
-}
-.step-num {
-  width:20px; height:20px;
-  border-radius:50%;
-  background:var(--bg3); border:1px solid var(--border2);
-  display:flex; align-items:center; justify-content:center;
-  font-size:10px; font-weight:600; font-family:'SF Mono','Courier New',monospace;
-}
-.step.done .step-num { background:var(--accent); color:#000; border-color:var(--accent); }
-.step.active .step-num { background:transparent; border-color:var(--accent); color:var(--accent); }
-.step-divider { flex:1; height:1px; background:var(--border); }
-
-/* ── GRADE PICKER ────────────────────── */
-.grade-picker { display:flex; gap:8px; flex-wrap:wrap; }
+/* ── GRADE PICKER ────────────────── */
+.grade-picker { display:flex; gap:6px; flex-wrap:wrap; }
 .grade-btn {
-  width:48px; height:40px;
-  border-radius:var(--radius);
-  border:1px solid var(--border2);
-  background:var(--bg3);
-  color:var(--text2);
+  padding:6px 12px; border-radius:8px; border:1px solid #e5e5ea;
+  background:#f5f5f7; color:#3a3a3c; font-size:12px; font-weight:600;
+  cursor:pointer; transition:all .12s;
   font-family:'SF Mono','Courier New',monospace;
-  font-size:13px; font-weight:600;
-  cursor:pointer; transition:all .15s;
 }
-.grade-btn:hover { border-color:var(--border); color:var(--text); }
-.grade-btn.selected { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 10%,transparent); color:var(--accent); }
+.grade-btn:hover { border-color:#c7c7cc; }
+.grade-btn.sel { background:#1d1d1f; color:#fff; border-color:#1d1d1f; }
 
-/* ── BATTERY BAR ─────────────────────── */
-.bat-display {
-  display:flex; align-items:center; gap:10px; margin-top:6px;
-}
-.bat-bar {
-  flex:1; height:6px;
-  background:var(--bg3);
-  border-radius:3px; overflow:hidden;
-}
-.bat-fill {
-  height:100%; border-radius:3px;
-  background:var(--green);
-  transition:width .3s, background .3s;
-}
-.bat-val { font-family:'SF Mono','Courier New',monospace; font-size:13px; min-width:36px; }
+/* ── BAT SLIDER ──────────────────── */
+input[type=range] { accent-color:#007aff; width:100%; }
+.bat-display { display:flex; align-items:center; gap:10px; margin-top:6px; }
+.bat-display-bar { flex:1; height:6px; background:#e5e5ea; border-radius:3px; overflow:hidden; }
+.bat-display-fill { height:100%; border-radius:3px; background:#34c759; transition:width .2s, background .2s; }
+.bat-val { font-size:13px; font-family:'SF Mono','Courier New',monospace; color:#3a3a3c; min-width:36px; }
 
-/* ── RECENT LIST (right panel) ───────── */
-.recent-list { display:flex; flex-direction:column; gap:8px; }
+/* ── RECEIVE LAYOUT ──────────────── */
+.receive-layout { display:grid; grid-template-columns:1fr 340px; gap:16px; }
+
+/* ── RECENT ITEM ─────────────────── */
 .recent-item {
-  background:var(--bg3);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:12px 14px;
   display:flex; align-items:center; gap:12px;
+  padding:10px 14px; border-radius:10px; background:#f5f5f7; margin-bottom:8px;
 }
-.recent-icon {
-  width:36px; height:36px;
-  background:var(--bg2);
-  border-radius:8px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:16px;
-}
+.recent-icon { font-size:20px; width:34px; text-align:center; flex-shrink:0; }
 .recent-info { flex:1; min-width:0; }
 .recent-name { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.recent-meta { font-size:11px; color:var(--text3); margin-top:2px; font-family:'SF Mono','Courier New',monospace; }
+.recent-meta { font-size:11px; color:#8e8e93; margin-top:2px; font-family:'SF Mono','Courier New',monospace; }
 
-/* ── EMPTY STATE ─────────────────────── */
-.empty {
-  text-align:center;
-  padding:60px 20px;
-  color:var(--text3);
-}
-.empty-icon { font-size:40px; margin-bottom:12px; }
-.empty-text { font-size:14px; }
+/* ── SELL PAGE ───────────────────── */
+.sell-layout { display:grid; grid-template-columns:1fr 360px; gap:16px; }
+.sell-left, .sell-right { display:flex; flex-direction:column; gap:14px; }
 
-/* ── TOAST ───────────────────────────── */
-.toast {
-  position:fixed; bottom:24px; right:24px;
-  background:var(--bg2); border:1px solid var(--border2);
-  border-radius:var(--radius);
-  padding:12px 16px;
-  font-size:13px;
-  display:flex; align-items:center; gap:10px;
-  z-index:200;
-  transform:translateY(80px); opacity:0;
-  transition:all .25s cubic-bezier(.34,1.56,.64,1);
-  box-shadow:0 4px 20px rgba(0,0,0,.12);
+.mode-tabs { display:flex; gap:2px; background:#f5f5f7; border-radius:10px; padding:3px; }
+.mode-tab {
+  flex:1; padding:7px; text-align:center; border-radius:8px;
+  font-size:13px; font-weight:500; cursor:pointer;
+  border:none; background:transparent; transition:all .12s;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+  color:#8e8e93;
 }
-.toast.show { transform:translateY(0); opacity:1; }
-.toast-dot { width:8px; height:8px; border-radius:50%; background:var(--green); flex-shrink:0; }
-.toast-dot.err { background:var(--red); }
+.mode-tab.active { background:#fff; color:#1d1d1f; box-shadow:0 1px 3px rgba(0,0,0,.1); }
 
-/* ── SELL PAGE ───────────────────────────── */
-.sell-layout { display:grid; grid-template-columns:1fr 380px; gap:16px; min-height:0; }
-.sell-left, .sell-right { display:flex; flex-direction:column; gap:16px; }
-
-.sell-tabs { display:flex; gap:0; background:var(--bg3); border-radius:var(--radius); padding:3px; border:1px solid var(--border); }
-.sell-tab {
-  flex:1; padding:7px 0; text-align:center;
-  border-radius:7px; font-size:13px; font-weight:500;
-  cursor:pointer; color:var(--text2); transition:all .15s;
-  border:none; background:transparent; font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
-}
-.sell-tab.active { background:var(--bg2); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.08); }
-
-.device-picker {
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:var(--radius-lg); overflow:hidden;
-}
-.device-picker-header { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
-.device-picker-title { font-size:13px; font-weight:500; }
-.device-search {
-  margin-left:auto; display:flex; align-items:center; gap:6px;
-  background:var(--bg3); border:1px solid var(--border2);
-  border-radius:8px; padding:5px 10px;
-}
-.device-search input {
-  background:none; border:none; color:var(--text); font-size:12px;
-  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; outline:none; width:150px;
-}
-.device-search input::placeholder { color:var(--text3); }
-
-.device-list { max-height:280px; overflow-y:auto; }
+.device-list { max-height:260px; overflow-y:auto; }
 .device-row {
   display:flex; align-items:center; gap:12px;
   padding:10px 16px; cursor:pointer; transition:background .1s;
-  border-bottom:1px solid var(--border);
+  border-bottom:1px solid #f2f2f7;
 }
 .device-row:last-child { border-bottom:none; }
-.device-row:hover { background:var(--bg3); }
-.device-row.selected { background:color-mix(in srgb,var(--blue) 8%,transparent); }
+.device-row:hover { background:#fafafa; }
+.device-row.selected { background:#f0f7ff; }
 .device-row-icon { font-size:20px; width:32px; text-align:center; }
 .device-row-info { flex:1; min-width:0; }
 .device-row-name { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.device-row-meta { font-size:11px; color:var(--text3); font-family:'SF Mono','Courier New',monospace; margin-top:2px; }
-.device-row-price { font-size:13px; font-weight:500; font-family:'SF Mono','Courier New',monospace; color:var(--text2); }
-.device-row-check { width:18px; height:18px; border-radius:50%; border:2px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:10px; }
-.device-row.selected .device-row-check { background:var(--blue); border-color:var(--blue); color:#fff; }
-
-.sell-form-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
-.sell-form-title { font-size:13px; font-weight:500; margin-bottom:14px; color:var(--text2); }
-
-.selected-device-card {
-  background:var(--bg3); border:1px solid var(--border2);
-  border-radius:var(--radius); padding:14px 16px;
-  display:flex; align-items:center; gap:12px;
-  margin-bottom:16px;
+.device-row-meta { font-size:11px; color:#8e8e93; font-family:'SF Mono','Courier New',monospace; margin-top:2px; }
+.device-row-right { text-align:right; }
+.device-row-price { font-size:13px; font-weight:600; color:#1d1d1f; font-family:'SF Mono','Courier New',monospace; }
+.device-check {
+  width:20px; height:20px; border-radius:50%; border:2px solid #e5e5ea;
+  display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;
 }
-.selected-device-empty {
-  background:var(--bg3); border:1px dashed var(--border2);
-  border-radius:var(--radius); padding:20px;
-  text-align:center; color:var(--text3); font-size:13px;
-  margin-bottom:16px;
-}
+.device-row.selected .device-check { background:#007aff; border-color:#007aff; color:#fff; }
 
-.price-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.price-label { font-size:12px; color:var(--text2); width:90px; flex-shrink:0; }
+.price-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.price-label { font-size:12px; color:#8e8e93; width:90px; flex-shrink:0; font-weight:500; }
 .price-input {
-  flex:1; background:var(--bg3); border:1px solid var(--border2);
-  border-radius:var(--radius); padding:8px 12px;
-  font-size:14px; font-weight:500; color:var(--text);
-  font-family:'SF Mono','Courier New',monospace; outline:none; transition:border-color .15s;
+  flex:1; padding:8px 12px; border-radius:9px; border:1px solid #e5e5ea;
+  font-size:14px; font-weight:600; color:#1d1d1f; outline:none;
+  font-family:'SF Mono','Courier New',monospace;
+  font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+  transition:border .12s;
 }
-.price-input:focus { border-color:var(--blue); }
-.price-tag { font-size:12px; color:var(--text3); white-space:nowrap; }
+.price-input:focus { border-color:#007aff; }
+.price-unit { font-size:12px; color:#8e8e93; }
 
-.profit-banner {
-  background:color-mix(in srgb,var(--green) 10%,transparent);
-  border:1px solid color-mix(in srgb,var(--green) 25%,transparent);
-  border-radius:var(--radius); padding:12px 16px;
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:16px;
+.profit-card {
+  background:#e8f8ec; border-radius:10px; padding:12px 16px;
+  display:flex; justify-content:space-between; align-items:center;
 }
-.profit-loss { background:color-mix(in srgb,var(--red) 10%,transparent); border-color:color-mix(in srgb,var(--red) 25%,transparent); }
-.profit-label { font-size:12px; color:var(--text2); }
-.profit-value { font-size:18px; font-weight:600; font-family:'SF Mono','Courier New',monospace; color:var(--green); }
-.profit-loss .profit-value { color:var(--red); }
+.profit-card.loss { background:#fdecea; }
+.profit-label { font-size:11px; color:#1a7f37; font-weight:500; }
+.profit-card.loss .profit-label { color:#c0392b; }
+.profit-value { font-size:20px; font-weight:700; color:#1a7f37; font-family:'SF Mono','Courier New',monospace; }
+.profit-card.loss .profit-value { color:#c0392b; }
 
-/* installment summary panel */
-.summary-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
-.summary-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
-.summary-row:last-child { border-bottom:none; }
-.summary-key { font-size:13px; color:var(--text2); }
-.summary-val { font-size:13px; font-weight:500; font-family:'SF Mono','Courier New',monospace; }
+.sum-card { background:#f5f5f7; border-radius:10px; padding:14px 16px; }
+.sum-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #e5e5ea; font-size:13px; }
+.sum-row:last-child { border-bottom:none; font-weight:600; }
+.sum-key { color:#8e8e93; }
+.sum-val { font-family:'SF Mono','Courier New',monospace; }
 
-/* ── SALES HISTORY TABLE ─────────────── */
-.sales-section { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
-.sales-header  { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
-
-/* ── INSTALLMENT PAGE ────────────────── */
-.inst-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
-.inst-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; }
-.inst-card-title { font-size:12px; color:var(--text3); margin-bottom:6px; }
-.inst-card-val { font-size:22px; font-weight:600; font-family:'SF Mono','Courier New',monospace; }
+/* ── INSTALLMENT ─────────────────── */
+.inst-stats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:18px; }
+.inst-stat { background:#fff; border-radius:12px; border:1px solid #e5e5ea; padding:14px 16px; }
+.inst-stat-label { font-size:11px; color:#8e8e93; font-weight:500; margin-bottom:6px; }
+.inst-stat-val { font-size:22px; font-weight:700; color:#1d1d1f; letter-spacing:-.5px; }
+.inst-stat-val.blue { color:#007aff; }
+.inst-stat-val.red { color:#ff3b30; }
+.inst-stat-val.green { color:#34c759; }
 
 .inst-row {
   display:flex; align-items:center; gap:12px;
-  padding:14px 18px; border-bottom:1px solid var(--border); cursor:pointer;
-  transition:background .1s;
+  padding:14px 18px; border-bottom:1px solid #f2f2f7; cursor:pointer; transition:background .1s;
 }
-.inst-row:hover { background:var(--bg3); }
+.inst-row:hover { background:#fafafa; }
 .inst-row:last-child { border-bottom:none; }
 .inst-avatar {
-  width:38px; height:38px; border-radius:10px;
-  background:var(--bg3); border:1px solid var(--border2);
-  display:flex; align-items:center; justify-content:center; font-size:17px;
+  width:38px; height:38px; border-radius:10px; background:#f5f5f7;
+  display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
 }
 .inst-info { flex:1; min-width:0; }
 .inst-name { font-size:13px; font-weight:500; }
-.inst-meta { font-size:11px; color:var(--text3); font-family:'SF Mono','Courier New',monospace; margin-top:2px; }
-.inst-right { text-align:right; }
-.inst-amount { font-size:13px; font-weight:500; font-family:'SF Mono','Courier New',monospace; }
-.inst-due { font-size:11px; color:var(--text3); margin-top:2px; }
+.inst-meta { font-size:11px; color:#8e8e93; font-family:'SF Mono','Courier New',monospace; margin-top:2px; }
+.progress-bar { height:3px; background:#e5e5ea; border-radius:2px; overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; border-radius:2px; background:#007aff; }
+.inst-right { text-align:right; flex-shrink:0; }
+.inst-amount { font-size:13px; font-weight:600; font-family:'SF Mono','Courier New',monospace; }
+.inst-due { font-size:11px; color:#8e8e93; margin-top:2px; }
+.overdue { color:#ff3b30; }
 
-.progress-bar { height:4px; background:var(--bg3); border-radius:2px; overflow:hidden; margin-top:6px; }
-.progress-fill { height:100%; border-radius:2px; background:var(--blue); transition:width .4s; }
+/* ── MODAL ───────────────────────── */
+.overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.4);
+  backdrop-filter:blur(8px); z-index:100;
+  display:none; align-items:center; justify-content:center;
+}
+.overlay.open { display:flex; }
+.modal {
+  background:#fff; border-radius:18px; width:560px; max-width:92vw;
+  max-height:88vh; overflow-y:auto; padding:28px;
+  box-shadow:0 20px 60px rgba(0,0,0,.15);
+}
+.modal-title { font-size:18px; font-weight:700; margin-bottom:4px; }
+.modal-sub { font-size:13px; color:#8e8e93; margin-bottom:22px; }
+.modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:22px; padding-top:18px; border-top:1px solid #f2f2f7; }
 
-.overdue-badge { color:var(--red); font-size:11px; font-weight:500; }
+/* ── EMPTY ───────────────────────── */
+.empty { text-align:center; padding:48px 20px; }
+.empty-icon { font-size:36px; margin-bottom:10px; }
+.empty-text { font-size:13px; color:#8e8e93; }
 
+/* ── TOAST ───────────────────────── */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:200;
+  background:#1d1d1f; color:#fff; border-radius:12px;
+  padding:12px 18px; font-size:13px;
+  display:flex; align-items:center; gap:10px;
+  transform:translateY(80px); opacity:0;
+  transition:all .25s cubic-bezier(.34,1.4,.64,1);
+  box-shadow:0 8px 30px rgba(0,0,0,.2);
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast-dot { width:7px; height:7px; border-radius:50%; background:#34c759; flex-shrink:0; }
+.toast-dot.err { background:#ff3b30; }
+
+/* ── SELECTED DEVICE ─────────────── */
+.selected-device {
+  background:#f5f5f7; border-radius:10px; padding:12px 14px;
+  display:flex; align-items:center; gap:12px; margin-bottom:14px;
+}
+.selected-empty {
+  background:#f5f5f7; border-radius:10px; padding:16px;
+  text-align:center; color:#8e8e93; font-size:13px; margin-bottom:14px;
+  border:1.5px dashed #e5e5ea;
+}
+
+/* ── THEME TOGGLE ────────────────── */
+[data-theme="dark"] {
+  --bg:#000; --bg2:#1c1c1e; --bg3:#2c2c2e;
+  --text:#f5f5f7; --text2:#aeaeb2; --text3:#636366;
+  --border:#3a3a3c; --accent:#fff;
+}
+[data-theme="dark"] body { background:#000; color:#f5f5f7; }
+[data-theme="dark"] .sidebar { background:#1c1c1e; border-color:#3a3a3c; }
+[data-theme="dark"] .sidebar-logo { border-color:#2c2c2e; }
+[data-theme="dark"] .nav-item:hover, [data-theme="dark"] .nav-item.active { background:#2c2c2e; }
+[data-theme="dark"] .logo-name, [data-theme="dark"] .nav-item.active { color:#f5f5f7; }
+[data-theme="dark"] .nav-item { color:#aeaeb2; }
+[data-theme="dark"] .topbar { background:#1c1c1e; border-color:#3a3a3c; }
+[data-theme="dark"] .card, [data-theme="dark"] .stat-card, [data-theme="dark"] .branch-card, [data-theme="dark"] .modal { background:#1c1c1e; border-color:#3a3a3c; }
+[data-theme="dark"] .content { background:#000; }
+[data-theme="dark"] table thead th { background:#1c1c1e; }
+[data-theme="dark"] tbody tr:hover, [data-theme="dark"] .nav-section .nav-item:hover { background:#2c2c2e; }
+[data-theme="dark"] .field input, [data-theme="dark"] .field select, [data-theme="dark"] .field textarea { background:#2c2c2e; border-color:#3a3a3c; color:#f5f5f7; }
+[data-theme="dark"] .search-wrap { background:#2c2c2e; }
+[data-theme="dark"] .search-wrap input { color:#f5f5f7; }
+[data-theme="dark"] .mode-tabs, [data-theme="dark"] .grade-picker { background:#2c2c2e; }
+[data-theme="dark"] .mode-tab.active { background:#3a3a3c; color:#f5f5f7; }
+[data-theme="dark"] .grade-btn { background:#2c2c2e; color:#aeaeb2; border-color:#3a3a3c; }
+[data-theme="dark"] .grade-btn.sel { background:#f5f5f7; color:#1d1d1f; }
+[data-theme="dark"] .chip { background:#1c1c1e; border-color:#3a3a3c; color:#aeaeb2; }
+[data-theme="dark"] .chip.active { background:#f5f5f7; color:#1d1d1f; border-color:#f5f5f7; }
+[data-theme="dark"] .recent-item, [data-theme="dark"] .selected-device, [data-theme="dark"] .selected-empty, [data-theme="dark"] .sum-card { background:#2c2c2e; }
+[data-theme="dark"] .device-row:hover { background:#2c2c2e; }
+[data-theme="dark"] .device-row.selected { background:#001d3d; }
+[data-theme="dark"] .inst-avatar, [data-theme="dark"] .inst-stat { background:#2c2c2e; border-color:#3a3a3c; }
+[data-theme="dark"] .branch-select { background:#2c2c2e; border-color:#3a3a3c; color:#aeaeb2; }
+[data-theme="dark"] .btn-secondary { background:#2c2c2e; border-color:#3a3a3c; color:#f5f5f7; }
+[data-theme="dark"] .nav-badge { background:#f5f5f7; color:#1d1d1f; }
+[data-theme="dark"] tbody td { color:#f5f5f7; border-color:#2c2c2e; }
+[data-theme="dark"] thead th, [data-theme="dark"] .card-header, [data-theme="dark"] .filter-bar { border-color:#2c2c2e; }
+[data-theme="dark"] .bstat + .bstat { border-color:#2c2c2e; }
+[data-theme="dark"] .price-input { background:#2c2c2e; border-color:#3a3a3c; color:#f5f5f7; }
 </style>
 </head>
 <body>
+
 <div class="app" style="display:flex;flex-direction:row;height:100vh;overflow:hidden;width:100%;">
 
-  <!-- ══ SIDEBAR ══════════════════════════ -->
-  <aside class="sidebar" style="width:220px;min-width:220px;max-width:220px;background:#ffffff;border-right:1px solid #e8e8ec;display:flex;flex-direction:column;height:100vh;overflow:hidden;flex-shrink:0;">
-    <div class="sidebar-logo" style="padding:20px;border-bottom:1px solid #e8e8ec;flex-shrink:0;">
-      <div class="logo-mark">
-        <div class="logo-dot">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
-            <rect x="5" y="2" width="14" height="20" rx="3"/>
-            <line x1="12" y1="18" x2="12" y2="18.5" stroke-width="3"/>
-          </svg>
+<!-- SIDEBAR -->
+<aside class="sidebar" style="width:240px;min-width:240px;height:100vh;background:#fff;border-right:1px solid #e5e5ea;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;">
+  <div class="sidebar-logo" style="padding:20px 18px 16px;border-bottom:1px solid #f2f2f7;">
+    <div class="logo-wrap" style="display:flex;align-items:center;gap:10px;">
+      <div class="logo-icon" style="width:32px;height:32px;background:#1d1d1f;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" width="16" height="16"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.5" stroke-width="3"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">iPhone 24</div>
+        <div class="logo-sub">Stock System</div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav" style="padding:10px;flex:1;overflow-y:auto;">
+    <button class="nav-item active" onclick="showPage('dashboard',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:#f5f5f7;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:500;color:#1d1d1f;margin-bottom:2px;">
+      <span style="font-size:15px;width:22px;text-align:center;">◈</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('stock',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:transparent;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:400;color:#3a3a3c;margin-bottom:2px;">
+      <span style="font-size:15px;width:22px;text-align:center;">▦</span> Stock
+      <span class="nav-badge" id="nav-stock-count" style="margin-left:auto;background:#1d1d1f;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('receive',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:transparent;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:400;color:#3a3a3c;margin-bottom:2px;">
+      <span style="font-size:15px;width:22px;text-align:center;">↓</span> รับเครื่องเข้า
+    </button>
+    <button class="nav-item" onclick="showPage('sell',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:transparent;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:400;color:#3a3a3c;margin-bottom:2px;">
+      <span style="font-size:15px;width:22px;text-align:center;">↗</span> ขาย
+    </button>
+    <button class="nav-item" onclick="showPage('installment',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:transparent;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:400;color:#3a3a3c;margin-bottom:2px;">
+      <span style="font-size:15px;width:22px;text-align:center;">📋</span> ผ่อนชำระ
+    </button>
+  </nav>
+  <div class="sidebar-bottom" style="padding:12px 10px;border-top:1px solid #f2f2f7;">
+    <select class="branch-select" id="branch-filter" onchange="applyBranchFilter()" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;font-size:12px;color:#3a3a3c;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;cursor:pointer;outline:none;">
+      <option value="all">ทุกสาขา</option>
+      <option value="สันติธรรม">สันติธรรม</option>
+      <option value="แจ่มฟ้า">แจ่มฟ้า</option>
+      <option value="หน้ามอ">หน้ามอ</option>
+      <option value="ศึกษา">ศึกษา</option>
+    </select>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main style="flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0;">
+  <div class="topbar" style="height:52px;min-height:52px;background:#fff;border-bottom:1px solid #e5e5ea;display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;">
+    <div class="topbar-title" id="page-title">Dashboard</div>
+    <div class="topbar-right" style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+      <button class="btn btn-secondary btn-icon" id="theme-toggle" onclick="toggleTheme()" style="padding:7px 10px;font-size:16px;background:#f5f5f7;border:1px solid #e5e5ea;border-radius:8px;cursor:pointer;">☀️</button>
+      <button class="btn btn-primary" onclick="openModal('receive-modal')" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:#1d1d1f;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">+ รับเครื่องเข้า</button>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:24px;background:#f5f5f7;" class="content">
+
+  <!-- DASHBOARD -->
+  <div class="page" id="page-dashboard" style="display:none;">
+    <div class="stats-row" style="display:flex;gap:12px;margin-bottom:20px;">
+      <div class="stat-card green" style="flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;">
+        <div class="stat-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;font-weight:500;">พร้อมขาย</div>
+        <div class="stat-num" id="stat-ready" style="font-size:28px;font-weight:700;color:#34c759;letter-spacing:-1px;line-height:1;">0</div>
+        <div class="stat-sub" style="font-size:11px;color:#8e8e93;margin-top:4px;">เครื่อง</div>
+      </div>
+      <div class="stat-card" style="flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;">
+        <div class="stat-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;font-weight:500;">ขายแล้ว</div>
+        <div class="stat-num" id="stat-sold" style="font-size:28px;font-weight:700;color:#1d1d1f;letter-spacing:-1px;line-height:1;">0</div>
+        <div class="stat-sub" style="font-size:11px;color:#8e8e93;margin-top:4px;">เครื่อง</div>
+      </div>
+      <div class="stat-card orange" style="flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;">
+        <div class="stat-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;font-weight:500;">รอเช็คเครื่อง</div>
+        <div class="stat-num" id="stat-arrived" style="font-size:28px;font-weight:700;color:#ff9500;letter-spacing:-1px;line-height:1;">0</div>
+        <div class="stat-sub" style="font-size:11px;color:#8e8e93;margin-top:4px;">เครื่อง</div>
+      </div>
+      <div class="stat-card blue" style="flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;">
+        <div class="stat-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;font-weight:500;">Stock ทั้งหมด</div>
+        <div class="stat-num" id="stat-total" style="font-size:28px;font-weight:700;color:#007aff;letter-spacing:-1px;line-height:1;">0</div>
+        <div class="stat-sub" style="font-size:11px;color:#8e8e93;margin-top:4px;">เครื่องในระบบ</div>
+      </div>
+    </div>
+
+    <div class="branch-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
+      <div class="branch-card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;" id="bc-st">
+        <div class="branch-name" style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:#34c759;display:inline-block;"></span>สันติธรรม</div>
+        <div class="branch-stats" style="display:flex;">
+          <div class="bstat" style="flex:1;text-align:center;"><div class="bstat-num" id="bst-st-ready" style="font-size:20px;font-weight:700;color:#1d1d1f;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">พร้อมขาย</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-st-sold" style="font-size:20px;font-weight:700;color:#8e8e93;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">ขายแล้ว</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-st-wait" style="font-size:20px;font-weight:700;color:#ff9500;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">รอเช็ค</div></div>
         </div>
-        <div>
-          <div class="logo-text">iPhone 24</div>
-          <div class="logo-sub">STOCK SYSTEM</div>
+      </div>
+      <div class="branch-card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;">
+        <div class="branch-name" style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:#34c759;display:inline-block;"></span>แจ่มฟ้า</div>
+        <div class="branch-stats" style="display:flex;">
+          <div class="bstat" style="flex:1;text-align:center;"><div class="bstat-num" id="bst-jf-ready" style="font-size:20px;font-weight:700;color:#1d1d1f;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">พร้อมขาย</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-jf-sold" style="font-size:20px;font-weight:700;color:#8e8e93;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">ขายแล้ว</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-jf-wait" style="font-size:20px;font-weight:700;color:#ff9500;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">รอเช็ค</div></div>
+        </div>
+      </div>
+      <div class="branch-card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;">
+        <div class="branch-name" style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:#34c759;display:inline-block;"></span>หน้ามอ</div>
+        <div class="branch-stats" style="display:flex;">
+          <div class="bstat" style="flex:1;text-align:center;"><div class="bstat-num" id="bst-hm-ready" style="font-size:20px;font-weight:700;color:#1d1d1f;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">พร้อมขาย</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-hm-sold" style="font-size:20px;font-weight:700;color:#8e8e93;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">ขายแล้ว</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-hm-wait" style="font-size:20px;font-weight:700;color:#ff9500;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">รอเช็ค</div></div>
+        </div>
+      </div>
+      <div class="branch-card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:18px 20px;">
+        <div class="branch-name" style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:#34c759;display:inline-block;"></span>ศึกษา</div>
+        <div class="branch-stats" style="display:flex;">
+          <div class="bstat" style="flex:1;text-align:center;"><div class="bstat-num" id="bst-sk-ready" style="font-size:20px;font-weight:700;color:#1d1d1f;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">พร้อมขาย</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-sk-sold" style="font-size:20px;font-weight:700;color:#8e8e93;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">ขายแล้ว</div></div>
+          <div class="bstat" style="flex:1;text-align:center;border-left:1px solid #f2f2f7;"><div class="bstat-num" id="bst-sk-wait" style="font-size:20px;font-weight:700;color:#ff9500;letter-spacing:-.5px;">0</div><div class="bstat-label" style="font-size:10px;color:#8e8e93;margin-top:3px;">รอเช็ค</div></div>
         </div>
       </div>
     </div>
 
-    <nav class="nav" style="padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:2px;overflow-y:auto;">
-      <div class="nav-item active" onclick="showPage('dashboard')">
-        <span class="nav-icon">◈</span> Dashboard
+    <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+      <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;">
+        <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">รับเข้าล่าสุด</span>
       </div>
-      <div class="nav-item" onclick="showPage('stock')">
-        <span class="nav-icon">▦</span> Stock
-        <span class="nav-badge" id="nav-stock-count">0</span>
-      </div>
-      <div class="nav-item" onclick="showPage('receive')">
-        <span class="nav-icon">↓</span> รับเครื่องเข้า
-      </div>
-      <div class="nav-item" onclick="showPage('sell')">
-        <span class="nav-icon">↗</span> ขาย
-      </div>
-      <div class="nav-item" onclick="showPage('installment')">
-        <span class="nav-icon">📋</span> ผ่อนชำระ
-      </div>
-    </nav>
-
-    <div class="sidebar-bottom" style="padding:12px 10px;border-top:1px solid #e8e8ec;flex-shrink:0;">
-      <select class="branch-selector" id="branch-filter" onchange="applyBranchFilter()">
-        <option value="all">ทุกสาขา</option>
-        <option value="สันติธรรม">สันติธรรม</option>
-        <option value="แจ่มฟ้า">แจ่มฟ้า</option>
-        <option value="หน้ามอ">หน้ามอ</option>
-        <option value="ศึกษา">ศึกษา</option>
-      </select>
+      <table><thead><tr>
+        <th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th>
+      </tr></thead><tbody id="recent-table-body">
+        <tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ยังไม่มีข้อมูล</div></div></td></tr>
+      </tbody></table>
     </div>
-  </aside>
+  </div>
 
-  <!-- ══ MAIN ═════════════════════════════ -->
-  <main class="main" style="flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;">
+  <!-- STOCK -->
+  <div class="page" id="page-stock" style="display:none;">
+    <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+      <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;">
+        <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">Stock ทั้งหมด</span>
+        <div class="search-wrap" style="display:flex;align-items:center;gap:8px;background:#f5f5f7;border-radius:8px;padding:6px 12px;margin-left:auto;border:1px solid transparent;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="ค้นหา รุ่น / SN / รหัส..." id="search-input" oninput="filterStock()" style="background:none;border:none;outline:none;font-size:13px;color:#1d1d1f;width:180px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+        </div>
+      </div>
+      <div class="filter-bar" style="display:flex;gap:6px;padding:10px 18px;border-bottom:1px solid #f2f2f7;overflow-x:auto;">
+        <button class="chip active" onclick="setStatusFilter('all',this)">ทั้งหมด</button>
+        <button class="chip" onclick="setStatusFilter('พร้อมขาย',this)">พร้อมขาย</button>
+        <button class="chip" onclick="setStatusFilter('ขายแล้ว',this)">ขายแล้ว</button>
+        <button class="chip" onclick="setStatusFilter('ของถึง',this)">รอเช็ค</button>
+        <button class="chip" onclick="setStatusFilter('iPhone',this,'type')">iPhone</button>
+        <button class="chip" onclick="setStatusFilter('MacBook',this,'type')">Mac</button>
+        <button class="chip" onclick="setStatusFilter('iPad',this,'type')">iPad</button>
+        <button class="chip" onclick="setStatusFilter('Watch',this,'type')">Watch</button>
+      </div>
+      <table><thead><tr>
+        <th>รหัส</th><th>รุ่น</th><th>ความจุ</th><th>สี</th><th>เกรด</th><th>แบต%</th><th>สาขา</th><th>ราคาทุน</th><th>สถานะ</th><th></th>
+      </tr></thead><tbody id="stock-table-body">
+        <tr><td colspan="10"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ไม่พบข้อมูล</div></div></td></tr>
+      </tbody></table>
+    </div>
+  </div>
 
-    <!-- TOPBAR -->
-    <div class="topbar" style="height:56px;min-height:56px;border-bottom:1px solid #e8e8ec;display:flex;align-items:center;padding:0 24px;gap:12px;background:#ffffff;flex-shrink:0;">
-      <div class="page-title" id="page-title">Dashboard</div>
-      <div class="topbar-actions" id="topbar-actions">
-        <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()" style="padding:7px 10px;font-size:18px;line-height:1;border-radius:10px" title="สลับธีม">☀️</button>
-        <button class="btn btn-primary" onclick="openModal('receive-modal')">+ รับเครื่องเข้า</button>
+  <!-- รับเครื่องเข้า -->
+  <div class="page" id="page-receive" style="display:none;">
+    <div class="receive-layout" style="display:grid;grid-template-columns:1fr 320px;gap:16px;">
+      <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+        <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;">
+          <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">รับเครื่องเข้าระบบ</span>
+        </div>
+        <div style="padding:20px;">
+          <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">รหัส Stock</label>
+              <input id="f-code" type="text" placeholder="MC-26-0001" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">แหล่งที่มา</label>
+              <input id="f-source" type="text" placeholder="Manz, Krit..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">รุ่น</label>
+              <input id="f-model" type="text" placeholder="iPhone 16 Pro, MacBook Air M3..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ความจุ</label>
+              <input id="f-storage" type="text" placeholder="256GB" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สี</label>
+              <input id="f-color" type="text" placeholder="Natural Titanium" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">IMEI / Serial</label>
+              <input id="f-sn" type="text" placeholder="SN หรือ IMEI" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ราคาทุน (฿)</label>
+              <input id="f-cost" type="number" placeholder="0" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สาขา</label>
+              <select id="f-branch" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;background:#fff;">
+                <option>สันติธรรม</option><option>แจ่มฟ้า</option><option>หน้ามอ</option><option>ศึกษา</option>
+              </select>
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">วันที่รับเข้า</label>
+              <input id="f-date" type="date" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ประเภท</label>
+              <select id="f-type" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;background:#fff;">
+                <option>มือสอง</option><option>มือหนึ่ง</option>
+              </select>
+            </div>
+            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">เกรดเครื่อง</label>
+              <div class="grade-picker" style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="grade-btn" onclick="selectGrade(this,'A++')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A++</button>
+                <button class="grade-btn" onclick="selectGrade(this,'A+')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A+</button>
+                <button class="grade-btn" onclick="selectGrade(this,'A')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">A</button>
+                <button class="grade-btn" onclick="selectGrade(this,'B')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">B</button>
+                <button class="grade-btn" onclick="selectGrade(this,'C')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">C</button>
+                <button class="grade-btn" onclick="selectGrade(this,'D')" style="padding:6px 14px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;font-family:SF Mono,Courier New,monospace;">D</button>
+              </div>
+              <input type="hidden" id="f-grade" value="">
+            </div>
+            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">แบตเตอรี่ %</label>
+              <input type="range" id="f-bat" min="0" max="100" value="100" oninput="updateBat(this.value)" style="width:100%;accent-color:#007aff;">
+              <div class="bat-display" style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+                <div class="bat-display-bar" style="flex:1;height:6px;background:#e5e5ea;border-radius:3px;overflow:hidden;">
+                  <div class="bat-display-fill" id="bat-fill" style="height:100%;border-radius:3px;background:#34c759;width:100%;transition:width .2s,background .2s;"></div>
+                </div>
+                <span class="bat-val" id="bat-val" style="font-size:13px;font-family:SF Mono,Courier New,monospace;color:#3a3a3c;min-width:36px;">100%</span>
+              </div>
+            </div>
+            <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+              <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">หมายเหตุ</label>
+              <textarea id="f-note" placeholder="รอยขนแมว, ประกัน, อุปกรณ์..." style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;resize:vertical;min-height:60px;"></textarea>
+            </div>
+            <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;">
+              <button class="btn btn-secondary" onclick="clearReceiveForm()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ล้าง</button>
+              <button class="btn btn-primary" onclick="saveDevice()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">บันทึกเครื่อง →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+        <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;">
+          <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">รับเข้าวันนี้</span>
+          <span id="today-count" style="font-size:12px;color:#8e8e93;margin-left:auto;">(0 เครื่อง)</span>
+        </div>
+        <div style="padding:14px;" id="today-list">
+          <div class="empty" style="padding:30px 0;text-align:center;"><div style="font-size:28px;margin-bottom:8px;">📥</div><div style="font-size:12px;color:#8e8e93;">ยังไม่มีเครื่องเข้าวันนี้</div></div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="content" style="flex:1;overflow-y:auto;padding:24px;background:#f2f2f4;">
-
-      <!-- ════ PAGE: DASHBOARD ═══════════════ -->
-      <div class="page active" id="page-dashboard" style="display:block">
-
-        <div class="stats-grid">
-          <div class="stat-card accent-card">
-            <div class="stat-label">พร้อมขาย</div>
-            <div class="stat-value" id="stat-ready">0</div>
-            <div class="stat-sub">เครื่อง ทุกสาขา</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">ขายแล้ว (เดือนนี้)</div>
-            <div class="stat-value" id="stat-sold">0</div>
-            <div class="stat-sub">เครื่อง</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">รอเช็คเครื่อง</div>
-            <div class="stat-value" id="stat-arrived" style="color:var(--amber)">0</div>
-            <div class="stat-sub">เครื่อง</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Stock ทั้งหมด</div>
-            <div class="stat-value" id="stat-total">0</div>
-            <div class="stat-sub">เครื่องในระบบ</div>
-          </div>
+  <!-- SELL -->
+  <div class="page" id="page-sell" style="display:none;">
+    <div class="sell-layout" style="display:grid;grid-template-columns:1fr 340px;gap:16px;">
+      <div class="sell-left" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="mode-tabs" style="display:flex;gap:2px;background:#f5f5f7;border-radius:10px;padding:3px;">
+          <button class="mode-tab active" id="tab-cash" onclick="setSellMode('cash')" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:#fff;color:#1d1d1f;box-shadow:0 1px 3px rgba(0,0,0,.1);font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">💵 ขายสด</button>
+          <button class="mode-tab" id="tab-inst" onclick="setSellMode('installment')" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:#8e8e93;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">📋 ขายผ่อน</button>
         </div>
-
-        <!-- Branch overview -->
-        <div class="branch-grid">
-          <div class="branch-card" id="bc-st">
-            <div class="branch-name">สันติธรรม</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-st-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-st-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-st-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
+        <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+          <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;">
+            <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">เลือกเครื่อง (พร้อมขาย)</span>
+            <div class="search-wrap" style="display:flex;align-items:center;gap:8px;background:#f5f5f7;border-radius:8px;padding:6px 12px;margin-left:auto;border:1px solid transparent;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="ค้นหา..." id="sell-search" oninput="renderSellDeviceList()" style="background:none;border:none;outline:none;font-size:12px;color:#1d1d1f;width:130px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
             </div>
           </div>
-          <div class="branch-card">
-            <div class="branch-name">แจ่มฟ้า</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-jf-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-jf-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-jf-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
-            </div>
-          </div>
-          <div class="branch-card">
-            <div class="branch-name">หน้ามอ</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-hm-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-hm-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-hm-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
-            </div>
-          </div>
-          <div class="branch-card">
-            <div class="branch-name">ศึกษา</div>
-            <div class="branch-stats">
-              <div class="bstat"><div class="bstat-num" id="bst-sk-ready">0</div><div class="bstat-label">พร้อมขาย</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-sk-sold" style="color:var(--text3)">0</div><div class="bstat-label">ขายแล้ว</div></div>
-              <div class="bstat"><div class="bstat-num" id="bst-sk-wait" style="color:var(--amber)">0</div><div class="bstat-label">รอเช็ค</div></div>
-            </div>
-          </div>
+          <div class="device-list" id="sell-device-list" style="max-height:260px;overflow-y:auto;"></div>
         </div>
-
-        <!-- Recent activity -->
-        <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">รับเข้าล่าสุด</div>
-          </div>
-          <table>
-            <thead><tr>
-              <th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th>
-            </tr></thead>
-            <tbody id="recent-table-body">
-              <tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ยังไม่มีข้อมูล — กด "รับเครื่องเข้า" เพื่อเริ่ม</div></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ════ PAGE: STOCK ═══════════════════ -->
-      <div class="page" id="page-stock" style="display:none">
-        <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">Stock ทั้งหมด</div>
-            <div class="search-box">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="ค้นหา รุ่น / SN / รหัส..." id="search-input" oninput="filterStock()">
+        <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+          <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;"><span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">ข้อมูลการขาย</span></div>
+          <div style="padding:18px;">
+            <div id="selected-device-display" class="selected-empty" style="background:#f5f5f7;border-radius:10px;padding:16px;text-align:center;color:#8e8e93;font-size:13px;margin-bottom:14px;border:1.5px dashed #e5e5ea;">← เลือกเครื่องจากรายการด้านบน</div>
+            <div class="profit-card" id="profit-banner" style="display:none;background:#e8f8ec;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:none;justify-content:space-between;align-items:center;">
+              <div><div class="profit-label" style="font-size:11px;color:#1a7f37;font-weight:500;">กำไรประมาณ</div><div class="profit-value" id="profit-value" style="font-size:20px;font-weight:700;color:#1a7f37;font-family:SF Mono,Courier New,monospace;">0 ฿</div></div>
+              <div style="text-align:right;"><div style="font-size:11px;color:#8e8e93;">ราคาทุน</div><div id="cost-display" style="font-size:13px;font-family:SF Mono,Courier New,monospace;color:#8e8e93;">0 ฿</div></div>
             </div>
-          </div>
-          <div class="filter-row">
-            <button class="filter-chip active" onclick="setStatusFilter('all',this)">ทั้งหมด</button>
-            <button class="filter-chip" onclick="setStatusFilter('พร้อมขาย',this)">พร้อมขาย</button>
-            <button class="filter-chip" onclick="setStatusFilter('ขายแล้ว',this)">ขายแล้ว</button>
-            <button class="filter-chip" onclick="setStatusFilter('ของถึง',this)">รอเช็ค</button>
-            <button class="filter-chip" onclick="setStatusFilter('iPhone',this,'type')">iPhone</button>
-            <button class="filter-chip" onclick="setStatusFilter('MacBook',this,'type')">MacBook</button>
-            <button class="filter-chip" onclick="setStatusFilter('iPad',this,'type')">iPad</button>
-            <button class="filter-chip" onclick="setStatusFilter('Watch',this,'type')">Watch</button>
-          </div>
-          <table>
-            <thead><tr>
-              <th>รหัส</th><th>รุ่น</th><th>ความจุ</th><th>สี</th><th>เกรด</th><th>แบต%</th><th>สาขา</th><th>ราคาทุน</th><th>สถานะ</th><th></th>
-            </tr></thead>
-            <tbody id="stock-table-body">
-              <tr><td colspan="10"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ยังไม่มี stock</div></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ════ PAGE: รับเครื่องเข้า ════════ -->
-      <div class="page" id="page-receive" style="display:none">
-        <div class="received-layout">
-          <div>
-            <div class="form-card">
-              <div class="form-card-title">รับเครื่องเข้าระบบ</div>
-
-              <div class="step-row">
-                <div class="step done" id="step1"><div class="step-num">1</div> <span>ข้อมูลเครื่อง</span></div>
-                <div class="step-divider"></div>
-                <div class="step active" id="step2"><div class="step-num">2</div> <span>เกรด & เช็ค</span></div>
-                <div class="step-divider"></div>
-                <div class="step" id="step3"><div class="step-num">3</div> <span>ยืนยัน</span></div>
+            <div class="price-row" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="font-size:12px;color:#8e8e93;width:80px;flex-shrink:0;font-weight:500;">ราคาขาย</span>
+              <input class="price-input" type="number" id="s-price" placeholder="0" oninput="calcProfit()" style="flex:1;padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:14px;font-weight:600;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <span style="font-size:12px;color:#8e8e93;">฿</span>
+            </div>
+            <div id="row-down" style="display:none;flex-direction:row;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="font-size:12px;color:#8e8e93;width:80px;flex-shrink:0;font-weight:500;">เงินดาวน์</span>
+              <input class="price-input" type="number" id="s-down" placeholder="0" oninput="calcInstallment()" style="flex:1;padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:14px;font-weight:600;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <span style="font-size:12px;color:#8e8e93;">฿</span>
+            </div>
+            <div id="row-installment" style="display:none;flex-direction:row;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="font-size:12px;color:#8e8e93;width:80px;flex-shrink:0;font-weight:500;">ค่างวด/เดือน</span>
+              <input class="price-input" type="number" id="s-monthly" placeholder="0" oninput="calcInstallment()" style="flex:1;padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:14px;font-weight:600;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <span style="font-size:12px;color:#8e8e93;">฿</span>
+            </div>
+            <div id="row-months" style="display:none;flex-direction:row;align-items:center;gap:10px;margin-bottom:14px;">
+              <span style="font-size:12px;color:#8e8e93;width:80px;flex-shrink:0;font-weight:500;">จำนวนงวด</span>
+              <input class="price-input" type="number" id="s-months" placeholder="12" oninput="calcInstallment()" style="flex:1;padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:14px;font-weight:600;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              <span style="font-size:12px;color:#8e8e93;">เดือน</span>
+            </div>
+            <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+                <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ชื่อลูกค้า</label>
+                <input type="text" id="s-customer" placeholder="ชื่อ-นามสกุล" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
               </div>
-
-              <div class="form-grid" id="receive-form">
-                <div class="field">
-                  <label>รหัส Stock (MC-XXXX)</label>
-                  <input type="text" id="f-code" placeholder="MC-26-0001">
-                </div>
-                <div class="field">
-                  <label>แหล่งที่มา / ร้านค้า</label>
-                  <input type="text" id="f-source" placeholder="Manz, Krit...">
-                </div>
-                <div class="field form-full">
-                  <label>รุ่น</label>
-                  <input type="text" id="f-model" placeholder="iPhone 16 Pro, MacBook Air M3...">
-                </div>
-                <div class="field">
-                  <label>ความจุ</label>
-                  <input type="text" id="f-storage" placeholder="256GB">
-                </div>
-                <div class="field">
-                  <label>สี</label>
-                  <input type="text" id="f-color" placeholder="Natural Titanium">
-                </div>
-                <div class="field">
-                  <label>IMEI / Serial Number</label>
-                  <input type="text" id="f-sn" placeholder="SN หรือ IMEI">
-                </div>
-                <div class="field">
-                  <label>ประเภท</label>
-                  <select id="f-type">
-                    <option>มือสอง</option>
-                    <option>มือหนึ่ง</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>ราคาทุน (บาท)</label>
-                  <input type="number" id="f-cost" placeholder="0">
-                </div>
-                <div class="field">
-                  <label>สาขารับเข้า</label>
-                  <select id="f-branch">
-                    <option>สันติธรรม</option>
-                    <option>แจ่มฟ้า</option>
-                    <option>หน้ามอ</option>
-                    <option>ศึกษา</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>วันที่รับเข้า</label>
-                  <input type="date" id="f-date">
-                </div>
-
-                <!-- เกรด -->
-                <div class="field form-full">
-                  <label>เกรดเครื่อง</label>
-                  <div class="grade-picker">
-                    <button class="grade-btn" onclick="selectGrade(this,'A++')">A++</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'A+')">A+</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'A')">A</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'B')">B</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'C')">C</button>
-                    <button class="grade-btn" onclick="selectGrade(this,'D')">D</button>
-                  </div>
-                  <input type="hidden" id="f-grade" value="">
-                </div>
-
-                <!-- แบต -->
-                <div class="field form-full">
-                  <label>แบตเตอรี่ %</label>
-                  <input type="range" id="f-bat" min="0" max="100" value="100"
-                    oninput="updateBat(this.value)" style="width:100%;accent-color:var(--accent)">
-                  <div class="bat-display">
-                    <div class="bat-bar"><div class="bat-fill" id="bat-fill" style="width:100%"></div></div>
-                    <span class="bat-val" id="bat-val">100%</span>
-                  </div>
-                </div>
-
-                <!-- หมายเหตุ -->
-                <div class="field form-full">
-                  <label>หมายเหตุ / ผลเช็คเครื่อง</label>
-                  <textarea id="f-note" placeholder="รอยขนแมว, ประกัน, อุปกรณ์..."></textarea>
-                </div>
-
-                <div class="field form-full" style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-                  <button class="btn btn-ghost" onclick="clearReceiveForm()">ล้าง</button>
-                  <button class="btn btn-primary" onclick="saveDevice()">บันทึกเครื่อง →</button>
-                </div>
+              <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">เบอร์โทร</label>
+                <input type="text" id="s-phone" placeholder="08x-xxx-xxxx" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              </div>
+              <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ช่องทาง</label>
+                <select id="s-channel" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+                  <option>Walk in</option><option>FB</option><option>Line</option><option>Instagram</option><option>ลูกค้าเก่า</option>
+                </select>
+              </div>
+              <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">พนักงาน</label>
+                <input type="text" id="s-staff" placeholder="ชื่อพนักงาน" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+              </div>
+              <div class="field" style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">วันที่ขาย</label>
+                <input type="date" id="s-date" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
               </div>
             </div>
-          </div>
-
-          <!-- Right: recent received -->
-          <div>
-            <div class="form-card">
-              <div class="form-card-title">รับเข้าวันนี้ <span id="today-count" style="color:var(--text3);font-weight:400;font-size:13px">(0 เครื่อง)</span></div>
-              <div class="recent-list" id="today-list">
-                <div class="empty" style="padding:30px 0">
-                  <div class="empty-icon" style="font-size:28px">📥</div>
-                  <div class="empty-text" style="font-size:12px">ยังไม่มีเครื่องเข้าวันนี้</div>
-                </div>
-              </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button onclick="clearSellForm()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ล้าง</button>
+              <button onclick="confirmSell()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">✓ ยืนยันการขาย</button>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- ════ PAGE: ขาย ══════════════════ -->
-      <div class="page" id="page-sell" style="display:none">
-        <div class="sell-layout">
-
-          <!-- LEFT: เลือกเครื่อง + ฟอร์ม -->
-          <div class="sell-left">
-
-            <!-- Tabs สด/ผ่อน -->
-            <div class="sell-tabs">
-              <button class="sell-tab active" id="tab-cash" onclick="setSellMode('cash')">💵 ขายสด</button>
-              <button class="sell-tab" id="tab-inst" onclick="setSellMode('installment')">📋 ขายผ่อน</button>
-            </div>
-
-            <!-- เลือกเครื่อง -->
-            <div class="device-picker">
-              <div class="device-picker-header">
-                <div class="device-picker-title">เลือกเครื่อง (พร้อมขาย)</div>
-                <div class="device-search">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input type="text" placeholder="ค้นหา..." id="sell-search" oninput="renderSellDeviceList()">
-                </div>
-              </div>
-              <div class="device-list" id="sell-device-list"></div>
-            </div>
-
-            <!-- ฟอร์มขาย -->
-            <div class="sell-form-card">
-              <div class="sell-form-title">ข้อมูลการขาย</div>
-
-              <!-- เครื่องที่เลือก -->
-              <div id="selected-device-display" class="selected-device-empty">
-                ← เลือกเครื่องจากรายการด้านบน
-              </div>
-
-              <!-- กำไร/ขาดทุน -->
-              <div class="profit-banner" id="profit-banner" style="display:none">
-                <div>
-                  <div class="profit-label">กำไรประมาณ</div>
-                  <div class="profit-value" id="profit-value">0 บาท</div>
-                </div>
-                <div style="text-align:right">
-                  <div class="profit-label">ราคาทุน</div>
-                  <div style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text2)" id="cost-display">0 บาท</div>
-                </div>
-              </div>
-
-              <!-- ราคา -->
-              <div class="price-row">
-                <span class="price-label">ราคาขาย</span>
-                <input class="price-input" type="number" id="s-price" placeholder="0" oninput="calcProfit()">
-                <span class="price-tag">บาท</span>
-              </div>
-              <div class="price-row" id="row-down" style="display:none">
-                <span class="price-label">เงินดาวน์</span>
-                <input class="price-input" type="number" id="s-down" placeholder="0" oninput="calcInstallment()">
-                <span class="price-tag">บาท</span>
-              </div>
-              <div class="price-row" id="row-installment" style="display:none">
-                <span class="price-label">ค่างวด/เดือน</span>
-                <input class="price-input" type="number" id="s-monthly" placeholder="0" oninput="calcInstallment()">
-                <span class="price-tag">บาท</span>
-              </div>
-              <div class="price-row" id="row-months" style="display:none">
-                <span class="price-label">จำนวนงวด</span>
-                <input class="price-input" type="number" id="s-months" placeholder="12" oninput="calcInstallment()">
-                <span class="price-tag">เดือน</span>
-              </div>
-
-              <div class="form-grid" style="margin-top:14px">
-                <div class="field form-full">
-                  <label>ชื่อลูกค้า</label>
-                  <input type="text" id="s-customer" placeholder="ชื่อ-นามสกุล">
-                </div>
-                <div class="field">
-                  <label>เบอร์โทร</label>
-                  <input type="text" id="s-phone" placeholder="08x-xxx-xxxx">
-                </div>
-                <div class="field">
-                  <label>ช่องทางลูกค้า</label>
-                  <select id="s-channel">
-                    <option>Walk in</option><option>FB</option><option>Line</option>
-                    <option>Instagram</option><option>ลูกค้าเก่า</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>พนักงานขาย</label>
-                  <input type="text" id="s-staff" placeholder="ชื่อพนักงาน">
-                </div>
-                <div class="field">
-                  <label>วันที่ขาย</label>
-                  <input type="date" id="s-date">
-                </div>
-              </div>
-
-              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-                <button class="btn btn-ghost" onclick="clearSellForm()">ล้าง</button>
-                <button class="btn btn-primary" onclick="confirmSell()">✓ ยืนยันการขาย</button>
-              </div>
+      <div class="sell-right" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card" id="inst-summary" style="display:none;background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+          <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;"><span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">สรุปการผ่อน</span></div>
+          <div style="padding:14px;">
+            <div class="sum-card" style="background:#f5f5f7;border-radius:10px;padding:14px 16px;">
+              <div class="sum-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e5e5ea;font-size:13px;"><span class="sum-key" style="color:#8e8e93;">ราคาขาย</span><span class="sum-val" id="sum-price" style="font-family:SF Mono,Courier New,monospace;">-</span></div>
+              <div class="sum-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e5e5ea;font-size:13px;"><span class="sum-key" style="color:#8e8e93;">เงินดาวน์</span><span class="sum-val" id="sum-down" style="font-family:SF Mono,Courier New,monospace;">-</span></div>
+              <div class="sum-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e5e5ea;font-size:13px;"><span class="sum-key" style="color:#8e8e93;">ยอดผ่อนรวม</span><span class="sum-val" id="sum-total" style="font-family:SF Mono,Courier New,monospace;">-</span></div>
+              <div class="sum-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e5e5ea;font-size:13px;"><span class="sum-key" style="color:#8e8e93;">ค่างวด/เดือน</span><span class="sum-val" id="sum-monthly" style="font-family:SF Mono,Courier New,monospace;">-</span></div>
+              <div class="sum-row" style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;font-weight:600;border-bottom:none;"><span class="sum-key" style="color:#8e8e93;">จำนวนงวด</span><span class="sum-val" id="sum-months" style="font-family:SF Mono,Courier New,monospace;">-</span></div>
             </div>
           </div>
-
-          <!-- RIGHT: สรุป + ประวัติ -->
-          <div class="sell-right">
-            <!-- สรุปผ่อน (แสดงเมื่อโหมดผ่อน) -->
-            <div class="summary-card" id="inst-summary" style="display:none">
-              <div style="font-size:13px;font-weight:500;margin-bottom:14px">สรุปการผ่อน</div>
-              <div class="summary-row"><span class="summary-key">ราคาขาย</span><span class="summary-val" id="sum-price">-</span></div>
-              <div class="summary-row"><span class="summary-key">เงินดาวน์</span><span class="summary-val" id="sum-down">-</span></div>
-              <div class="summary-row"><span class="summary-key">ยอดผ่อนรวม</span><span class="summary-val" id="sum-total">-</span></div>
-              <div class="summary-row"><span class="summary-key">ค่างวด/เดือน</span><span class="summary-val" id="sum-monthly">-</span></div>
-              <div class="summary-row" style="border:none"><span class="summary-key">จำนวนงวด</span><span class="summary-val" id="sum-months">-</span></div>
-            </div>
-
-            <!-- ประวัติขาย -->
-            <div class="sales-section">
-              <div class="sales-header">
-                <div class="table-title">ขายล่าสุด</div>
-                <span id="sales-count" style="font-size:12px;color:var(--text3)">(0 รายการ)</span>
-              </div>
-              <table style="width:100%;border-collapse:collapse">
-                <thead><tr>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">รุ่น</th>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ลูกค้า</th>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ราคา</th>
-                  <th style="text-align:left;font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px">ประเภท</th>
-                </tr></thead>
-                <tbody id="sales-history-body">
-                  <tr><td colspan="4" style="padding:30px;text-align:center;color:var(--text3);font-size:13px">ยังไม่มีประวัติการขาย</td></tr>
-                </tbody>
-              </table>
-            </div>
+        </div>
+        <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+          <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;">
+            <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">ขายล่าสุด</span>
+            <span id="sales-count" style="font-size:12px;color:#8e8e93;margin-left:auto;">(0)</span>
           </div>
-
+          <table><thead><tr>
+            <th>รุ่น</th><th>ลูกค้า</th><th>ราคา</th><th>ประเภท</th>
+          </tr></thead><tbody id="sales-history-body">
+            <tr><td colspan="4" style="padding:24px;text-align:center;color:#8e8e93;font-size:13px;">ยังไม่มีประวัติ</td></tr>
+          </tbody></table>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- ════ PAGE: ผ่อนชำระ ════════════ -->
-      <div class="page" id="page-installment" style="display:none">
-
-        <div class="inst-grid">
-          <div class="inst-card">
-            <div class="inst-card-title">สัญญาทั้งหมด</div>
-            <div class="inst-card-val" id="inst-total-count">0</div>
-          </div>
-          <div class="inst-card">
-            <div class="inst-card-title">เกินกำหนด</div>
-            <div class="inst-card-val" id="inst-overdue-count" style="color:var(--red)">0</div>
-          </div>
-          <div class="inst-card">
-            <div class="inst-card-title">ยอดค้างรับรวม</div>
-            <div class="inst-card-val" id="inst-pending-amount" style="color:var(--blue);font-size:18px">0 ฿</div>
-          </div>
-          <div class="inst-card">
-            <div class="inst-card-title">ชำระแล้วเดือนนี้</div>
-            <div class="inst-card-val" id="inst-paid-month" style="color:var(--green);font-size:18px">0 ฿</div>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">รายการผ่อนชำระ</div>
-            <div class="search-box">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="ค้นหาลูกค้า..." id="inst-search" oninput="renderInstallmentList()">
-            </div>
-          </div>
-          <div id="installment-list">
-            <div class="empty" style="padding:50px"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีสัญญาผ่อน — ขายผ่อนจากหน้า "ขาย" ก่อนค่ะ</div></div>
-          </div>
-        </div>
-
+  <!-- INSTALLMENT -->
+  <div class="page" id="page-installment" style="display:none;">
+    <div class="inst-stats" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;">
+      <div class="inst-stat" style="background:#fff;border-radius:12px;border:1px solid #e5e5ea;padding:14px 16px;">
+        <div class="inst-stat-label" style="font-size:11px;color:#8e8e93;font-weight:500;margin-bottom:6px;">สัญญาทั้งหมด</div>
+        <div class="inst-stat-val" id="inst-total-count" style="font-size:22px;font-weight:700;color:#1d1d1f;letter-spacing:-.5px;">0</div>
       </div>
+      <div class="inst-stat" style="background:#fff;border-radius:12px;border:1px solid #e5e5ea;padding:14px 16px;">
+        <div class="inst-stat-label" style="font-size:11px;color:#8e8e93;font-weight:500;margin-bottom:6px;">เกินกำหนด</div>
+        <div class="inst-stat-val" id="inst-overdue-count" style="font-size:22px;font-weight:700;color:#ff3b30;letter-spacing:-.5px;">0</div>
+      </div>
+      <div class="inst-stat" style="background:#fff;border-radius:12px;border:1px solid #e5e5ea;padding:14px 16px;">
+        <div class="inst-stat-label" style="font-size:11px;color:#8e8e93;font-weight:500;margin-bottom:6px;">ยอดค้างรับรวม</div>
+        <div class="inst-stat-val" id="inst-pending-amount" style="font-size:20px;font-weight:700;color:#007aff;letter-spacing:-.5px;">0 ฿</div>
+      </div>
+      <div class="inst-stat" style="background:#fff;border-radius:12px;border:1px solid #e5e5ea;padding:14px 16px;">
+        <div class="inst-stat-label" style="font-size:11px;color:#8e8e93;font-weight:500;margin-bottom:6px;">ชำระแล้วเดือนนี้</div>
+        <div class="inst-stat-val" id="inst-paid-month" style="font-size:20px;font-weight:700;color:#34c759;letter-spacing:-.5px;">- ฿</div>
+      </div>
+    </div>
+    <div class="card" style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+      <div class="card-header" style="padding:14px 18px;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;">
+        <span class="card-title" style="font-size:13px;font-weight:600;color:#1d1d1f;">รายการผ่อนชำระ</span>
+        <div class="search-wrap" style="display:flex;align-items:center;gap:8px;background:#f5f5f7;border-radius:8px;padding:6px 12px;margin-left:auto;border:1px solid transparent;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="ค้นหาลูกค้า..." id="inst-search" oninput="renderInstallmentList()" style="background:none;border:none;outline:none;font-size:13px;color:#1d1d1f;width:160px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+        </div>
+      </div>
+      <div id="installment-list">
+        <div class="empty" style="padding:50px;text-align:center;"><div style="font-size:32px;margin-bottom:10px;">📋</div><div style="font-size:13px;color:#8e8e93;">ยังไม่มีสัญญาผ่อน</div></div>
+      </div>
+    </div>
+  </div>
 
-    </div><!-- /content -->
-  </main>
+  </div><!-- /content -->
+</main>
 </div>
 
-<!-- ══ MODAL: QUICK RECEIVE ════════════════ -->
-<div class="overlay" id="receive-modal" onclick="closeModalOnBg(event,'receive-modal')">
-  <div class="modal">
-    <div class="modal-title">รับเครื่องเข้าด่วน</div>
-    <div class="modal-sub">กรอกข้อมูลพื้นฐาน เพื่อเพิ่มเข้า Stock</div>
-    <div class="form-grid">
-      <div class="field"><label>รหัส Stock</label><input type="text" id="m-code" placeholder="MC-26-xxxx"></div>
-      <div class="field"><label>แหล่งที่มา</label><input type="text" id="m-source" placeholder="ชื่อร้าน/คน"></div>
-      <div class="field form-full"><label>รุ่น</label><input type="text" id="m-model" placeholder="iPhone 16 Pro Max 256GB"></div>
-      <div class="field"><label>SN / IMEI</label><input type="text" id="m-sn" placeholder="Serial Number"></div>
-      <div class="field"><label>ราคาทุน</label><input type="number" id="m-cost" placeholder="0"></div>
-      <div class="field"><label>สาขา</label>
-        <select id="m-branch">
-          <option>สันติธรรม</option><option>แจ่มฟ้า</option><option>หน้ามอ</option><option>ศึกษา</option>
-        </select>
-      </div>
-      <div class="field"><label>เกรด</label>
-        <select id="m-grade">
-          <option>A++</option><option>A+</option><option>A</option><option>B</option><option>C</option><option>D</option>
-        </select>
-      </div>
+<!-- MODAL -->
+<div class="overlay" id="receive-modal" onclick="closeModalOnBg(event,'receive-modal')" style="position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;">
+  <div class="modal" style="background:#fff;border-radius:18px;width:520px;max-width:92vw;max-height:88vh;overflow-y:auto;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.15);">
+    <div style="font-size:17px;font-weight:700;margin-bottom:3px;">รับเครื่องเข้าด่วน</div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:20px;">กรอกข้อมูลพื้นฐาน</div>
+    <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="field" style="display:flex;flex-direction:column;gap:5px;"><label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">รหัส Stock</label><input type="text" id="m-code" placeholder="MC-26-xxxx" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;"></div>
+      <div class="field" style="display:flex;flex-direction:column;gap:5px;"><label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">แหล่งที่มา</label><input type="text" id="m-source" placeholder="ชื่อร้าน/คน" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;"></div>
+      <div class="field form-full" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;"><label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">รุ่น</label><input type="text" id="m-model" placeholder="iPhone 16 Pro Max 256GB" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;"></div>
+      <div class="field" style="display:flex;flex-direction:column;gap:5px;"><label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">SN / IMEI</label><input type="text" id="m-sn" placeholder="Serial Number" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;"></div>
+      <div class="field" style="display:flex;flex-direction:column;gap:5px;"><label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">ราคาทุน</label><input type="number" id="m-cost" placeholder="0" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;"></div>
+      <div class="field" style="display:flex;flex-direction:column;gap:5px;"><label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">สาขา</label><select id="m-branch" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;"><option>สันติธรรม</option><option>แจ่มฟ้า</option><option>หน้ามอ</option><option>ศึกษา</option></select></div>
+      <div class="field" style="display:flex;flex-direction:column;gap:5px;"><label style="font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;">เกรด</label><select id="m-grade" style="padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;color:#1d1d1f;outline:none;background:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;"><option>A++</option><option>A+</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('receive-modal')">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="saveModalDevice()">บันทึก</button>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #f2f2f7;">
+      <button onclick="closeModal('receive-modal')" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ยกเลิก</button>
+      <button onclick="saveModalDevice()" style="display:inline-flex;align-items:center;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">บันทึก</button>
     </div>
   </div>
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast">
-  <div class="toast-dot" id="toast-dot"></div>
+<div class="toast" id="toast" style="position:fixed;bottom:24px;right:24px;z-index:200;background:#1d1d1f;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all .25s cubic-bezier(.34,1.4,.64,1);box-shadow:0 8px 30px rgba(0,0,0,.2);">
+  <div class="toast-dot" id="toast-dot" style="width:7px;height:7px;border-radius:50%;background:#34c759;flex-shrink:0;"></div>
   <span id="toast-msg">บันทึกแล้ว</span>
 </div>
+
 <script>
+
 
 
 // ═══════════════════════════════════════
@@ -1214,7 +960,37 @@ let currentPage  = 'dashboard';
 // ═══════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════
-function showPage(id) {
+function showPage(id, navBtn) {
+  // Hide ALL pages with inline style
+  document.querySelectorAll('.page').forEach(function(p) {
+    p.style.cssText = 'display:none !important';
+  });
+  // Show target
+  var t = document.getElementById('page-' + id);
+  if (t) t.style.cssText = 'display:block';
+  // Nav highlight
+  document.querySelectorAll('.nav-item').forEach(function(n) {
+    n.style.background = 'transparent';
+    n.style.fontWeight = '400';
+    n.style.color = '#3a3a3c';
+  });
+  if (navBtn) {
+    navBtn.style.background = '#f5f5f7';
+    navBtn.style.fontWeight = '500';
+    navBtn.style.color = '#1d1d1f';
+  }
+  // Page title
+  var titles = {dashboard:'Dashboard',stock:'Stock',receive:'รับเครื่องเข้า',sell:'ขาย',installment:'ผ่อนชำระ'};
+  var el = document.getElementById('page-title');
+  if (el) el.textContent = titles[id] || id;
+  currentPage = id;
+  if (id === 'stock') renderStockTable();
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'sell') { renderSellDeviceList(); renderSalesHistory(); var sd = document.getElementById('s-date'); if(sd) sd.value = new Date().toISOString().split('T')[0]; }
+  if (id === 'installment') renderInstallmentList();
+  if (id === 'receive') renderTodayList();
+}
+function _oldShowPage(id) {
   // Hide all pages with inline style (overrides everything)
   document.querySelectorAll('.page').forEach(function(p) {
     p.style.display = 'none';
@@ -1874,6 +1650,7 @@ function markPaid(instId) {
     showToast('บันทึกชำระงวดที่ ' + inst.paidMonths + ' ✓');
   }).catch(function(err) { showToast(err.message, true); });
 }
+
 
 
 
