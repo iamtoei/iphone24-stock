@@ -1141,7 +1141,7 @@ function localFallback(action, data) {
     case 'getSales':       sales=sa; return sa;
     case 'getInstallments': installments=ins; return ins;
     case 'addDevice':
-      data.device.id = data.device.id || ('dev-'+Date.now());
+      data.device.id = String(data.device.id || ('dev-'+Date.now()));
       data.device.statusKey = data.device.grade ? 'พร้อมขาย' : 'ของถึง';
       st.unshift(data.device); saveAll(); devices=st; return data.device;
     case 'updateDevice':
@@ -1846,17 +1846,17 @@ function toggleTheme() {
 
 function loadDemoData() {
   const demo = [
-    { id:1, code:'MC-001',     source:'ซื้อมา',  model:'iPhone 14',          storage:'128GB', color:'Black',   sn:'123456789', type:'มือสอง', cost:15000, branch:'สันติธรรม', date:'2026-05-21', grade:'A',   bat:85, note:'', statusKey:'พร้อมขาย' },
-    { id:2, code:'MC-1234',    source:'Krit',    model:'MacBook Pro 13" M2',  storage:'128GB', color:'ดำ',     sn:'EHEWHWEJWEJ', type:'มือสอง', cost:0, branch:'แจ่มฟ้า',  date:'2026-05-21', grade:'B',   bat:90, note:'KB: EN', statusKey:'พร้อมขาย' },
-    { id:3, code:'MC-1123',    source:'Toei',    model:'iPhone 17',           storage:'256GB', color:'ดำ',     sn:'FGYYYYYYYY', type:'มือสอง', cost:15997, branch:'หน้ามอ',   date:'2026-05-21', grade:'A+',  bat:90, note:'', statusKey:'ขายแล้ว' },
-    { id:4, code:'MC-1556',    source:'Bonus',   model:'iPhone 11',           storage:'64GB',  color:'ดำ',     sn:'FRGRHPHJJHRH', type:'มือสอง', cost:2000, branch:'แจ่มฟ้า', date:'2026-05-21', grade:'B',   bat:85, note:'รอยกระแทก', statusKey:'พร้อมขาย' },
-    { id:5, code:'MC-5667',    source:'Manz',    model:'iPhone 16 Pro',       storage:'256GB', color:'ขาว',    sn:'GXXXXXXXXXX', type:'มือสอง', cost:19999, branch:'หน้ามอ',   date:'2026-05-21', grade:'A',   bat:100, note:'', statusKey:'พร้อมขาย' },
-    { id:6, code:'MC-1122',    source:'manz',    model:'iPhone 17 Pro Max',   storage:'256GB', color:'บลู',    sn:'sgfythugoh', type:'มือสอง', cost:43000, branch:'แจ่มฟ้า',  date:'2026-04-08', grade:'A+',  bat:100, note:'ประกันศูนย์', statusKey:'ของถึง' },
-    { id:7, code:'MC-26-1899', source:'Manz',    model:'iPhone 14 Pro Max',   storage:'256GB', color:'ขาว',    sn:'BEJTJWTKRTKELL', type:'มือสอง', cost:150000, branch:'สันติธรรม', date:'2026-05-22', grade:'A++', bat:100, note:'', statusKey:'พร้อมขาย' },
-    { id:8, code:'MC-26-0909', source:'Manz',    model:'MacBook Pro 14 M3',   storage:'256GB', color:'B',      sn:'CXXXXXXXXXXX', type:'มือสอง', cost:20000, branch:'สันติธรรม', date:'2026-05-22', grade:'A+',  bat:null, note:'Nobox', statusKey:'พร้อมขาย' },
-    { id:9, code:'MC-26-8900', source:'Boy',     model:'iPad Pro 11 M1',      storage:'512GB', color:'B/Wifi', sn:'BWWQHWOHW', type:'มือสอง', cost:9000, branch:'แจ่มฟ้า',   date:'2026-05-22', grade:'B',   bat:89, note:'', statusKey:'พร้อมขาย' },
-    { id:10, code:'MC-26-0000', source:'Krit',   model:'iPhone Air',          storage:'512GB', color:'BL',     sn:'EVEKOHOHTLJJOP', type:'มือสอง', cost:24000, branch:'สันติธรรม', date:'2026-05-23', grade:'A++', bat:94, note:'ประกันศูนย์', statusKey:'ขายแล้ว' },
-    { id:11, code:'MC-26-1290', source:'Oppp',   model:'Apple Watch Ultra',   storage:'-',     color:'BL',     sn:'BWLWAHWHKWHWH', type:'มือสอง', cost:11998, branch:'ศึกษา',     date:'2026-05-22', grade:'A+',  bat:100, note:'', statusKey:'พร้อมขาย' },
+    { id:"1", code:'MC-001',     source:'ซื้อมา',  model:'iPhone 14',          storage:'128GB', color:'Black',   sn:'123456789', type:'มือสอง', cost:15000, branch:'สันติธรรม', date:'2026-05-21', grade:'A',   bat:85, note:'', statusKey:'พร้อมขาย' },
+    { id:"2", code:'MC-1234',    source:'Krit',    model:'MacBook Pro 13" M2',  storage:'128GB', color:'ดำ',     sn:'EHEWHWEJWEJ', type:'มือสอง', cost:0, branch:'แจ่มฟ้า',  date:'2026-05-21', grade:'B',   bat:90, note:'KB: EN', statusKey:'พร้อมขาย' },
+    { id:"3", code:'MC-1123',    source:'Toei',    model:'iPhone 17',           storage:'256GB', color:'ดำ',     sn:'FGYYYYYYYY', type:'มือสอง', cost:15997, branch:'หน้ามอ',   date:'2026-05-21', grade:'A+',  bat:90, note:'', statusKey:'ขายแล้ว' },
+    { id:"4", code:'MC-1556',    source:'Bonus',   model:'iPhone 11',           storage:'64GB',  color:'ดำ',     sn:'FRGRHPHJJHRH', type:'มือสอง', cost:2000, branch:'แจ่มฟ้า', date:'2026-05-21', grade:'B',   bat:85, note:'รอยกระแทก', statusKey:'พร้อมขาย' },
+    { id:"5", code:'MC-5667',    source:'Manz',    model:'iPhone 16 Pro',       storage:'256GB', color:'ขาว',    sn:'GXXXXXXXXXX', type:'มือสอง', cost:19999, branch:'หน้ามอ',   date:'2026-05-21', grade:'A',   bat:100, note:'', statusKey:'พร้อมขาย' },
+    { id:"6", code:'MC-1122',    source:'manz',    model:'iPhone 17 Pro Max',   storage:'256GB', color:'บลู',    sn:'sgfythugoh', type:'มือสอง', cost:43000, branch:'แจ่มฟ้า',  date:'2026-04-08', grade:'A+',  bat:100, note:'ประกันศูนย์', statusKey:'ของถึง' },
+    { id:"7", code:'MC-26-1899', source:'Manz',    model:'iPhone 14 Pro Max',   storage:'256GB', color:'ขาว',    sn:'BEJTJWTKRTKELL', type:'มือสอง', cost:150000, branch:'สันติธรรม', date:'2026-05-22', grade:'A++', bat:100, note:'', statusKey:'พร้อมขาย' },
+    { id:"8", code:'MC-26-0909', source:'Manz',    model:'MacBook Pro 14 M3',   storage:'256GB', color:'B',      sn:'CXXXXXXXXXXX', type:'มือสอง', cost:20000, branch:'สันติธรรม', date:'2026-05-22', grade:'A+',  bat:null, note:'Nobox', statusKey:'พร้อมขาย' },
+    { id:"9", code:'MC-26-8900', source:'Boy',     model:'iPad Pro 11 M1',      storage:'512GB', color:'B/Wifi', sn:'BWWQHWOHW', type:'มือสอง', cost:9000, branch:'แจ่มฟ้า',   date:'2026-05-22', grade:'B',   bat:89, note:'', statusKey:'พร้อมขาย' },
+    { id:"10", code:'MC-26-0000', source:'Krit',   model:'iPhone Air',          storage:'512GB', color:'BL',     sn:'EVEKOHOHTLJJOP', type:'มือสอง', cost:24000, branch:'สันติธรรม', date:'2026-05-23', grade:'A++', bat:94, note:'ประกันศูนย์', statusKey:'ขายแล้ว' },
+    { id:"11", code:'MC-26-1290', source:'Oppp',   model:'Apple Watch Ultra',   storage:'-',     color:'BL',     sn:'BWLWAHWHKWHWH', type:'มือสอง', cost:11998, branch:'ศึกษา',     date:'2026-05-22', grade:'A+',  bat:100, note:'', statusKey:'พร้อมขาย' },
   ];
   devices = demo;
   localStorage.setItem('iphone24_stock', JSON.stringify(demo));
@@ -1894,7 +1894,7 @@ function renderSellDeviceList() {
     return;
   }
   el.innerHTML = avail.map(d => `
-    <div class="device-row ${selectedSellDeviceId===d.id?'selected':''}" onclick="selectSellDevice(${d.id})">
+    <div class="device-row ${selectedSellDeviceId===d.id?'selected':''}" onclick="selectSellDevice('${d.id || d.code}')">
       <div class="device-row-icon">${deviceEmoji(d.model)}</div>
       <div class="device-row-info">
         <div class="device-row-name">${d.model}</div>
@@ -1911,7 +1911,9 @@ function renderSellDeviceList() {
 
 function selectSellDevice(id) {
   selectedSellDeviceId = id;
-  const d = devices.find(x => x.id === id);
+  const d = devices.find(function(x) {
+    return String(x.id) === String(id) || x.code === id || x.id == id;
+  });
   if (!d) return;
   const el = document.getElementById('selected-device-display');
   el.className = 'selected-device-card';
@@ -1963,11 +1965,17 @@ function confirmSell() {
   const price = parseFloat(document.getElementById('s-price').value) || 0;
   if (!price) { showToast('กรุณากรอกราคาขาย', true); return; }
 
-  const d = devices.find(x => x.id === selectedSellDeviceId);
+  // หา device แบบ loose — รองรับทั้ง id เป็น number/string และ code
+  const d = devices.find(function(x) {
+    return String(x.id) === String(selectedSellDeviceId) ||
+           x.code === selectedSellDeviceId ||
+           x.id == selectedSellDeviceId;
+  });
+  if (!d) { showToast('ไม่พบข้อมูลเครื่อง กรุณาเลือกใหม่', true); return; }
   const today = document.getElementById('s-date').value || new Date().toISOString().split('T')[0];
   const sale = {
     id:       Date.now(),
-    deviceId: selectedSellDeviceId,
+    deviceId: String(selectedSellDeviceId),
     deviceCode: d.code,
     model:    d.model,
     grade:    d.grade,
@@ -1988,10 +1996,12 @@ function confirmSell() {
   };
 
   // อัปเดตสถานะเครื่อง → ขายแล้ว
-  d.statusKey = 'ขายแล้ว';
-  d.soldDate  = today;
-  d.soldPrice = price;
-  d.soldTo    = customer;
+  if (d) {
+    d.statusKey = 'ขายแล้ว';
+    d.soldDate  = today;
+    d.soldPrice = price;
+    d.soldTo    = customer;
+  }
   saveToStorage();
 
   setLoading(true);
@@ -2004,7 +2014,7 @@ function confirmSell() {
     renderSellDeviceList();
     renderSalesHistory();
     renderDashboard();
-    lastSale = Object.assign({}, sale, { device: devices.find(function(x){return x.code===sale.deviceCode||x.id===sale.deviceId;}) || {} });
+    lastSale = Object.assign({}, sale, { device: devices.find(function(x){return x.code===sale.deviceCode||String(x.id)===String(sale.deviceId)||x.id==sale.deviceId;}) || d || {} });
     // Show receipt & contract buttons
     var btnR = document.getElementById('btn-receipt');
     var btnC = document.getElementById('btn-contract');
@@ -2183,7 +2193,7 @@ function clearReceiveColor() {
 // ══════════════════════════════════════
 //  RECEIPT & CONTRACT
 // ══════════════════════════════════════
-var INSTALLMENT_FORM_URL = 'https://docs.google.com/forms/d/e/PASTE_YOUR_FORM_ID_HERE/viewform';
+var INSTALLMENT_FORM_URL = 'https://docs.google.com/forms/d/e/1DyIYKcgLUb6i7M8i8pzeb9TRiu_GuKxZSufpyv_KVXA/viewform';
 var lastSale = null; // เก็บข้อมูลการขายล่าสุดสำหรับออกใบเสร็จ
 
 function openInstallmentForm() {
