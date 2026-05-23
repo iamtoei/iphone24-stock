@@ -1575,6 +1575,10 @@ function setLoading(on) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // ซ่อนทุก page ทันที ก่อนอื่นใดเลย
+  document.querySelectorAll('.page').forEach(function(p) {
+    p.style.cssText = 'display:none !important';
+  });
   // Apply saved theme
   const savedTheme = localStorage.getItem('iphone24_theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1597,10 +1601,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     updateNavBadge();
-    renderDashboard();
+    showPage('dashboard');
   }).catch(function(err) {
     console.error(err);
-    // fallback to demo
     loadDemoData();
   });
 });
