@@ -1001,6 +1001,7 @@ input[type=range] { accent-color:#007aff; width:100%; }
               <button onclick="confirmSell()" style="display:inline-flex;align-items:center;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">✓ ยืนยันการขาย</button>
               <button onclick="printReceipt()" id="btn-receipt" style="display:none;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#e8f8ec;border:1px solid #c3e6cb;color:#1a7f37;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">🧾 ใบเสร็จ</button>
               <button onclick="openInstallmentForm()" id="btn-contract" style="display:none;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#e8f0fe;border:1px solid #c3d4fc;color:#1a56db;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">📋 ฟอร์มสัญญา</button>
+              <button onclick="openContractDoc()" id="btn-contract-doc" style="display:none;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#fff4e6;border:1px solid #ffd9a0;color:#c45000;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">📄 ใบสัญญาเช่าซื้อ</button>
             </div>
           </div>
         </div>
@@ -2020,6 +2021,8 @@ function confirmSell() {
     var btnC = document.getElementById('btn-contract');
     if (btnR) btnR.style.display = 'inline-flex';
     if (btnC && sale.type === 'installment') btnC.style.display = 'inline-flex';
+    var btnCD = document.getElementById('btn-contract-doc');
+    if (btnCD && sale.type === 'installment') btnCD.style.display = 'inline-flex';
     showToast('บันทึกการขาย ' + sale.deviceCode + ' ให้ ' + customer + ' ✓');
     setLoading(false);
   }).catch(function(err) {
@@ -2194,11 +2197,17 @@ function clearReceiveColor() {
 //  RECEIPT & CONTRACT
 // ══════════════════════════════════════
 var INSTALLMENT_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSedcygoeJAhlim3dCqYoHewdxYJ7F3CDAF6rZEaohHWVY4qJQ/viewform';
+var CONTRACT_DOC_URL = 'https://docs.google.com/document/d/1DyIYKcgLUb6i7M8i8pzeb9TRiu_GuKxZSufpyv_KVXA/edit';
 var lastSale = null; // เก็บข้อมูลการขายล่าสุดสำหรับออกใบเสร็จ
 
 function openInstallmentForm() {
-  // เปิด Google Form สัญญาผ่อนในแท็บใหม่
+  // เปิด Google Form ให้ลูกค้ากรอกข้อมูล
   window.open(INSTALLMENT_FORM_URL, '_blank');
+}
+
+function openContractDoc() {
+  // เปิดสัญญาเช่าซื้อ Google Doc
+  window.open(CONTRACT_DOC_URL, '_blank');
 }
 
 function printReceipt() {
