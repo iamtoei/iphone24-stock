@@ -2198,6 +2198,10 @@ function clearReceiveColor() {
 // ══════════════════════════════════════
 var INSTALLMENT_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSedcygoeJAhlim3dCqYoHewdxYJ7F3CDAF6rZEaohHWVY4qJQ/viewform';
 var CONTRACT_DOC_URL = 'https://docs.google.com/document/d/1DyIYKcgLUb6i7M8i8pzeb9TRiu_GuKxZSufpyv_KVXA/edit';
+// ← วาง Apps Script Web App URL ตรงนี้หลัง deploy
+// เช่น: 'https://script.google.com/macros/s/AKfyc.../exec'
+var APPS_SCRIPT_EXEC_URL = '';
+var CONTRACT_DOC_URL = 'https://docs.google.com/document/d/1DyIYKcgLUb6i7M8i8pzeb9TRiu_GuKxZSufpyv_KVXA/edit';
 var lastSale = null; // เก็บข้อมูลการขายล่าสุดสำหรับออกใบเสร็จ
 
 function openInstallmentForm() {
@@ -2206,8 +2210,169 @@ function openInstallmentForm() {
 }
 
 function openContractDoc() {
-  // เปิดสัญญาเช่าซื้อ Google Doc
-  window.open(CONTRACT_DOC_URL, '_blank');
+  // ถ้ามี Apps Script URL → สร้างสัญญาอัตโนมัติ
+  if (APPS_SCRIPT_EXEC_URL && lastSale) {
+    showContractModal(lastSale);
+  } else {
+    // Fallback: เปิด template โดยตรง
+    window.open(CONTRACT_DOC_URL, '_blank');
+  }
+}
+
+function showContractModal(sale) {
+  var d = sale.device || {};
+  // สร้าง modal กรอกข้อมูลลูกค้าเพิ่มเติม
+  var existing = document.getElementById('contract-modal');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'contract-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:18px;width:540px;max-width:94vw;max-height:90vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+      <div style="font-size:17px;font-weight:700;margin-bottom:4px;">สร้างสัญญาเช่าซื้อ</div>
+      <div style="font-size:13px;color:#8e8e93;margin-bottom:20px;">กรอกข้อมูลลูกค้าเพิ่มเติม ระบบจะสร้างสัญญาให้อัตโนมัติ</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="display:flex;flex-direction:column;gap:4px;grid-column:1/-1;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">เลขสัญญา (รหัสเครื่อง)</label>
+          <input id="ct-no" value="${sale.deviceCode||''}" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">ชื่อ-นามสกุล</label>
+          <input id="ct-name" value="${sale.customer||''}" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">เบอร์โทร</label>
+          <input id="ct-phone" value="${sale.phone||''}" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">เลขบัตรประชาชน</label>
+          <input id="ct-idcard" placeholder="13 หลัก" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">อายุ</label>
+          <input id="ct-age" placeholder="25" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;grid-column:1/-1;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">ที่อยู่ปัจจุบัน</label>
+          <input id="ct-addr" placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+
+        <div style="grid-column:1/-1;padding-top:8px;border-top:1px solid #f2f2f7;margin-top:4px;">
+          <div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;margin-bottom:10px;">บุคคลอ้างอิง 1</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:10px;color:#8e8e93;font-weight:600;">ชื่อ-นามสกุล</label><input id="ct-ref1n" style="padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:12px;outline:none;"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:10px;color:#8e8e93;font-weight:600;">ความสัมพันธ์</label><input id="ct-ref1r" style="padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:12px;outline:none;"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:10px;color:#8e8e93;font-weight:600;">เบอร์โทร</label><input id="ct-ref1p" style="padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:12px;outline:none;"></div>
+          </div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;margin-bottom:10px;">บุคคลอ้างอิง 2</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:10px;color:#8e8e93;font-weight:600;">ชื่อ-นามสกุล</label><input id="ct-ref2n" style="padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:12px;outline:none;"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:10px;color:#8e8e93;font-weight:600;">ความสัมพันธ์</label><input id="ct-ref2r" style="padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:12px;outline:none;"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:10px;color:#8e8e93;font-weight:600;">เบอร์โทร</label><input id="ct-ref2p" style="padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:12px;outline:none;"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">ชำระทุกวันที่</label>
+          <input id="ct-payday" placeholder="เช่น 5" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">เริ่มชำระวันที่</label>
+          <input id="ct-startdate" type="date" style="padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;">
+        </div>
+      </div>
+
+      <div id="ct-status" style="margin-top:14px;font-size:13px;color:#8e8e93;min-height:20px;"></div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #f2f2f7;">
+        <button onclick="document.getElementById('contract-modal').remove()" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ยกเลิก</button>
+        <button onclick="submitContractToAppsScript()" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">📄 สร้างสัญญา</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function submitContractToAppsScript() {
+  if (!lastSale) return;
+  var s = lastSale;
+  var d = s.device || {};
+
+  var payload = {
+    action: 'generateContract',
+    payload: {
+      contractNo:     document.getElementById('ct-no').value.trim() || s.deviceCode,
+      customerName:   document.getElementById('ct-name').value.trim(),
+      customerPhone:  document.getElementById('ct-phone').value.trim(),
+      customerIdcard: document.getElementById('ct-idcard').value.trim(),
+      customerAge:    document.getElementById('ct-age').value.trim(),
+      customerAddr:   document.getElementById('ct-addr').value.trim(),
+      ref1Name:  document.getElementById('ct-ref1n').value.trim(),
+      ref1Rel:   document.getElementById('ct-ref1r').value.trim(),
+      ref1Phone: document.getElementById('ct-ref1p').value.trim(),
+      ref2Name:  document.getElementById('ct-ref2n').value.trim(),
+      ref2Rel:   document.getElementById('ct-ref2r').value.trim(),
+      ref2Phone: document.getElementById('ct-ref2p').value.trim(),
+      payDay:    document.getElementById('ct-payday').value.trim(),
+      startDate: document.getElementById('ct-startdate').value,
+      // ข้อมูลเครื่อง
+      deviceCode: s.deviceCode,
+      model:   s.model,
+      storage: d.storage || '',
+      color:   d.color   || '',
+      sn:      d.sn      || '',
+      imei:    d.sn      || '',
+      grade:   d.grade   || s.grade || '',
+      // ราคา
+      price:   s.price,
+      down:    s.down    || 0,
+      monthly: s.monthly || 0,
+      months:  s.months  || 0,
+    }
+  };
+
+  var statusEl = document.getElementById('ct-status');
+  statusEl.textContent = '⏳ กำลังสร้างสัญญา...';
+
+  // เรียก Apps Script ผ่าน google.script.run (ถ้าอยู่ใน Apps Script)
+  // หรือผ่าน fetch (ถ้าอยู่ใน GitHub Pages + APPS_SCRIPT_EXEC_URL)
+  if (IS_APPS_SCRIPT) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.ok) {
+          statusEl.innerHTML = '✅ สร้างสัญญาเรียบร้อย! <a href="' + res.data.contractUrl + '" target="_blank" style="color:#007aff;font-weight:600;">เปิดสัญญา</a> | <a href="' + res.data.contractPdf + '" target="_blank" style="color:#34c759;font-weight:600;">ดาวน์โหลด PDF</a>';
+        } else {
+          statusEl.textContent = '❌ เกิดข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ');
+        }
+      })
+      .withFailureHandler(function(err) {
+        statusEl.textContent = '❌ ' + err.message;
+      })
+      .callServer('generateContract', payload.payload);
+
+  } else if (APPS_SCRIPT_EXEC_URL) {
+    fetch(APPS_SCRIPT_EXEC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload),
+      mode: 'cors'
+    }).then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res && res.ok) {
+          statusEl.innerHTML = '✅ สร้างสัญญาเรียบร้อย! <a href="' + res.data.contractUrl + '" target="_blank" style="color:#007aff;font-weight:600;">เปิดสัญญา</a>';
+        } else {
+          statusEl.textContent = '❌ ' + (res ? res.error : 'ไม่ทราบสาเหตุ');
+        }
+      })
+      .catch(function(err) {
+        statusEl.textContent = '❌ ' + err.message;
+      });
+  } else {
+    statusEl.innerHTML = '⚠️ ยังไม่ได้ตั้งค่า APPS_SCRIPT_EXEC_URL — <a href="' + CONTRACT_DOC_URL + '" target="_blank">เปิด Template</a>';
+  }
 }
 
 function printReceipt() {
