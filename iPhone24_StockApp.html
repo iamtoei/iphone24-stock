@@ -2846,6 +2846,87 @@ function setReviewFilter(f, btn) {
   renderReviewList();
 }
 
+function showReviewDetail(idx) {
+  var r = reviewData[idx];
+  if (!r) return;
+
+  var existing = document.getElementById('review-detail-modal');
+  if (existing) existing.remove();
+
+  function row(label, val) {
+    if (!val) return '';
+    return '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #f2f2f7;">' +
+      '<div style="font-size:11px;color:#8e8e93;font-weight:600;width:110px;flex-shrink:0;padding-top:1px;">' + label + '</div>' +
+      '<div style="font-size:13px;color:#1d1d1f;flex:1;">' + val + '</div>' +
+    '</div>';
+  }
+
+  var idFormatted = r.idcard ? r.idcard.replace(/(\d{1})(\d{4})(\d{5})(\d{2})(\d{1})/, '$1-$2-$3-$4-$5') : '-';
+  var statusColor = r.status === 'รอพิจารณา' ? '#ff9500' : r.status === 'ผ่าน' ? '#34c759' : '#ff3b30';
+  var statusBg    = r.status === 'รอพิจารณา' ? '#fff4e6' : r.status === 'ผ่าน' ? '#e8f8ec' : '#fdecea';
+
+  var html = '<div id="review-detail-modal" onclick="if(event.target===this)this.remove()" ' +
+    'style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;">' +
+    '<div style="background:#fff;border-radius:16px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);">' +
+
+      // Header
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f2f2f7;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;">' +
+        '<div>' +
+          '<div style="font-size:16px;font-weight:700;color:#1d1d1f;">' + (r.name||'ไม่ระบุ') + '</div>' +
+          '<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:' + statusBg + ';color:' + statusColor + ';">' + (r.status||'-') + '</span>' +
+        '</div>' +
+        '<button onclick="document.getElementById(\'review-detail-modal\').remove()" ' +
+          'style="width:28px;height:28px;border-radius:50%;background:#f2f2f7;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">✕</button>' +
+      '</div>' +
+
+      '<div style="padding:4px 20px 20px;">' +
+
+        // ข้อมูลส่วนตัว
+        '<div style="font-size:11px;font-weight:700;color:#8e8e93;letter-spacing:.5px;text-transform:uppercase;margin:16px 0 4px;">ข้อมูลส่วนตัว</div>' +
+        row('ชื่อ-นามสกุล', r.name) +
+        row('เบอร์โทร', r.phone) +
+        row('เลขบัตร', idFormatted) +
+        row('อายุ', r.age ? r.age + ' ปี' : '') +
+        row('ที่อยู่ปัจจุบัน', r.addr) +
+
+        // การทำงาน
+        (r.workplace || r.position || r.workTenure || r.addrWork ?
+          '<div style="font-size:11px;font-weight:700;color:#8e8e93;letter-spacing:.5px;text-transform:uppercase;margin:16px 0 4px;">การทำงาน</div>' +
+          row('ที่ทำงาน', r.workplace) +
+          row('ตำแหน่ง', r.position) +
+          row('อายุงาน', r.workTenure) +
+          row('ที่อยู่ที่ทำงาน', r.addrWork)
+        : '') +
+
+        // การศึกษา
+        (r.school || r.faculty || r.year || r.studentId ?
+          '<div style="font-size:11px;font-weight:700;color:#8e8e93;letter-spacing:.5px;text-transform:uppercase;margin:16px 0 4px;">การศึกษา</div>' +
+          row('สถานศึกษา', r.school) +
+          row('คณะ/สาขา', r.faculty) +
+          row('ชั้นปี', r.year) +
+          row('รหัสนักศึกษา', r.studentId)
+        : '') +
+
+        // บุคคลอ้างอิง
+        '<div style="font-size:11px;font-weight:700;color:#8e8e93;letter-spacing:.5px;text-transform:uppercase;margin:16px 0 4px;">บุคคลอ้างอิง</div>' +
+        row('คนที่ 1', r.ref1Name ? r.ref1Name + ' (' + (r.ref1Rel||'-') + ') ' + (r.ref1Phone||'') : '') +
+        row('คนที่ 2', r.ref2Name ? r.ref2Name + ' (' + (r.ref2Rel||'-') + ') ' + (r.ref2Phone||'') : '') +
+
+        // รูปบัตรประชาชน
+        (r.idphoto ?
+          '<div style="font-size:11px;font-weight:700;color:#8e8e93;letter-spacing:.5px;text-transform:uppercase;margin:16px 0 8px;">รูปบัตรประชาชน</div>' +
+          '<a href="' + r.idphoto + '" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:#e8f0fe;color:#1a56db;font-size:12px;font-weight:600;text-decoration:none;">🪪 เปิดดูรูปบัตร</a>'
+        : '') +
+
+        // วันที่ส่งฟอร์ม
+        '<div style="margin-top:16px;padding-top:12px;border-top:1px solid #f2f2f7;font-size:11px;color:#8e8e93;">ส่งฟอร์มเมื่อ: ' + (r.submitDate||'-') + '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
 function renderReviewList() {
   var list = document.getElementById('rv-list');
   var empty = document.getElementById('rv-empty');
@@ -2891,6 +2972,7 @@ function renderReviewList() {
           '</div>' +
           // Action buttons
           '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<button onclick="showReviewDetail(' + i + ')" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#f2f2f7;border:1px solid #e5e5ea;color:#3a3a3c;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">🔍 รายละเอียด</button>' +
             (canApprove ?
               '<button onclick="approveAndSelectDevice(' + i + ')" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#34c759;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">✓ อนุมัติ + เลือกเครื่อง</button>' : '') +
             (canApprove ?
