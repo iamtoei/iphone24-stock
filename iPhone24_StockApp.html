@@ -1178,13 +1178,11 @@ function api(action, payload) {
         .callServer(action, payload || {});
 
     } else if (APPS_SCRIPT_EXEC_URL && _shouldUseRemote(action)) {
-      // อยู่บน GitHub Pages + มี Apps Script URL → ใช้ fetch
-      fetch(APPS_SCRIPT_EXEC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: action, payload: payload || {} }),
-        mode: 'cors'
-      })
+      // อยู่บน GitHub Pages + มี Apps Script URL → ใช้ GET (หลีกเลี่ยง CORS preflight)
+      var gasUrl = APPS_SCRIPT_EXEC_URL
+        + '?action=' + encodeURIComponent(action)
+        + '&payload=' + encodeURIComponent(JSON.stringify(payload || {}));
+      fetch(gasUrl, { method: 'GET' })
       .then(function(r) { return r.json(); })
       .then(function(res) {
         if (res && res.ok) resolve(res.data);
@@ -2466,12 +2464,11 @@ function submitContractToAppsScript() {
       .callServer('generateContract', payload.payload);
 
   } else if (APPS_SCRIPT_EXEC_URL) {
-    fetch(APPS_SCRIPT_EXEC_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload),
-      mode: 'cors'
-    }).then(function(r) { return r.json(); })
+    var gasUrl2 = APPS_SCRIPT_EXEC_URL
+      + '?action=' + encodeURIComponent(payload.action)
+      + '&payload=' + encodeURIComponent(JSON.stringify(payload.payload || payload));
+    fetch(gasUrl2, { method: 'GET' })
+      .then(function(r) { return r.json(); })
       .then(function(res) {
         if (res && res.ok) {
           statusEl.innerHTML = '✅ สร้างสัญญาเรียบร้อย! <a href="' + res.data.contractUrl + '" target="_blank" style="color:#007aff;font-weight:600;">เปิดสัญญา</a>';
@@ -3032,12 +3029,10 @@ function cancelReview(idx) {
   var r = reviewData[idx];
   if (!r || !confirm('ยืนยันการยกเลิกคำขอของ ' + r.name + '?')) return;
 
-  fetch(APPS_SCRIPT_EXEC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'updateReviewStatus', payload: { row: r.row, status: 'ยกเลิก' } }),
-    mode: 'cors'
-  }).then(function(r) { return r.json(); })
+  var _cancelUrl = APPS_SCRIPT_EXEC_URL
+    + '?action=updateReviewStatus'
+    + '&payload=' + encodeURIComponent(JSON.stringify({ row: r.row, status: 'ยกเลิก' }));
+  fetch(_cancelUrl, { method: 'GET' }).then(function(r) { return r.json(); })
     .then(function(res) {
       if (res && res.ok) {
         showToast('ยกเลิกคำขอแล้วค่ะ');
@@ -3099,12 +3094,10 @@ function confirmApprove(idx) {
     }
   };
 
-  fetch(APPS_SCRIPT_EXEC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(payload),
-    mode: 'cors'
-  }).then(function(res) { return res.json(); })
+  var _approveUrl = APPS_SCRIPT_EXEC_URL
+    + '?action=' + encodeURIComponent(payload.action)
+    + '&payload=' + encodeURIComponent(JSON.stringify(payload.payload || {}));
+  fetch(_approveUrl, { method: 'GET' }).then(function(res) { return res.json(); })
     .then(function(res) {
       if (res && res.ok && res.data) {
         statusEl.innerHTML = '✅ เรียบร้อย! ' +
