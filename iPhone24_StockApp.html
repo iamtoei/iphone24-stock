@@ -17,7 +17,7 @@ html, body { height:100%; background:#f5f5f7; color:#1d1d1f; font-family:-apple-
   background:#fff; border-right:1px solid #e5e5ea;
   display:flex; flex-direction:column; flex-shrink:0;
   overflow:hidden;
-
+}
 .sidebar-logo {
   padding:20px 18px 16px;
   border-bottom:1px solid #f2f2f7;
@@ -1371,23 +1371,41 @@ function renderAlerts() {
 
   var html = '';
 
+  var S = {
+    card:  'background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;margin-bottom:10px;',
+    hdr:   'padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;',
+    icon:  'font-size:16px;',
+    title: 'font-size:13px;font-weight:600;color:#1d1d1f;',
+    cntR:  'margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fdecea;color:#c0392b;',
+    cntA:  'margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fff4e6;color:#c45000;',
+    body:  'border-top:1px solid #f2f2f7;',
+    row:   'display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #f2f2f7;font-size:13px;',
+    dotR:  'width:8px;height:8px;border-radius:50%;background:#e74c3c;flex-shrink:0;',
+    dotA:  'width:8px;height:8px;border-radius:50%;background:#e67e22;flex-shrink:0;',
+    info:  'flex:1;min-width:0;',
+    name:  'font-size:13px;font-weight:500;color:#1d1d1f;',
+    meta:  'font-size:11px;color:#8e8e93;margin-top:1px;',
+    bdgR:  'font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fdecea;color:#c0392b;white-space:nowrap;',
+    bdgA:  'font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fff4e6;color:#c45000;white-space:nowrap;',
+  };
+
   // Alert: ค้างนาน
   if (slowItems.length > 0) {
-    html += '<div class="alert-card">' +
-      '<div class="alert-header" onclick="toggleAlert(this)">' +
-        '<span class="alert-header-icon">⏳</span>' +
-        '<span class="alert-header-title">สินค้าค้างนานเกิน 60 วัน</span>' +
-        '<span class="alert-count red">' + slowItems.length + ' รายการ</span>' +
+    html += '<div style="' + S.card + '">' +
+      '<div style="' + S.hdr + '" onclick="toggleAlertInline(this)">' +
+        '<span style="' + S.icon + '">⏳</span>' +
+        '<span style="' + S.title + '">สินค้าค้างนานเกิน 60 วัน</span>' +
+        '<span style="' + S.cntR + '">' + slowItems.length + ' รายการ</span>' +
       '</div>' +
-      '<div class="alert-body">' +
+      '<div style="' + S.body + 'display:none;" class="alert-body-inline">' +
         slowItems.map(function(item) {
-          return '<div class="alert-row">' +
-            '<div class="alert-dot red"></div>' +
-            '<div class="alert-info">' +
-              '<div class="alert-name">' + item.model + '</div>' +
-              '<div class="alert-meta">' + item.code + ' · ' + (item.branch||'-') + '</div>' +
+          return '<div style="' + S.row + '">' +
+            '<div style="' + S.dotR + '"></div>' +
+            '<div style="' + S.info + '">' +
+              '<div style="' + S.name + '">' + item.model + '</div>' +
+              '<div style="' + S.meta + '">' + item.code + ' · ' + (item.branch||'-') + '</div>' +
             '</div>' +
-            '<span class="alert-badge red">' + item.days + ' วัน</span>' +
+            '<span style="' + S.bdgR + '">' + item.days + ' วัน</span>' +
           '</div>';
         }).join('') +
       '</div>' +
@@ -1396,20 +1414,20 @@ function renderAlerts() {
 
   // Alert: เหลือน้อย
   if (lowList.length > 0) {
-    html += '<div class="alert-card">' +
-      '<div class="alert-header" onclick="toggleAlert(this)">' +
-        '<span class="alert-header-icon">📉</span>' +
-        '<span class="alert-header-title">Stock เหลือน้อย (ต่ำกว่า ' + LOW_STOCK_THRESHOLD + ' เครื่อง)</span>' +
-        '<span class="alert-count amber">' + lowList.length + ' รุ่น</span>' +
+    html += '<div style="' + S.card + '">' +
+      '<div style="' + S.hdr + '" onclick="toggleAlertInline(this)">' +
+        '<span style="' + S.icon + '">📉</span>' +
+        '<span style="' + S.title + '">Stock เหลือน้อย (ต่ำกว่า ' + LOW_STOCK_THRESHOLD + ' เครื่อง)</span>' +
+        '<span style="' + S.cntA + '">' + lowList.length + ' รุ่น</span>' +
       '</div>' +
-      '<div class="alert-body">' +
+      '<div style="' + S.body + 'display:none;" class="alert-body-inline">' +
         lowList.map(function(e) {
-          return '<div class="alert-row">' +
-            '<div class="alert-dot amber"></div>' +
-            '<div class="alert-info">' +
-              '<div class="alert-name">' + e[0] + '</div>' +
+          return '<div style="' + S.row + '">' +
+            '<div style="' + S.dotA + '"></div>' +
+            '<div style="' + S.info + '">' +
+              '<div style="' + S.name + '">' + e[0] + '</div>' +
             '</div>' +
-            '<span class="alert-badge amber">เหลือ ' + e[1] + ' เครื่อง</span>' +
+            '<span style="' + S.bdgA + '">เหลือ ' + e[1] + ' เครื่อง</span>' +
           '</div>';
         }).join('') +
       '</div>' +
@@ -1423,6 +1441,11 @@ function renderAlerts() {
   }
 
   el.innerHTML = html;
+}
+
+function toggleAlertInline(headerEl) {
+  var body = headerEl.nextElementSibling;
+  if (body) body.style.display = body.style.display === 'none' ? 'block' : 'none';
 }
 
 function toggleAlert(headerEl) {
