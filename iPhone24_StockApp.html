@@ -1168,6 +1168,7 @@ const IS_APPS_SCRIPT = (function() {
 function api(action, payload) {
   return new Promise(function(resolve, reject) {
     if (IS_APPS_SCRIPT) {
+      // อยู่ใน Apps Script HTML — ใช้ google.script.run
       google.script.run
         .withSuccessHandler(function(res) {
           if (res && res.ok) resolve(res.data);
@@ -1175,11 +1176,40 @@ function api(action, payload) {
         })
         .withFailureHandler(function(err) { reject(new Error(err.message || 'Script error')); })
         .callServer(action, payload || {});
+
+    } else if (APPS_SCRIPT_EXEC_URL && _shouldUseRemote(action)) {
+      // อยู่บน GitHub Pages + มี Apps Script URL → ใช้ fetch
+      fetch(APPS_SCRIPT_EXEC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: action, payload: payload || {} }),
+        mode: 'cors'
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res && res.ok) resolve(res.data);
+        else reject(new Error(res ? res.error : 'API error'));
+      })
+      .catch(function(err) {
+        // ถ้า fetch fail → fallback local
+        console.warn('API remote failed, using local fallback:', err.message);
+        try { resolve(localFallback(action, payload || {})); }
+        catch(e) { reject(e); }
+      });
+
     } else {
+      // Local fallback (localStorage)
       try { resolve(localFallback(action, payload || {})); }
       catch(e) { reject(e); }
     }
   });
+}
+
+// Actions ที่ควรส่งไป Apps Script (ไม่ใช่แค่ local)
+function _shouldUseRemote(action) {
+  return ['addDevice','getStock','updateDeviceStatus','confirmSale',
+          'generateContract','approveContract','getReviewList',
+          'updateReviewStatus'].indexOf(action) >= 0;
 }
 
 function localFallback(action, data) {
@@ -1553,7 +1583,7 @@ function saveDevice() {
     updateNavBadge();
     renderTodayList();
     clearReceiveForm();
-    showToast('บันทึก ' + code + ' เรียบร้อย ✓');
+    showToast('บันทึก ' + code + ' ลง Sheet เรียบร้อย ✓');
     setLoading(false);
   }).catch(function(err) {
     showToast(err.message || 'เกิดข้อผิดพลาด', true);
@@ -1867,26 +1897,48 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set today date
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
 
-  // Load data from API (or localStorage in demo mode)
-  Promise.all([
-    api('getStock', {}),
-    api('getSales', {}),
-    api('getInstallments', {}),
-  ]).then(function(results) {
-    devices = results[0] || [];
-    sales   = results[1] || [];
-    installments = results[2] || [];
-    // ถ้า demo mode และยังไม่มีข้อมูล → โหลด demo data
-    if (!IS_APPS_SCRIPT && !devices.length) {
+  // Load data
+  if (APPS_SCRIPT_EXEC_URL) {
+    // มี Apps Script URL → ดึง Stock จาก Google Sheet จริง
+    showToast('กำลังโหลดข้อมูลจาก Sheet...');
+    api('getStock', {})
+      .then(function(list) {
+        devices = list && list.length ? list : [];
+        if (!devices.length) loadDemoData();
+        // โหลด sales + installments จาก localStorage ไปก่อน
+        var stored = JSON.parse(localStorage.getItem('iphone24_data') || '{}');
+        sales        = stored.sales        || [];
+        installments = stored.installments || [];
+        updateNavBadge();
+        showPage('dashboard');
+        showToast('โหลด Stock ' + devices.length + ' เครื่อง ✓');
+      })
+      .catch(function(err) {
+        console.warn('Load from sheet failed:', err.message);
+        loadDemoData();
+        var stored = JSON.parse(localStorage.getItem('iphone24_data') || '{}');
+        sales        = stored.sales        || [];
+        installments = stored.installments || [];
+        showPage('dashboard');
+      });
+  } else {
+    // Demo mode / local
+    Promise.all([
+      api('getStock', {}),
+      api('getSales', {}),
+      api('getInstallments', {}),
+    ]).then(function(results) {
+      devices = results[0] || [];
+      sales   = results[1] || [];
+      installments = results[2] || [];
+      if (!IS_APPS_SCRIPT && !devices.length) { loadDemoData(); return; }
+      updateNavBadge();
+      showPage('dashboard');
+    }).catch(function(err) {
+      console.error(err);
       loadDemoData();
-      return;
-    }
-    updateNavBadge();
-    showPage('dashboard');
-  }).catch(function(err) {
-    console.error(err);
-    loadDemoData();
-  });
+    });
+  }
 });
 
 // ═══════════════════════════════════════
@@ -2059,6 +2111,11 @@ function confirmSell() {
     d.soldTo    = customer;
   }
   saveToStorage();
+  // Sync สถานะขายกลับ Sheet
+  if (APPS_SCRIPT_EXEC_URL && d) {
+    api('updateDeviceStatus', { code: d.code, status: 'ขายแล้ว', soldPrice: price, soldTo: customer })
+      .catch(function(e) { console.warn('Sync sold status failed:', e.message); });
+  }
 
   setLoading(true);
   api('addSale', { sale }).then(function() {
