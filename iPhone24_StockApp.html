@@ -1801,9 +1801,9 @@ function deleteDevice(id) {
 //  FILTERS
 // ═══════════════════════════════════════
 function setStatusFilter(val, btn, mode='status') {
-  const row = btn.closest('.filter-row');
-  row.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
+  const row = btn ? btn.closest('.filter-row') : null;
+  if (row) row.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
   if (mode === 'status') statusFilter = val;
   else { typeFilter = val; }
   renderStockTable();
