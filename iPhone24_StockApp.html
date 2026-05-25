@@ -1573,8 +1573,12 @@ function clearReceiveForm() {
 
 function saveDevice() {
   const code  = document.getElementById('f-code').value.trim();
-  const model = document.getElementById('f-model').value.trim();
+  const modelInput = document.getElementById('f-model').value.trim();
+  const modelSel   = document.getElementById('f-model-sel') ? document.getElementById('f-model-sel').value.trim() : '';
+  const model = modelInput || modelSel;
   if (!code || !model) { showToast('กรุณากรอก รหัส และ รุ่น', true); return; }
+  // sync back to f-model
+  document.getElementById('f-model').value = model;
 
   const device = {
     id:           Date.now(),
