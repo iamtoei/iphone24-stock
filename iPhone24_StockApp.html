@@ -1526,8 +1526,10 @@ function selectGrade(btn, grade) {
 }
 
 function updateBat(v) {
-  document.getElementById('bat-val').textContent = v + '%';
+  var valEl = document.getElementById('bat-val');
+  if (valEl) valEl.textContent = v + '%';
   const fill = document.getElementById('bat-fill');
+  if (!fill) return;
   fill.style.width = v + '%';
   fill.style.background = v >= 80 ? 'var(--green)' : v >= 50 ? 'var(--amber)' : 'var(--red)';
 }
@@ -1552,22 +1554,28 @@ function saveDevice() {
   if (!code || !model) { showToast('กรุณากรอก รหัส และ รุ่น', true); return; }
 
   const device = {
-    id:      Date.now(),
+    id:           Date.now(),
     code,
-    source:  document.getElementById('f-source').value.trim(),
+    source:       document.getElementById('f-source').value.trim(),
     model,
-    storage: document.getElementById('f-storage').value.trim(),
-    color:   document.getElementById('f-color').value.trim(),
-    sn:      document.getElementById('f-sn').value.trim(),
-    type:    document.getElementById('f-type').value,
-    cost:    parseFloat(document.getElementById('f-cost').value) || 0,
-    branch:  document.getElementById('f-branch').value,
-    date:    document.getElementById('f-date').value || new Date().toISOString().split('T')[0],
-    grade:   selectedGrade || document.getElementById('f-grade').value || '-',
-    bat:     parseInt(document.getElementById('f-bat').value),
-    note:    document.getElementById('f-note').value.trim(),
-    status:  '⏳ รอเช็ค',
-    statusKey: 'ของถึง',
+    storage:      document.getElementById('f-storage').value.trim(),
+    color:        document.getElementById('f-color').value.trim(),
+    sn:           document.getElementById('f-sn').value.trim(),
+    type:         document.getElementById('f-type').value,
+    cost:         parseFloat(document.getElementById('f-cost').value) || 0,
+    branch:       document.getElementById('f-branch').value,
+    date:         document.getElementById('f-date').value || new Date().toISOString().split('T')[0],
+    grade:        selectedGrade || document.getElementById('f-grade').value || '-',
+    bat:          parseInt(document.getElementById('f-bat').value) || 0,
+    cc:           document.getElementById('f-cc') ? document.getElementById('f-cc').value.trim() : '',
+    batSt:        document.getElementById('f-bat-st') ? document.getElementById('f-bat-st').value : '',
+    screen:       document.getElementById('f-screen') ? document.getElementById('f-screen').value.trim() : '',
+    body:         document.getElementById('f-body') ? document.getElementById('f-body').value.trim() : '',
+    warranty:     document.getElementById('f-warranty') ? document.getElementById('f-warranty').value : '',
+    warrantyDate: document.getElementById('f-warranty-date') ? document.getElementById('f-warranty-date').value.trim() : '',
+    note:         document.getElementById('f-note').value.trim(),
+    status:       '⏳ รอเช็ค',
+    statusKey:    'ของถึง',
   };
 
   // ถ้ามีเกรดถือว่าเช็คแล้ว
