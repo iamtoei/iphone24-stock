@@ -524,6 +524,10 @@ input[type=range] { accent-color:#007aff; width:100%; }
     <button class="nav-item" onclick="showPage('sell',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:transparent;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:400;color:#3a3a3c;margin-bottom:2px;">
       <span style="font-size:15px;width:22px;text-align:center;">↗</span> ขาย
     </button>
+    <button class="nav-item" onclick="showPage('review',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:transparent;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:400;color:#3a3a3c;margin-bottom:2px;">
+      <span style="font-size:15px;width:22px;text-align:center;">🔍</span> ตรวจเอกสาร
+      <span id="nav-review-count" style="margin-left:auto;background:#ff9500;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;display:none;">0</span>
+    </button>
     <button class="nav-item" onclick="showPage('installment',this)" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;width:100%;text-align:left;border:none;background:transparent;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:400;color:#3a3a3c;margin-bottom:2px;">
       <span style="font-size:15px;width:22px;text-align:center;">📋</span> ผ่อนชำระ
     </button>
@@ -1034,6 +1038,56 @@ input[type=range] { accent-color:#007aff; width:100%; }
     </div>
   </div>
 
+  <!-- REVIEW DOCUMENTS -->
+  <div class="page" id="page-review" style="display:none;">
+
+    <!-- Header stats -->
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div style="flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:14px 16px;">
+        <div style="font-size:11px;color:#8e8e93;font-weight:500;margin-bottom:6px;">รอพิจารณา</div>
+        <div id="rv-count-wait" style="font-size:26px;font-weight:700;color:#ff9500;letter-spacing:-1px;">0</div>
+      </div>
+      <div style="flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:14px 16px;">
+        <div style="font-size:11px;color:#8e8e93;font-weight:500;margin-bottom:6px;">อนุมัติแล้ว</div>
+        <div id="rv-count-pass" style="font-size:26px;font-weight:700;color:#34c759;letter-spacing:-1px;">0</div>
+      </div>
+      <div style="flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:14px 16px;">
+        <div style="font-size:11px;color:#8e8e93;font-weight:500;margin-bottom:6px;">ยกเลิก</div>
+        <div id="rv-count-cancel" style="font-size:26px;font-weight:700;color:#ff3b30;letter-spacing:-1px;">0</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:14px 16px;display:flex;align-items:center;">
+        <button onclick="loadReviewData()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#1d1d1f;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+          ↻ รีเฟรช
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div style="background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;">
+      <div style="display:flex;border-bottom:1px solid #f2f2f7;overflow-x:auto;">
+        <button class="branch-tab active" onclick="setReviewFilter('all',this)" style="padding:10px 16px;font-size:13px;font-weight:600;color:#1d1d1f;cursor:pointer;border-bottom:2px solid #1d1d1f;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ทั้งหมด</button>
+        <button class="branch-tab" onclick="setReviewFilter('รอพิจารณา',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:#8e8e93;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">รอพิจารณา</button>
+        <button class="branch-tab" onclick="setReviewFilter('ผ่าน',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:#8e8e93;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">อนุมัติแล้ว</button>
+        <button class="branch-tab" onclick="setReviewFilter('ยกเลิก',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:#8e8e93;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ยกเลิก</button>
+      </div>
+
+      <!-- Loading state -->
+      <div id="rv-loading" style="padding:40px;text-align:center;color:#8e8e93;display:none;">
+        <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+        <div style="font-size:13px;">กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="rv-empty" style="padding:48px;text-align:center;color:#8e8e93;">
+        <div style="font-size:32px;margin-bottom:10px;">📋</div>
+        <div style="font-size:13px;">กดรีเฟรชเพื่อโหลดข้อมูลจาก Google Form</div>
+      </div>
+
+      <!-- List -->
+      <div id="rv-list" style="display:none;"></div>
+    </div>
+  </div>
+
   <!-- INSTALLMENT -->
   <div class="page" id="page-installment" style="display:none;">
     <div class="inst-stats" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;">
@@ -1381,11 +1435,12 @@ function showPage(id, navBtn) {
     navBtn.style.color = '#1d1d1f';
   }
   // Page title
-  var titles = {dashboard:'Dashboard',stock:'Stock',receive:'รับเครื่องเข้า',sell:'ขาย',installment:'ผ่อนชำระ'};
+  var titles = {dashboard:'Dashboard',stock:'Stock',receive:'รับเครื่องเข้า',sell:'ขาย',installment:'ผ่อนชำระ',review:'ตรวจเอกสาร'};
   var el = document.getElementById('page-title');
   if (el) el.textContent = titles[id] || id;
   currentPage = id;
   if (id === 'stock') { renderStockTable(); renderAlerts(); }
+  if (id === 'review') { if (reviewData.length === 0) {} }
   if (id === 'dashboard') renderDashboard();
   if (id === 'sell') { renderSellDeviceList(); renderSalesHistory(); var sd = document.getElementById('s-date'); if(sd) sd.value = new Date().toISOString().split('T')[0]; }
   if (id === 'installment') renderInstallmentList();
@@ -2666,6 +2721,356 @@ function printReceipt() {
 </div>
 </body></html>`);
   w.document.close();
+}
+
+
+// ══════════════════════════════════════
+//  REVIEW DOCUMENTS (ตรวจเอกสาร)
+// ══════════════════════════════════════
+var reviewData = [];
+var reviewFilter = 'all';
+
+function loadReviewData() {
+  if (!APPS_SCRIPT_EXEC_URL) {
+    showToast('กรุณาตั้งค่า APPS_SCRIPT_EXEC_URL ก่อนค่ะ', true);
+    return;
+  }
+  var el = document.getElementById('rv-loading');
+  var empty = document.getElementById('rv-empty');
+  var list = document.getElementById('rv-list');
+  if (el) el.style.display = 'block';
+  if (empty) empty.style.display = 'none';
+  if (list) list.style.display = 'none';
+
+  fetch(APPS_SCRIPT_EXEC_URL + '?action=getReviewList', { method: 'GET' })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (el) el.style.display = 'none';
+      if (res && res.ok && res.data) {
+        reviewData = res.data;
+        renderReviewList();
+        updateReviewStats();
+      } else {
+        showToast('โหลดข้อมูลไม่สำเร็จ: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'), true);
+        if (empty) empty.style.display = 'block';
+      }
+    })
+    .catch(function(err) {
+      if (el) el.style.display = 'none';
+      if (empty) { empty.style.display = 'block'; empty.querySelector('div:last-child').textContent = '❌ ' + err.message; }
+      showToast('เชื่อมต่อ Apps Script ไม่ได้: ' + err.message, true);
+    });
+}
+
+function updateReviewStats() {
+  var wait   = reviewData.filter(function(r) { return r.status === 'รอพิจารณา'; }).length;
+  var pass   = reviewData.filter(function(r) { return r.status === 'ผ่าน'; }).length;
+  var cancel = reviewData.filter(function(r) { return r.status === 'ยกเลิก'; }).length;
+  document.getElementById('rv-count-wait').textContent   = wait;
+  document.getElementById('rv-count-pass').textContent   = pass;
+  document.getElementById('rv-count-cancel').textContent = cancel;
+  // Nav badge
+  var badge = document.getElementById('nav-review-count');
+  if (badge) {
+    badge.textContent = wait;
+    badge.style.display = wait > 0 ? 'inline-block' : 'none';
+  }
+}
+
+function setReviewFilter(f, btn) {
+  reviewFilter = f;
+  document.querySelectorAll('#page-review .branch-tab').forEach(function(b) {
+    b.style.color = '#8e8e93';
+    b.style.borderBottomColor = 'transparent';
+    b.style.fontWeight = '500';
+  });
+  if (btn) {
+    btn.style.color = '#1d1d1f';
+    btn.style.borderBottomColor = '#1d1d1f';
+    btn.style.fontWeight = '600';
+  }
+  renderReviewList();
+}
+
+function renderReviewList() {
+  var list = document.getElementById('rv-list');
+  var empty = document.getElementById('rv-empty');
+  if (!list) return;
+
+  var filtered = reviewFilter === 'all' ? reviewData
+    : reviewData.filter(function(r) { return r.status === reviewFilter; });
+
+  if (!filtered.length) {
+    list.style.display = 'none';
+    empty.style.display = 'block';
+    empty.querySelector('div:last-child').textContent = 'ไม่มีรายการในหมวดนี้';
+    return;
+  }
+  empty.style.display = 'none';
+  list.style.display = 'block';
+
+  list.innerHTML = filtered.map(function(r, i) {
+    var statusColor = r.status === 'รอพิจารณา' ? '#ff9500' : r.status === 'ผ่าน' ? '#34c759' : '#ff3b30';
+    var statusBg    = r.status === 'รอพิจารณา' ? '#fff4e6' : r.status === 'ผ่าน' ? '#e8f8ec' : '#fdecea';
+    var canApprove  = r.status === 'รอพิจารณา';
+    return '<div style="border-bottom:1px solid #f2f2f7;padding:14px 18px;">' +
+      '<div style="display:flex;align-items:flex-start;gap:12px;">' +
+        '<div style="width:38px;height:38px;border-radius:10px;background:#f5f5f7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👤</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
+            '<div style="font-size:14px;font-weight:600;color:#1d1d1f;">' + (r.name||'ไม่ระบุ') + '</div>' +
+            '<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:' + statusBg + ';color:' + statusColor + ';">' + (r.status||'-') + '</span>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:12px;color:#3a3a3c;margin-bottom:8px;">' +
+            '<div>📱 ' + (r.phone||'-') + '</div>' +
+            '<div>🪪 ' + (r.idcard ? r.idcard.replace(/(\d{1})(\d{4})(\d{5})(\d{2})(\d{1})/, '$1-$2-$3-$4-$5') : '-') + '</div>' +
+            '<div>🏠 ' + (r.addr ? r.addr.substring(0,30)+(r.addr.length>30?'...':'') : '-') + '</div>' +
+            '<div>📅 ' + (r.submitDate||'-') + '</div>' +
+          '</div>' +
+          // บุคคลอ้างอิง
+          '<div style="background:#f5f5f7;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#3a3a3c;">' +
+            '<div style="font-weight:600;color:#8e8e93;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;font-size:10px;">บุคคลอ้างอิง</div>' +
+            '<div style="display:flex;gap:16px;flex-wrap:wrap;">' +
+              (r.ref1Name ? '<div>1. ' + r.ref1Name + ' (' + (r.ref1Rel||'-') + ') ' + (r.ref1Phone||'') + '</div>' : '') +
+              (r.ref2Name ? '<div>2. ' + r.ref2Name + ' (' + (r.ref2Rel||'-') + ') ' + (r.ref2Phone||'') + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+          // Action buttons
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            (canApprove ?
+              '<button onclick="approveAndSelectDevice(' + i + ')" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#34c759;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">✓ อนุมัติ + เลือกเครื่อง</button>' : '') +
+            (canApprove ?
+              '<button onclick="cancelReview(' + i + ')" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#fdecea;border:1px solid #f5c6c6;color:#c0392b;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">✕ ยกเลิก</button>' : '') +
+            (r.contractUrl ? '<a href="' + r.contractUrl + '" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;background:#e8f0fe;color:#1a56db;">📄 ดูสัญญา</a>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── อนุมัติ → เลือกเครื่อง Modal ─────────────────────────────────────────
+function approveAndSelectDevice(idx) {
+  var r = reviewData[idx];
+  if (!r) return;
+
+  // สร้าง modal เลือกเครื่อง
+  var existing = document.getElementById('approve-modal');
+  if (existing) existing.remove();
+
+  var availDevices = devices.filter(function(d) { return d.statusKey === 'พร้อมขาย'; });
+  var deviceOptions = availDevices.length === 0
+    ? '<div style="padding:20px;text-align:center;color:#8e8e93;font-size:13px;">ไม่มีเครื่องพร้อมขาย</div>'
+    : availDevices.map(function(d, di) {
+        var isSelected = (approveSelectedDeviceIdx === di);
+        var rowBg  = isSelected ? '#f0f7ff' : '#fff';
+        var chkBg  = isSelected ? '#007aff' : '';
+        var chkBdr = isSelected ? '#007aff' : '#e5e5ea';
+        var chkTxt = isSelected ? '✓'       : '';
+        return '<div onclick="selectApproveDevice(' + di + ')" id="approve-dev-' + di + '" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;border-bottom:1px solid #f2f2f7;background:' + rowBg + ';">' +
+          '<div style="width:32px;text-align:center;font-size:18px;">' + deviceEmoji(d.model) + '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:13px;font-weight:500;">' + (d.model||'') + ' ' + (d.storage||'') + '</div>' +
+            '<div style="font-size:11px;color:#8e8e93;font-family:SF Mono,Courier New,monospace;margin-top:1px;">' + (d.code||'') + ' · ' + (d.color||'') + ' · เกรด ' + (d.grade||'') + ' · แบต ' + (d.bat||'') + '%</div>' +
+          '</div>' +
+          '<div style="text-align:right;">' +
+            '<div style="font-size:13px;font-weight:600;font-family:SF Mono,Courier New,monospace;">' + (d.cost ? d.cost.toLocaleString() : '-') + ' ฿</div>' +
+            '<div style="font-size:10px;color:#8e8e93;">ราคาทุน</div>' +
+          '</div>' +
+          '<div id="approve-check-' + di + '" style="width:20px;height:20px;border-radius:50%;border:2px solid ' + chkBdr + ';background:' + chkBg + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">' + chkTxt + '</div>' +
+        '</div>';
+      }).join('');
+
+  var modal = document.createElement('div');
+  modal.id = 'approve-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:18px;width:580px;max-width:94vw;max-height:90vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+      <div style="font-size:17px;font-weight:700;margin-bottom:2px;">อนุมัติคำขอผ่อนชำระ</div>
+      <div style="font-size:13px;color:#8e8e93;margin-bottom:16px;">${r.name} · ${r.phone||''}</div>
+
+      <!-- ข้อมูลการผ่อน -->
+      <div style="background:#f5f5f7;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">กำหนดเงื่อนไขการผ่อน</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:10px;font-weight:600;color:#8e8e93;text-transform:uppercase;">ราคาขาย (฿)</label>
+            <input id="ap-price" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;font-weight:600;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;" oninput="calcApproveInstallment()">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:10px;font-weight:600;color:#8e8e93;text-transform:uppercase;">เงินดาวน์ (฿)</label>
+            <input id="ap-down" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;font-weight:600;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;" oninput="calcApproveInstallment()">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:10px;font-weight:600;color:#8e8e93;text-transform:uppercase;">ค่างวด/เดือน (฿)</label>
+            <input id="ap-monthly" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;font-weight:600;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;" oninput="calcApproveInstallment()">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:10px;font-weight:600;color:#8e8e93;text-transform:uppercase;">จำนวนงวด (เดือน)</label>
+            <input id="ap-months" type="number" placeholder="12" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;font-weight:600;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;" oninput="calcApproveInstallment()">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:10px;font-weight:600;color:#8e8e93;text-transform:uppercase;">ชำระทุกวันที่</label>
+            <input id="ap-payday" type="number" placeholder="5" min="1" max="28" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:10px;font-weight:600;color:#8e8e93;text-transform:uppercase;">เริ่มชำระวันที่</label>
+            <input id="ap-startdate" type="date" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">
+          </div>
+        </div>
+        <div id="ap-summary" style="margin-top:10px;font-size:12px;color:#8e8e93;text-align:right;"></div>
+      </div>
+
+      <!-- เลือกเครื่อง -->
+      <div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">เลือกเครื่องที่จะให้ลูกค้า</div>
+      <div style="border:1px solid #e5e5ea;border-radius:10px;overflow:hidden;max-height:220px;overflow-y:auto;margin-bottom:14px;">
+        ${deviceOptions}
+      </div>
+
+      <input type="hidden" id="ap-selected-device-idx" value="">
+      <div id="ap-status" style="font-size:13px;color:#8e8e93;margin-bottom:12px;min-height:18px;"></div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px;border-top:1px solid #f2f2f7;">
+        <button onclick="document.getElementById('approve-modal').remove()" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">ยกเลิก</button>
+        <button onclick="confirmApprove(${idx})" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#34c759;border:none;color:#fff;font-family:-apple-system,Helvetica Neue,Arial,sans-serif;">✓ อนุมัติ + ตัดขาย + ออกเอกสาร</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+var approveSelectedDeviceIdx = null;
+
+function selectApproveDevice(di) {
+  approveSelectedDeviceIdx = di;
+  // Reset all
+  document.querySelectorAll('[id^="approve-check-"]').forEach(function(el) {
+    el.style.background = '';
+    el.style.borderColor = '#e5e5ea';
+    el.textContent = '';
+  });
+  document.querySelectorAll('[id^="approve-dev-"]').forEach(function(el) {
+    el.style.background = '#fff';
+  });
+  // Highlight selected
+  var check = document.getElementById('approve-check-' + di);
+  var row   = document.getElementById('approve-dev-' + di);
+  if (check) { check.style.background = '#007aff'; check.style.borderColor = '#007aff'; check.textContent = '✓'; check.style.color = '#fff'; }
+  if (row)   { row.style.background = '#f0f7ff'; }
+}
+
+function calcApproveInstallment() {
+  var price   = parseFloat(document.getElementById('ap-price').value)   || 0;
+  var down    = parseFloat(document.getElementById('ap-down').value)    || 0;
+  var monthly = parseFloat(document.getElementById('ap-monthly').value) || 0;
+  var months  = parseFloat(document.getElementById('ap-months').value)  || 0;
+  var el = document.getElementById('ap-summary');
+  if (!el) return;
+  if (price && down !== undefined && monthly && months) {
+    var remaining = price - down;
+    el.textContent = 'ยอดผ่อน ' + remaining.toLocaleString() + ' ฿ · รวมทั้งสิ้น ' + (down + monthly * months).toLocaleString() + ' ฿';
+  }
+}
+
+function cancelReview(idx) {
+  var r = reviewData[idx];
+  if (!r || !confirm('ยืนยันการยกเลิกคำขอของ ' + r.name + '?')) return;
+
+  fetch(APPS_SCRIPT_EXEC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'updateReviewStatus', payload: { row: r.row, status: 'ยกเลิก' } }),
+    mode: 'cors'
+  }).then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res && res.ok) {
+        showToast('ยกเลิกคำขอแล้วค่ะ');
+        loadReviewData();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : ''), true);
+      }
+    }).catch(function(e) { showToast('เชื่อมต่อไม่ได้: ' + e.message, true); });
+}
+
+function confirmApprove(idx) {
+  var r = reviewData[idx];
+  if (!r) return;
+  if (approveSelectedDeviceIdx === null) {
+    showToast('กรุณาเลือกเครื่องก่อนค่ะ', true);
+    return;
+  }
+
+  var price   = parseFloat(document.getElementById('ap-price').value)   || 0;
+  var down    = parseFloat(document.getElementById('ap-down').value)    || 0;
+  var monthly = parseFloat(document.getElementById('ap-monthly').value) || 0;
+  var months  = parseFloat(document.getElementById('ap-months').value)  || 12;
+  var payday  = document.getElementById('ap-payday').value;
+  var startdate = document.getElementById('ap-startdate').value;
+
+  if (!price) { showToast('กรุณากรอกราคาขายค่ะ', true); return; }
+
+  var d = devices.filter(function(x) { return x.statusKey === 'พร้อมขาย'; })[approveSelectedDeviceIdx];
+  if (!d) { showToast('ไม่พบเครื่องที่เลือก', true); return; }
+
+  var statusEl = document.getElementById('ap-status');
+  statusEl.textContent = '⏳ กำลังดำเนินการ...';
+
+  // 1. ตัดขายใน Web App
+  d.statusKey = 'ขายแล้ว';
+  d.soldDate  = new Date().toISOString().split('T')[0];
+  d.soldPrice = price;
+  d.soldTo    = r.name;
+  saveToStorage();
+  renderDashboard();
+
+  // 2. เรียก Apps Script สร้างสัญญา + อัปเดตสถานะ
+  var payload = {
+    action: 'approveContract',
+    payload: {
+      row:          r.row,
+      contractNo:   d.code,
+      customerName: r.name,
+      customerPhone:  r.phone    || '',
+      customerIdcard: r.idcard   || '',
+      customerAge:    r.age      || '',
+      customerAddr:   r.addr     || '',
+      ref1Name:  r.ref1Name  || '', ref1Rel:  r.ref1Rel  || '', ref1Phone: r.ref1Phone || '',
+      ref2Name:  r.ref2Name  || '', ref2Rel:  r.ref2Rel  || '', ref2Phone: r.ref2Phone || '',
+      deviceCode: d.code, model: d.model, storage: d.storage||'',
+      color: d.color||'', sn: d.sn||'', imei: d.sn||'', grade: d.grade||'',
+      price: price, down: down, monthly: monthly, months: months,
+      payDay: payday, startDate: startdate,
+    }
+  };
+
+  fetch(APPS_SCRIPT_EXEC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload),
+    mode: 'cors'
+  }).then(function(res) { return res.json(); })
+    .then(function(res) {
+      if (res && res.ok && res.data) {
+        statusEl.innerHTML = '✅ เรียบร้อย! ' +
+          '<a href="' + res.data.contractUrl + '" target="_blank" style="color:#007aff;font-weight:600;">📄 สัญญา</a>' +
+          ' · <a href="' + res.data.contractPdf + '" target="_blank" style="color:#34c759;font-weight:600;">PDF</a>';
+        showToast('อนุมัติ + สร้างสัญญาเรียบร้อย ✓');
+        // Auto print receipt
+        lastSale = { deviceCode: d.code, model: d.model, customer: r.name,
+          phone: r.phone||'', price: price, down: down, monthly: monthly,
+          months: months, type: 'installment', device: d, staff: '', channel: 'ผ่อน' };
+        setTimeout(function() { printReceipt(); }, 800);
+        loadReviewData();
+      } else {
+        statusEl.textContent = '❌ ' + (res ? res.error : 'ไม่ทราบสาเหตุ');
+        // Rollback
+        d.statusKey = 'พร้อมขาย'; delete d.soldDate; delete d.soldPrice; delete d.soldTo;
+        saveToStorage();
+      }
+    }).catch(function(e) {
+      statusEl.textContent = '❌ เชื่อมต่อไม่ได้: ' + e.message;
+      d.statusKey = 'พร้อมขาย'; delete d.soldDate; delete d.soldPrice; delete d.soldTo;
+      saveToStorage();
+    });
 }
 
 </script>
