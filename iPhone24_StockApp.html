@@ -862,8 +862,10 @@ function localFallback(action, data) {
 window.onload = function() {
   setTodayDate();
   initBranches();
-  loadStock();
+  loadStock(true);  // silent — show cache first, sync background
   updateChecklistSection('iPhone');
+  // preload review in background after 2s
+  setTimeout(function(){ loadReview(true); }, 2000);
 };
 
 function setTodayDate() {
@@ -917,22 +919,30 @@ function showPage(id) {
 // ===================================================================
 //  LOAD STOCK FROM SERVER
 // ===================================================================
-function loadStock() {
-  document.getElementById('sync-btn').textContent = '⟳ กำลังโหลด...';
+function loadStock(silent) {
+  // แสดง cache ทันที
+  try {
+    var cached = localStorage.getItem('ip24_devices');
+    if (cached) {
+      devices = JSON.parse(cached);
+      renderDashboard(); renderStock(); renderSellList(); updateBadges();
+    }
+  } catch(e) {}
+
+  if (!silent) document.getElementById('sync-btn').textContent = '⟳ กำลังโหลด...';
   api('getStock').then(function(data) {
     devices = data || [];
-    renderDashboard();
-    renderStock();
-    renderSellList();
-    updateBadges();
+    try { localStorage.setItem('ip24_devices', JSON.stringify(devices)); } catch(e) {}
+    renderDashboard(); renderStock(); renderSellList(); updateBadges();
     document.getElementById('sync-btn').textContent = '⟳ ซิงค์';
+    if (!silent) showToast('อัพเดต Stock แล้ว ✓');
   }).catch(function(e) {
-    showToast('โหลด Stock ไม่ได้: ' + e.message, true);
     document.getElementById('sync-btn').textContent = '⟳ ซิงค์';
+    if (!silent) showToast('โหลดไม่ได้: ' + e.message, true);
   });
 }
 
-function syncFromServer() { loadStock(); }
+function syncFromServer() { loadStock(false); }
 
 // ===================================================================
 //  DASHBOARD
@@ -1805,17 +1815,33 @@ function getWarrantyText(grade, type) {
 // ===================================================================
 //  REVIEW
 // ===================================================================
-function loadReview() {
-  document.getElementById('review-list').innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">กำลังโหลด...</div></div>';
+function loadReview(silent) {
+  // แสดง cache ก่อน
+  try {
+    var cached = localStorage.getItem('ip24_review');
+    if (cached) {
+      reviewData = JSON.parse(cached);
+      renderReview(); updateReviewBadges();
+    } else {
+      document.getElementById('review-list').innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">กำลังโหลด...</div></div>';
+    }
+  } catch(e) {
+    document.getElementById('review-list').innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">กำลังโหลด...</div></div>';
+  }
   api('getReviewList').then(function(data) {
     reviewData = data || [];
-    renderReview();
-    var wait = reviewData.filter(function(r){ return r.status === 'รอพิจารณา'; }).length;
-    document.getElementById('review-badge').textContent = wait;
-    document.getElementById('rv-wait').textContent   = wait;
-    document.getElementById('rv-ok').textContent     = reviewData.filter(function(r){ return r.status === 'ผ่าน'; }).length;
-    document.getElementById('rv-cancel').textContent = reviewData.filter(function(r){ return r.status === 'ยกเลิก'; }).length;
-  }).catch(function(e){ showToast('โหลดไม่ได้: '+e.message, true); });
+    try { localStorage.setItem('ip24_review', JSON.stringify(reviewData)); } catch(e) {}
+    renderReview(); updateReviewBadges();
+    if (!silent) showToast('อัพเดตเอกสารแล้ว ✓');
+  }).catch(function(e){ if(!silent) showToast('โหลดไม่ได้: '+e.message, true); });
+}
+
+function updateReviewBadges() {
+  var wait = reviewData.filter(function(r){ return r.status === 'รอพิจารณา'; }).length;
+  document.getElementById('review-badge').textContent = wait;
+  document.getElementById('rv-wait').textContent   = wait;
+  document.getElementById('rv-ok').textContent     = reviewData.filter(function(r){ return r.status === 'ผ่าน'; }).length;
+  document.getElementById('rv-cancel').textContent = reviewData.filter(function(r){ return r.status === 'ยกเลิก'; }).length;
 }
 
 function renderReview() {
