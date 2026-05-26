@@ -308,15 +308,69 @@ input[type=range]{accent-color:#007aff;width:100%;}
         </div>
       </div>
       <div class="branch-grid" id="branch-grid"></div>
-      <div class="card">
+
+      <!-- ต้นทุน Stock แยกประเภท -->
+      <div class="card" style="margin-bottom:18px;">
         <div class="card-header">
-          <span class="card-title">รับเข้าล่าสุด</span>
-          <span class="card-count" id="d-recent-count"></span>
+          <span class="card-title">💰 ต้นทุน Stock (เฉพาะยังไม่ขาย)</span>
+          <span class="card-count" id="d-cost-total" style="font-size:13px;font-weight:700;color:#1d1d1f;"></span>
         </div>
-        <table>
-          <thead><tr><th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th></tr></thead>
-          <tbody id="d-recent-tbody"></tbody>
-        </table>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;" id="d-cost-grid">
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;">
+            <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">📱 iPhone</div>
+            <div style="font-size:16px;font-weight:700;color:#1d1d1f;" id="dc-iphone">-</div>
+            <div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-iphone"></div>
+          </div>
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;">
+            <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">📱 iPad</div>
+            <div style="font-size:16px;font-weight:700;color:#1d1d1f;" id="dc-ipad">-</div>
+            <div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-ipad"></div>
+          </div>
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;">
+            <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">💻 Mac</div>
+            <div style="font-size:16px;font-weight:700;color:#1d1d1f;" id="dc-mac">-</div>
+            <div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-mac"></div>
+          </div>
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;">
+            <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">⌚ Watch</div>
+            <div style="font-size:16px;font-weight:700;color:#1d1d1f;" id="dc-watch">-</div>
+            <div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-watch"></div>
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">🎧 Acc</div>
+            <div style="font-size:16px;font-weight:700;color:#1d1d1f;" id="dc-acc">-</div>
+            <div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-acc"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import Excel + Recent -->
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">รับเข้าล่าสุด</span>
+            <span class="card-count" id="d-recent-count"></span>
+          </div>
+          <table>
+            <thead><tr><th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th></tr></thead>
+            <tbody id="d-recent-tbody"></tbody>
+          </table>
+        </div>
+        <div>
+          <!-- Import Excel Card -->
+          <div class="card" style="padding:16px;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px;">📥 นำเข้า Stock จาก Excel</div>
+            <div style="font-size:11px;color:#8e8e93;margin-bottom:12px;">อัพโหลดไฟล์ .xlsx / .csv</div>
+            <input type="file" id="import-file" accept=".xlsx,.csv" style="display:none;" onchange="handleImportFile(this)">
+            <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-bottom:8px;" onclick="document.getElementById('import-file').click()">
+              📂 เลือกไฟล์ Excel / CSV
+            </button>
+            <button class="btn btn-secondary" style="width:100%;justify-content:center;font-size:12px;" onclick="showImportGuide()">
+              📋 ดูวิธีสร้างไฟล์ Excel
+            </button>
+            <div id="import-status" style="margin-top:10px;font-size:12px;"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -359,7 +413,21 @@ input[type=range]{accent-color:#007aff;width:100%;}
     <div class="page" id="page-receive">
       <div class="receive-layout">
         <div class="card" style="padding:20px;">
-          <div style="font-size:15px;font-weight:600;margin-bottom:18px;">รับเครื่องเข้าระบบ</div>
+          <!-- Mode Tabs -->
+          <div class="mode-tabs" style="margin-bottom:18px;max-width:400px;">
+            <button class="mode-tab active" id="rc-tab-new" onclick="setReceiveMode('new',this)">📥 รับเครื่องใหม่</button>
+            <button class="mode-tab" id="rc-tab-check" onclick="setReceiveMode('check',this)">🔍 เช็คละเอียด</button>
+          </div>
+          <!-- MC Lookup (แสดงเฉพาะโหมดเช็คละเอียด) -->
+          <div id="rc-lookup-bar" style="display:none;background:#f5f5f7;border-radius:12px;padding:14px;margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:600;color:#8e8e93;margin-bottom:8px;">กรอกรหัสเครื่องที่ต้องการเช็คละเอียด</div>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="rc-lookup-mc" placeholder="MC-XXXX" oninput="this.value=this.value.toUpperCase()" style="flex:1;padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;">
+              <button class="btn btn-primary" onclick="lookupForCheck()">ดึงข้อมูล →</button>
+            </div>
+            <div id="rc-lookup-result" style="margin-top:8px;font-size:12px;color:#8e8e93;"></div>
+          </div>
+          <div id="rc-form-title" style="font-size:15px;font-weight:600;margin-bottom:18px;">รับเครื่องเข้าระบบ</div>
           <div class="form-grid">
             <div class="field">
               <label>รหัส STOCK *</label>
@@ -508,7 +576,7 @@ input[type=range]{accent-color:#007aff;width:100%;}
           </div>
           <div style="margin-top:16px;display:flex;gap:8px;">
             <button class="btn btn-secondary" onclick="clearReceive()">ล้าง</button>
-            <button class="btn btn-primary" onclick="saveReceive()">บันทึกเครื่อง →</button>
+            <button class="btn btn-primary" id="rc-save-btn" onclick="saveReceive()">บันทึกเครื่อง →</button>
           </div>
         </div>
         <div>
@@ -911,9 +979,184 @@ function renderDashboard() {
       +'<td>'+statusBadge(d.statusKey)+'</td></tr>';
   }).join('') : '<tr><td colspan="6" style="text-align:center;color:#8e8e93;padding:20px;">ยังไม่มีข้อมูล</td></tr>';
   document.getElementById('d-recent-count').textContent = recent.length + ' รายการล่าสุด';
+
+  // Cost breakdown by type (exclude ขายแล้ว)
+  var unsold = list.filter(function(d){ return d.statusKey !== 'ขายแล้ว' && d.statusKey !== 'ลบแล้ว'; });
+  var types = {
+    iphone : { kw:'iphone', id:'iphone', label:'iPhone' },
+    ipad   : { kw:'ipad',   id:'ipad',   label:'iPad' },
+    mac    : { kw:'mac',    id:'mac',    label:'Mac' },
+    watch  : { kw:'watch',  id:'watch',  label:'Watch' },
+    acc    : { kw:'airpods|acc|pencil|android', id:'acc', label:'Acc' },
+  };
+  var totalCost = 0;
+  Object.keys(types).forEach(function(t) {
+    var kws = types[t].kw.split('|');
+    var items = unsold.filter(function(d) {
+      var ml = (d.model||'').toLowerCase() + ' ' + (d.type||'').toLowerCase();
+      return kws.some(function(k){ return ml.includes(k); });
+    });
+    var cost = items.reduce(function(s,d){ return s + (Number(d.cost)||0); }, 0);
+    totalCost += cost;
+    var el = document.getElementById('dc-'+types[t].id);
+    var elc = document.getElementById('dcc-'+types[t].id);
+    if (el) el.textContent = cost > 0 ? fmtB(cost) : '-';
+    if (elc) elc.textContent = items.length + ' เครื่อง';
+  });
+  var totalEl = document.getElementById('d-cost-total');
+  if (totalEl) totalEl.textContent = 'รวม ' + fmtB(totalCost);
 }
 
 function applyBranchFilter() { renderDashboard(); renderStock(); renderSellList(); }
+
+function fmtB(n) {
+  if (!n) return '0 ฿';
+  if (n >= 1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M ฿';
+  if (n >= 1000)    return (n/1000).toFixed(1).replace(/\.0$/,'') + 'K ฿';
+  return n.toLocaleString() + ' ฿';
+}
+
+// ===================================================================
+//  IMPORT EXCEL / CSV
+// ===================================================================
+function showImportGuide() {
+  var modal = document.getElementById('modal-device');
+  modal.innerHTML = '<div class="modal-title">📋 วิธีสร้างไฟล์ Excel สำหรับนำเข้า Stock</div>'
+    + '<div class="modal-sub">ไฟล์ .xlsx หรือ .csv — แถวแรกเป็นหัวคอลัมน์</div>'
+    + '<div style="overflow-x:auto;margin-bottom:14px;">'
+    + '<table style="font-size:11px;border-collapse:collapse;width:100%;">'
+    + '<thead><tr style="background:#1d1d1f;color:#fff;">'
+    + ['คอลัมน์','ชื่อหัวคอลัมน์','ตัวอย่าง','หมายเหตุ'].map(function(h){
+        return '<th style="padding:6px 10px;text-align:left;white-space:nowrap;">'+h+'</th>';
+      }).join('')
+    + '</tr></thead><tbody>'
+    + [
+        ['A','code','MC-0001','รหัส Stock (จำเป็น)'],
+        ['B','model','iPhone 16 Pro','ชื่อรุ่น (จำเป็น)'],
+        ['C','storage','256GB','ความจุ'],
+        ['D','color','ดำ','สี'],
+        ['E','grade','A+','เกรด A++/A+/A/B/C/D'],
+        ['F','type','มือสอง','มือสอง/มือหนึ่ง/New/Demo'],
+        ['G','cost','18000','ราคาทุน (ตัวเลขเท่านั้น)'],
+        ['H','sn','ABC123XYZ','Serial Number / IMEI'],
+        ['I','branch','สันติธรรม','สาขา'],
+        ['J','source','Maccafe','แหล่งที่มา'],
+        ['K','bat','95','แบตเตอรี่ % (0-100)'],
+        ['L','statusKey','ของถึง','ของถึง/พร้อมขาย/รอเช็ค'],
+        ['M','note','สภาพดี','หมายเหตุ (ไม่บังคับ)'],
+      ].map(function(r, i){
+        return '<tr style="background:'+(i%2?'#fafafa':'#fff')+';">'
+          + r.map(function(c,ci){
+              return '<td style="padding:6px 10px;border-bottom:1px solid #f2f2f7;'+(ci===3?'color:#8e8e93;':'')+'">'+c+'</td>';
+            }).join('')
+          + '</tr>';
+      }).join('')
+    + '</tbody></table></div>'
+    + '<div style="background:#e8f0fe;border-radius:10px;padding:12px 14px;font-size:12px;color:#1a56db;margin-bottom:14px;">'
+    + '<strong>💡 เคล็ดลับ:</strong> ดาวน์โหลดไฟล์ตัวอย่างแล้วแก้ข้อมูล จะง่ายที่สุดครับ'
+    + '</div>'
+    + '<div class="modal-actions">'
+    + '<button class="btn btn-primary" onclick="downloadSampleExcel()">⬇️ ดาวน์โหลด Template Excel</button>'
+    + '<button class="btn btn-secondary" onclick="closeModal(&quot;overlay-device&quot;)">ปิด</button>'
+    + '</div>';
+  document.getElementById('overlay-device').classList.add('open');
+}
+
+function downloadSampleExcel() {
+  var headers = ['code','model','storage','color','grade','type','cost','sn','branch','source','bat','statusKey','note'];
+  var sample = [
+    ['MC-0001','iPhone 16 Pro','256GB','ดำ','A+','มือสอง','18000','SN123456','สันติธรรม','Maccafe','95','ของถึง',''],
+    ['MC-0002','iPhone 15 Pro Max','512GB','ขาว','A','มือสอง','20000','SN789012','แจ่มฟ้า','ลูกค้า','88','พร้อมขาย','มีรอยเล็กน้อย'],
+    ['MC-0003','MacBook Air 13" M2','256GB','Starlight','A+','มือสอง','25000','SN345678','หน้ามอ','Maccafe','100','ของถึง',''],
+  ];
+  var csv = [headers.join(',')].concat(sample.map(function(r){
+    return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+  })).join('');
+  var blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'iPhone24_Stock_Template.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('ดาวน์โหลด Template เรียบร้อย');
+}
+
+function handleImportFile(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var statusEl = document.getElementById('import-status');
+  statusEl.textContent = '⏳ กำลังอ่านไฟล์...';
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var text = e.target.result;
+      // Remove BOM
+      text = text.replace(/^﻿/, '');
+      var lines = text.split(/\r?\n/).filter(function(l){ return l.trim(); });
+      if (lines.length < 2) { statusEl.textContent = '❌ ไม่พบข้อมูลในไฟล์'; return; }
+
+      // Parse CSV
+      function parseCSVLine(line) {
+        var result = [], current = '', inQuote = false;
+        for (var i = 0; i < line.length; i++) {
+          var ch = line[i];
+          if (ch === '"') { inQuote = !inQuote; }
+          else if (ch === ',' && !inQuote) { result.push(current.trim()); current = ''; }
+          else current += ch;
+        }
+        result.push(current.trim());
+        return result;
+      }
+
+      var headers = parseCSVLine(lines[0]).map(function(h){ return h.replace(/^"|"$/g,'').toLowerCase().trim(); });
+      var rows = lines.slice(1).map(function(l){ return parseCSVLine(l); });
+
+      // Map to device objects
+      var imported = rows.map(function(r) {
+        var obj = {};
+        headers.forEach(function(h, i){ obj[h] = (r[i]||'').replace(/^"|"$/g,'').trim(); });
+        return obj;
+      }).filter(function(d){ return d.code || d.model; });
+
+      if (!imported.length) { statusEl.textContent = '❌ ไม่พบข้อมูลที่ถูกต้อง'; return; }
+
+      statusEl.innerHTML = '📦 พบ <strong>'+imported.length+'</strong> รายการ กำลังนำเข้า...';
+
+      // Import one by one
+      var ok = 0, fail = 0;
+      var idx = 0;
+      function importNext() {
+        if (idx >= imported.length) {
+          statusEl.innerHTML = '✅ นำเข้าสำเร็จ <strong>'+ok+'</strong> รายการ'+(fail?' · ล้มเหลว '+fail+' รายการ':'');
+          loadStock();
+          return;
+        }
+        var d = imported[idx++];
+        api('saveDevice', {
+          code     : d.code     || '',
+          model    : d.model    || '',
+          storage  : d.storage  || '',
+          color    : d.color    || '',
+          grade    : d.grade    || '',
+          type     : d.type     || 'มือสอง',
+          cost     : Number(d.cost)||0,
+          sn       : d.sn       || '',
+          branch   : d.branch   || '',
+          source   : d.source   || '',
+          bat      : Number(d.bat)||0,
+          statusKey: d.statuskey || d.status || 'ของถึง',
+          note     : d.note     || '',
+        }).then(function(){ ok++; importNext(); })
+          .catch(function(){ fail++; importNext(); });
+      }
+      importNext();
+    } catch(err) {
+      statusEl.textContent = '❌ อ่านไฟล์ไม่ได้: ' + err.message;
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  input.value = ''; // reset
+}
 
 function updateBadges() {
   document.getElementById('stock-badge').textContent = devices.filter(function(d){ return d.statusKey === 'พร้อมขาย'; }).length;
@@ -1152,6 +1395,144 @@ function clearReceive() {
   updateChecklistSection('iPhone');
 }
 
+// ===================================================================
+//  RECEIVE MODE — รับใหม่ / เช็คละเอียด
+// ===================================================================
+var receiveMode = 'new';
+
+function setReceiveMode(mode, btn) {
+  receiveMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+
+  var lookupBar  = document.getElementById('rc-lookup-bar');
+  var formTitle  = document.getElementById('rc-form-title');
+  var statusSel  = document.getElementById('rc-status');
+
+  if (mode === 'check') {
+    lookupBar.style.display = 'block';
+    formTitle.textContent = '🔍 เช็คละเอียด';
+    if (statusSel) {
+      // default to พร้อมขาย for detail check
+      for (var i=0; i<statusSel.options.length; i++) {
+        if (statusSel.options[i].value === 'พร้อมขาย') { statusSel.selectedIndex = i; break; }
+      }
+    }
+  } else {
+    lookupBar.style.display = 'none';
+    formTitle.textContent = 'รับเครื่องเข้าระบบ';
+    if (statusSel) statusSel.selectedIndex = 0;
+    var saveBtn = document.getElementById('rc-save-btn');
+    if (saveBtn) saveBtn.textContent = 'บันทึกเครื่อง →';
+  }
+  var saveBtn = document.getElementById('rc-save-btn');
+  if (saveBtn) saveBtn.textContent = mode === 'check' ? '✓ บันทึกผลเช็คละเอียด' : 'บันทึกเครื่อง →';
+}
+
+function lookupForCheck() {
+  var mc = document.getElementById('rc-lookup-mc').value.trim();
+  if (!mc) { showToast('กรุณากรอกรหัสเครื่อง', true); return; }
+  var resultEl = document.getElementById('rc-lookup-result');
+  resultEl.textContent = '⏳ กำลังค้นหา...';
+
+  // ค้นจาก local ก่อน
+  var mc_norm = mc.toUpperCase().startsWith('MC-') ? mc.toUpperCase() : 'MC-'+mc.toUpperCase();
+  var d = devices.find(function(x){
+    return (x.code||'').toUpperCase() === mc_norm || (x.code||'').toUpperCase() === mc.toUpperCase();
+  });
+
+  if (d) {
+    fillReceiveForm(d);
+    resultEl.innerHTML = '✅ พบข้อมูล: <strong>'+htmlEsc(d.model||'-')+'</strong> '+htmlEsc(d.storage||'')
+      +' '+htmlEsc(d.color||'')+(d.grade?' · เกรด '+d.grade:'')+(d.bat?' · แบต '+d.bat+'%':'')
+      +' · สถานะ: '+htmlEsc(d.statusKey||'-');
+    return;
+  }
+
+  // ถ้าไม่เจอ local ให้ดึงจาก server
+  api('getDeviceData', { code: mc }).then(function(data) {
+    if (!data || !data.found) {
+      resultEl.innerHTML = '<span style="color:#ff3b30;">❌ ไม่พบ '+mc+' ในระบบ</span>';
+      return;
+    }
+    fillReceiveForm(data);
+    resultEl.innerHTML = '✅ พบข้อมูล: <strong>'+htmlEsc(data.model||'-')+'</strong> '
+      +htmlEsc(data.storage||'')+' '+htmlEsc(data.color||'')+(data.grade?' · เกรด '+data.grade:'');
+  }).catch(function(e){
+    resultEl.innerHTML = '<span style="color:#ff3b30;">❌ '+e.message+'</span>';
+  });
+}
+
+function fillReceiveForm(d) {
+  // Fill form fields from device data
+  var fields = {
+    'rc-code'   : d.code    || '',
+    'rc-model'  : d.model   || '',
+    'rc-color'  : d.color   || '',
+    'rc-sn'     : d.sn      || '',
+    'rc-cost'   : d.cost    || '',
+  };
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = fields[id];
+  });
+  // selects
+  var storage = document.getElementById('rc-storage');
+  if (storage && d.storage) {
+    for (var i=0; i<storage.options.length; i++) {
+      if (storage.options[i].value === d.storage || storage.options[i].text === d.storage) {
+        storage.selectedIndex = i; break;
+      }
+    }
+    if (storage.value !== d.storage) {
+      var opt = document.createElement('option');
+      opt.value = opt.text = d.storage;
+      storage.appendChild(opt);
+      storage.value = d.storage;
+    }
+  }
+  // devtype + model list
+  var devtype = document.getElementById('rc-devtype');
+  if (devtype && d.type) {
+    for (var j=0; j<devtype.options.length; j++) {
+      if ((d.type||'').toLowerCase().includes(devtype.options[j].value.toLowerCase()) ||
+          devtype.options[j].value.toLowerCase().includes((d.type||'').toLowerCase())) {
+        devtype.selectedIndex = j; break;
+      }
+    }
+    updateModelList();
+  }
+  // model select
+  var modelSel = document.getElementById('rc-model-sel');
+  if (modelSel && d.model) {
+    for (var k=0; k<modelSel.options.length; k++) {
+      if (modelSel.options[k].value === d.model) { modelSel.selectedIndex = k; break; }
+    }
+  }
+  // branch
+  var branch = document.getElementById('rc-branch');
+  if (branch && d.branch) {
+    for (var m=0; m<branch.options.length; m++) {
+      if (branch.options[m].value === d.branch) { branch.selectedIndex = m; break; }
+    }
+  }
+  // bat
+  if (d.bat) {
+    var batEl = document.getElementById('rc-bat');
+    if (batEl) { batEl.value = d.bat; updBat(); }
+  }
+  // grade
+  if (d.grade) {
+    document.getElementById('rc-grade').value = d.grade;
+    document.querySelectorAll('#rc-grade-picker .grade-btn').forEach(function(b){
+      b.classList.toggle('sel', b.textContent === d.grade);
+    });
+  }
+  // scroll to form
+  document.getElementById('rc-code').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  showToast('โหลดข้อมูล '+htmlEsc(d.code||d.model||'')+' เรียบร้อย');
+}
+
 function saveReceive() {
   var code = document.getElementById('rc-code').value.trim();
   if (!code) { showToast('กรุณากรอกรหัส Stock', true); return; }
@@ -1178,9 +1559,29 @@ function saveReceive() {
     note      : document.getElementById('rc-note').value,
     date      : document.getElementById('rc-date').value,
   };
+  var action = receiveMode === 'check' ? 'saveCheckResult' : 'saveDevice';
+  if (receiveMode === 'check') {
+    // เพิ่ม checklist data
+    var sels = document.querySelectorAll('#rc-checklist select');
+    var pass = 0, fail = 0, failList = [];
+    sels.forEach(function(s, i) {
+      var item = s.closest('div').querySelector('span:nth-child(2)');
+      var label = item ? item.textContent : ('รายการ '+(i+1));
+      if (s.value === 'ปกติ') pass++;
+      else if (s.value === 'ไม่ปกติ') { fail++; failList.push(label); }
+    });
+    data.passCount = pass;
+    data.failCount = fail;
+    data.failList  = failList;
+    data.mc        = code;
+    data.warSt     = data.warranty;
+    data.warDate   = data.warrantyDate;
+    data.faceJo    = data.screen;
+  }
   showToast('⏳ กำลังบันทึก...');
-  api('saveDevice', data).then(function() {
-    showToast('บันทึกเครื่อง ' + code + ' เรียบร้อย ✓');
+  api(action, data).then(function() {
+    var msg = receiveMode === 'check' ? 'เช็คละเอียด ' + code + ' เรียบร้อย ✓ สถานะ → พร้อมขาย' : 'บันทึกเครื่อง ' + code + ' เรียบร้อย ✓';
+    showToast(msg);
     // update local
     var idx = devices.findIndex(function(x){ return x.code === code; });
     if (idx >= 0) Object.assign(devices[idx], data);
