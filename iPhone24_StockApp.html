@@ -864,39 +864,30 @@ function renderStock() {
   var typeF   = chipFilters['stock-type']   || '';
   var branchF = document.getElementById('branch-filter').value;
 
-  // Model sort order (เก่า -> ใหม่)
-  var modelOrder = [
-    'iPhone SE (Gen 2)','iPhone SE (Gen 3)',
-    'iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max',
-    'iPhone 12 mini','iPhone 12','iPhone 12 Pro','iPhone 12 Pro Max',
-    'iPhone 13 mini','iPhone 13','iPhone 13 Pro','iPhone 13 Pro Max',
-    'iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max',
-    'iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max',
-    'iPhone 16','iPhone 16 Plus','iPhone 16 Pro','iPhone 16 Pro Max',
-    'iPhone 17','iPhone 17 Plus','iPhone 17 Pro','iPhone 17 Pro Max',
-    'iPad (Gen 9)','iPad (Gen 10)',
+  // Model generation rank — keyword matching (เก่า→ใหม่)
+  var genOrder = [
+    'SE','SE2','SE3','SE (Gen 2)','SE (Gen 3)',
+    'iPhone 11','11 Pro Max','11 Pro',
+    'iPhone 12 mini','iPhone 12','12 Pro Max','12 Pro',
+    'iPhone 13 mini','iPhone 13','13 Pro Max','13 Pro',
+    'iPhone 14 Plus','iPhone 14','14 Pro Max','14 Pro',
+    'iPhone 15 Plus','iPhone 15','15 Pro Max','15 Pro',
+    'iPhone 16 Plus','iPhone 16','16 Pro Max','16 Pro',
+    'iPhone 17 Plus','iPhone 17 Air','iPhone 17','17 Pro Max','17 Pro',
     'iPad mini 5','iPad mini 6','iPad mini 7',
-    'iPad Air 4','iPad Air 5','iPad Air 11" M2','iPad Air 13" M2',
-    'iPad Pro 11" M1','iPad Pro 11" M2','iPad Pro 11" M4',
-    'iPad Pro 12.9" M1','iPad Pro 12.9" M2','iPad Pro 13" M4',
-    'MacBook Air 13" M1','MacBook Air 13" M2','MacBook Air 13" M3',
-    'MacBook Air 15" M2','MacBook Air 15" M3',
-    'MacBook Pro 13" M1','MacBook Pro 13" M2',
-    'MacBook Pro 14" M1 Pro','MacBook Pro 14" M2 Pro','MacBook Pro 14" M3 Pro','MacBook Pro 14" M4 Pro',
-    'MacBook Pro 16" M1 Pro','MacBook Pro 16" M2 Pro','MacBook Pro 16" M3 Pro','MacBook Pro 16" M4 Pro',
+    'iPad (Gen 9)','iPad (Gen 10)',
+    'iPad Air 4','iPad Air 5','iPad Air 11','iPad Air 13',
+    'iPad Pro 11','iPad Pro 12','iPad Pro 13',
+    'MacBook Air 13','MacBook Air 15',
+    'MacBook Pro 13','MacBook Pro 14','MacBook Pro 16',
+    'iMac','Mac mini',
   ];
-  function getModelRank(model) {
-    var m = (model||'').trim();
-    var idx = modelOrder.indexOf(m);
-    if (idx >= 0) return idx;
-    // fuzzy match
-    var best = 9999;
-    modelOrder.forEach(function(k,i) {
-      if (m.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(m.toLowerCase())) {
-        if (i < best) best = i;
-      }
-    });
-    return best;
+  function modelRank(m) {
+    var ml = (m||'').toLowerCase();
+    for (var i=0; i<genOrder.length; i++) {
+      if (ml.includes(genOrder[i].toLowerCase())) return i;
+    }
+    return 999;
   }
 
   var list = devices.filter(function(d) {
@@ -913,31 +904,43 @@ function renderStock() {
     return true;
   });
 
+  // Collect unique branches in order (BRANCHES first, then any others)
+  var branchSeen = {}, orderedBranches = [];
+  BRANCHES.forEach(function(b){ branchSeen[b]=true; orderedBranches.push(b); });
+  list.forEach(function(d){
+    if (d.branch && !branchSeen[d.branch]) {
+      branchSeen[d.branch] = true;
+      orderedBranches.push(d.branch);
+    }
+  });
+  var bOrd = {};
+  orderedBranches.forEach(function(b,i){ bOrd[b]=i; });
+
   // Sort: สาขา → รุ่น (เก่า→ใหม่) → รหัส
-  var bOrd = {}; BRANCHES.forEach(function(b,i){ bOrd[b] = i; });
   list.sort(function(a,b) {
     var bd = (bOrd[a.branch]!==undefined?bOrd[a.branch]:99) - (bOrd[b.branch]!==undefined?bOrd[b.branch]:99);
     if (bd !== 0) return bd;
-    var md = getModelRank(a.model) - getModelRank(b.model);
+    var md = modelRank(a.model) - modelRank(b.model);
     if (md !== 0) return md;
     return (a.code||'').localeCompare(b.code||'');
   });
 
   var rows = '';
-  var lastBranch = null;
+  var lastBranch = '__none__';
 
   list.forEach(function(d) {
-    // Branch header — แสดงเมื่อไม่ได้ filter สาขาเดียว
-    if (!branchF && d.branch !== lastBranch) {
-      lastBranch = d.branch;
-      var bReady = list.filter(function(x){ return x.branch===d.branch && x.statusKey==='พร้อมขาย'; }).length;
-      var bTotal = list.filter(function(x){ return x.branch===d.branch; }).length;
+    var branchVal = d.branch || '(ไม่ระบุสาขา)';
+    // Branch header — แสดงทุกครั้งที่สาขาเปลี่ยน ยกเว้นตอน filter สาขาเดียว
+    if (!branchF && branchVal !== lastBranch) {
+      lastBranch = branchVal;
+      var bItems = list.filter(function(x){ return (x.branch||'(ไม่ระบุสาขา)') === branchVal; });
+      var bReady = bItems.filter(function(x){ return x.statusKey==='พร้อมขาย'; }).length;
       rows += '<tr style="background:#f0f0f5;border-top:2px solid #e5e5ea;">'
         + '<td colspan="10" style="padding:8px 14px;">'
         + '<div style="display:flex;align-items:center;gap:8px;">'
-        + '<span style="width:8px;height:8px;border-radius:50%;background:#34c759;display:inline-block;"></span>'
-        + '<span style="font-size:12px;font-weight:700;color:#1d1d1f;">'+htmlEsc(d.branch||'-')+'</span>'
-        + '<span style="font-size:11px;color:#8e8e93;">· '+bTotal+' เครื่อง · พร้อมขาย '+bReady+'</span>'
+        + '<span style="width:8px;height:8px;border-radius:50%;background:#34c759;display:inline-block;flex-shrink:0;"></span>'
+        + '<span style="font-size:12px;font-weight:700;color:#1d1d1f;letter-spacing:.2px;">'+htmlEsc(branchVal)+'</span>'
+        + '<span style="font-size:11px;color:#8e8e93;">·&nbsp;'+bItems.length+'&nbsp;เครื่อง&nbsp;·&nbsp;พร้อมขาย&nbsp;'+bReady+'</span>'
         + '</div></td></tr>';
     }
     rows += '<tr>'
