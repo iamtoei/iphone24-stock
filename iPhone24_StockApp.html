@@ -1130,36 +1130,61 @@ function handleImportFile(input) {
 
       if (!imported.length) { statusEl.textContent = '❌ ไม่พบข้อมูลที่ถูกต้อง'; return; }
 
-      statusEl.innerHTML = '📦 พบ <strong>'+imported.length+'</strong> รายการ กำลังนำเข้า...';
+      statusEl.innerHTML = '📦 พบ <strong>'+imported.length+'</strong> รายการ กำลังนำเข้า... (0/'+ imported.length +')';
 
-      // Import one by one
+      // Batch import — ส่ง 50 รายการต่อ 1 request
       var ok = 0, fail = 0;
-      var idx = 0;
-      function importNext() {
-        if (idx >= imported.length) {
+      var BATCH = 50;
+      var batches = [];
+      for (var b = 0; b < imported.length; b += BATCH) {
+        batches.push(imported.slice(b, b + BATCH));
+      }
+      var batchIdx = 0;
+
+      function mapDevice(d) {
+        return {
+          code     : d.code      || '',
+          model    : d.model     || '',
+          storage  : d.storage   || '',
+          color    : d.color     || '',
+          grade    : d.grade     || '',
+          type     : d.type      || 'มือสอง',
+          cost     : Number(d.cost)||0,
+          sn       : d.sn        || '',
+          branch   : d.branch    || '',
+          source   : d.source    || '',
+          bat      : Number(d.bat)||0,
+          statusKey: d.statuskey || d.statusKey || d.status || 'ของถึง',
+          note     : d.note      || '',
+        };
+      }
+
+      function runBatch() {
+        if (batchIdx >= batches.length) {
           statusEl.innerHTML = '✅ นำเข้าสำเร็จ <strong>'+ok+'</strong> รายการ'+(fail?' · ล้มเหลว '+fail+' รายการ':'');
-          loadStock();
+          loadStock(true);
           return;
         }
-        var d = imported[idx++];
-        api('saveDevice', {
-          code     : d.code     || '',
-          model    : d.model    || '',
-          storage  : d.storage  || '',
-          color    : d.color    || '',
-          grade    : d.grade    || '',
-          type     : d.type     || 'มือสอง',
-          cost     : Number(d.cost)||0,
-          sn       : d.sn       || '',
-          branch   : d.branch   || '',
-          source   : d.source   || '',
-          bat      : Number(d.bat)||0,
-          statusKey: d.statuskey || d.status || 'ของถึง',
-          note     : d.note     || '',
-        }).then(function(){ ok++; importNext(); })
-          .catch(function(){ fail++; importNext(); });
+        var batch = batches[batchIdx++];
+        var devices_batch = batch.map(mapDevice);
+        statusEl.innerHTML = '⏳ นำเข้า '+(batchIdx*BATCH)+'/'+imported.length+' รายการ...';
+
+        // ลอง batchSave ก่อน ถ้าไม่มีให้ส่งทีละอันแบบ parallel
+        api('batchSaveDevices', { devices: devices_batch })
+          .then(function(res) {
+            ok += res.saved || devices_batch.length;
+            fail += res.failed || 0;
+            runBatch();
+          })
+          .catch(function() {
+            // fallback: parallel individual saves
+            var promises = devices_batch.map(function(d) {
+              return api('saveDevice', d).then(function(){ ok++; }).catch(function(){ fail++; });
+            });
+            Promise.all(promises).then(runBatch);
+          });
       }
-      importNext();
+      runBatch();
     } catch(err) {
       statusEl.textContent = '❌ อ่านไฟล์ไม่ได้: ' + err.message;
     }
