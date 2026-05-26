@@ -560,24 +560,71 @@ input[type=range]{accent-color:#007aff;width:100%;}
               <span style="font-size:11px;color:#1a7f37;font-weight:500;">กำไรประมาณ</span>
               <span class="profit-value" id="profit-val">0 ฿</span>
             </div>
-            <div class="field" style="margin-bottom:8px;">
-              <label>ชื่อลูกค้า</label>
-              <input type="text" id="sell-cust" placeholder="ชื่อลูกค้า">
-            </div>
-            <div class="field" style="margin-bottom:8px;">
-              <label>เบอร์โทร</label>
-              <input type="text" id="sell-phone" placeholder="0812345678">
-            </div>
-            <div class="field" style="margin-bottom:8px;">
-              <label>ช่องทาง</label>
-              <select id="sell-channel">
-                <option>Walk in</option><option>FB</option><option>Line</option>
-                <option>Instagram</option><option>ลูกค้าเก่า</option>
-              </select>
-            </div>
-            <div class="field" style="margin-bottom:14px;">
-              <label>พนักงาน</label>
-              <input type="text" id="sell-staff" placeholder="ชื่อพนักงาน">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+              <div class="field">
+                <label>ชื่อลูกค้า</label>
+                <input type="text" id="sell-cust" placeholder="ชื่อลูกค้า">
+              </div>
+              <div class="field">
+                <label>เบอร์โทร</label>
+                <input type="text" id="sell-phone" placeholder="0812345678">
+              </div>
+              <div class="field">
+                <label>อาชีพ</label>
+                <select id="sell-occupation">
+                  <option value="">เลือก...</option>
+                  <option>นักศึกษา</option><option>พนักงานประจำ</option>
+                  <option>ธุรกิจส่วนตัว</option><option>ข้าราชการ</option>
+                  <option>อาชีพอิสระ</option><option>อื่นๆ</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>ช่วงอายุ</label>
+                <select id="sell-age">
+                  <option value="">เลือก...</option>
+                  <option>ต่ำกว่า 18</option><option>18-24</option>
+                  <option>25-34</option><option>35-44</option>
+                  <option>45-54</option><option>55 ขึ้นไป</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>เพศ</label>
+                <select id="sell-gender">
+                  <option value="">เลือก...</option>
+                  <option>ชาย</option><option>หญิง</option><option>อื่นๆ</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>ประเภทบัตร</label>
+                <select id="sell-card">
+                  <option value="">เลือก...</option>
+                  <option>บัตรประชาชน</option><option>บัตรขาวชมพู</option>
+                  <option>พาสปอร์ต</option><option>อื่นๆ</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>จังหวัด</label>
+                <input type="text" id="sell-province" placeholder="เช่น เชียงใหม่">
+              </div>
+              <div class="field">
+                <label>ช่องทาง</label>
+                <select id="sell-channel">
+                  <option>Walk in</option><option>FB</option><option>Line</option>
+                  <option>Instagram</option><option>ลูกค้าเก่า</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>ชำระโดย</label>
+                <select id="sell-paytype">
+                  <option value="cash">เงินสด</option>
+                  <option value="transfer">โอน</option>
+                  <option value="both">สด+โอน</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>พนักงาน</label>
+                <input type="text" id="sell-staff" placeholder="ชื่อพนักงาน">
+              </div>
             </div>
             <button class="btn btn-green" style="width:100%;justify-content:center;font-size:14px;padding:10px;" onclick="confirmSell()">✓ ยืนยันการขาย</button>
           </div>
@@ -1163,24 +1210,40 @@ function confirmSell() {
   var staff = document.getElementById('sell-staff').value;
 
   showToast('⏳ กำลังบันทึก...');
+  var occupation = (document.getElementById('sell-occupation')||{value:''}).value;
+  var ageRange  = (document.getElementById('sell-age')||{value:''}).value;
+  var gender    = (document.getElementById('sell-gender')||{value:''}).value;
+  var cardType  = (document.getElementById('sell-card')||{value:''}).value;
+  var province  = (document.getElementById('sell-province')||{value:''}).value;
+  var paytype   = (document.getElementById('sell-paytype')||{value:'cash'}).value;
+  var cashAmt   = (paytype==='transfer') ? 0 : price;
+  var transAmt  = (paytype==='cash') ? 0 : price;
   var payload = {
-    deviceCode: selectedDevice.code,
-    code      : selectedDevice.code,
-    status    : 'ขายแล้ว',
-    price     : price,
-    customer  : cust,
-    phone     : phone,
-    channel   : chan,
-    staff     : staff,
-    model     : selectedDevice.model,
-    cost      : selectedDevice.cost,
-    sn        : selectedDevice.sn,
-    type      : sellMode === 'inst' ? 'installment' : 'cash',
-    saleType  : sellMode === 'inst' ? 'ขายผ่อน' : 'ขายสด',
-    down      : sellMode === 'inst' ? (parseFloat(document.getElementById('sell-down').value)||0) : 0,
-    monthly   : sellMode === 'inst' ? (parseFloat(document.getElementById('sell-monthly').value)||0) : 0,
-    months    : sellMode === 'inst' ? (parseInt(document.getElementById('sell-months').value)||0) : 0,
-    addSale   : true,
+    deviceCode  : selectedDevice.code,
+    code        : selectedDevice.code,
+    status      : 'ขายแล้ว',
+    price       : price,
+    customer    : cust,
+    phone       : phone,
+    channel     : chan,
+    staff       : staff,
+    occupation  : occupation,
+    ageRange    : ageRange,
+    gender      : gender,
+    cardType    : cardType,
+    province    : province,
+    cashAmount  : cashAmt,
+    transferAmount: transAmt,
+    model       : selectedDevice.model,
+    productType : selectedDevice.type || '',
+    cost        : selectedDevice.cost,
+    sn          : selectedDevice.sn,
+    type        : sellMode === 'inst' ? 'installment' : 'cash',
+    saleType    : sellMode === 'inst' ? 'ขายผ่อน' : 'ขายสด',
+    down        : sellMode === 'inst' ? (parseFloat(document.getElementById('sell-down').value)||0) : 0,
+    monthly     : sellMode === 'inst' ? (parseFloat(document.getElementById('sell-monthly').value)||0) : 0,
+    months      : sellMode === 'inst' ? (parseInt(document.getElementById('sell-months').value)||0) : 0,
+    addSale     : true,
   };
 
   api('confirmSale', payload).then(function() {
