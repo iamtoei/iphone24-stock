@@ -361,19 +361,35 @@ input[type=range]{accent-color:#007aff;width:100%;}
             </div>
             <div class="field">
               <label>แหล่งที่มา</label>
-              <input type="text" id="rc-source" placeholder="ร้านค้า / ชื่อ">
+              <div style="display:flex;gap:12px;margin-top:2px;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;color:#1d1d1f;cursor:pointer;text-transform:none;letter-spacing:0;">
+                  <input type="radio" name="rc-src-type" value="ร้านค้า" onchange="toggleSourceInput()" checked style="accent-color:#007aff;"> 🏪 ร้านค้า
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;color:#1d1d1f;cursor:pointer;text-transform:none;letter-spacing:0;">
+                  <input type="radio" name="rc-src-type" value="ลูกค้า" onchange="toggleSourceInput()" style="accent-color:#007aff;"> 👤 ลูกค้า
+                </label>
+              </div>
+              <input type="text" id="rc-source" placeholder="ชื่อร้านค้า / ชื่อลูกค้า" style="margin-top:6px;">
             </div>
             <div class="field">
               <label>ประเภทสินค้า</label>
               <select id="rc-devtype" onchange="updateModelList()">
                 <option value="">เลือกประเภท...</option>
-                <option>iPhone</option><option>iPad</option><option>MacBook</option>
-                <option>Apple Watch</option><option>AirPods</option><option>Android</option><option>Acc</option>
+                <option value="iPhone">iPhone</option>
+                <option value="iPad">iPad</option>
+                <option value="MacBook">MacBook</option>
+                <option value="Apple Watch">Apple Watch</option>
+                <option value="AirPods">AirPods</option>
+                <option value="Android">Android</option>
+                <option value="Acc">Acc</option>
               </select>
             </div>
-            <div class="field">
+            <div class="field form-full">
               <label>รุ่น</label>
-              <input type="text" id="rc-model" placeholder="เช่น iPhone 17 Pro Max">
+              <select id="rc-model-sel" onchange="this.value&&(document.getElementById('rc-model').value=this.value);" style="display:none;margin-bottom:6px;">
+                <option value="">เลือกรุ่น...</option>
+              </select>
+              <input type="text" id="rc-model" placeholder="เลือกประเภทก่อน หรือพิมพ์เอง">
             </div>
             <div class="field">
               <label>ความจุ</label>
@@ -424,7 +440,9 @@ input[type=range]{accent-color:#007aff;width:100%;}
               <input type="date" id="rc-date">
             </div>
           </div>
-          <div style="margin:16px 0 4px;font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">ผลการตรวจเช็ค</div>
+          <div style="margin:16px 0 8px;font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">ผลการตรวจเช็ค</div>
+          <div id="rc-checklist" style="margin-bottom:10px;border:1px solid #e5e5ea;border-radius:10px;padding:0 12px;max-height:260px;overflow-y:auto;"></div>
+          <div id="rc-check-summary" style="font-size:12px;color:#34c759;font-weight:500;margin-bottom:10px;"></div>
           <div class="form-grid">
             <div class="field">
               <label>⭐ เกรด</label>
@@ -440,9 +458,9 @@ input[type=range]{accent-color:#007aff;width:100%;}
             </div>
             <div class="field">
               <label>แบตเตอรี่ %</label>
-              <input type="range" id="rc-bat" min="0" max="100" value="100" oninput="updBat()">
-              <div class="bat-display">
-                <div class="bat-display-bar"><div class="bat-display-fill" id="rc-bat-fill" style="width:100%"></div></div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="number" id="rc-bat" min="0" max="100" value="100" placeholder="100" oninput="updBat()" style="flex:1;">
+                <div class="bat-display-bar" style="flex:2;"><div class="bat-display-fill" id="rc-bat-fill" style="width:100%"></div></div>
                 <span class="bat-val" id="rc-bat-val">100%</span>
               </div>
             </div>
@@ -713,6 +731,7 @@ window.onload = function() {
   setTodayDate();
   initBranches();
   loadStock();
+  updateChecklistSection('iPhone');
 };
 
 function setTodayDate() {
@@ -910,7 +929,8 @@ function selGrade(btn, g) {
 }
 
 function updBat() {
-  var v = document.getElementById('rc-bat').value;
+  var v = parseInt(document.getElementById('rc-bat').value)||0;
+  v = Math.min(100, Math.max(0, v));
   document.getElementById('rc-bat-val').textContent = v + '%';
   var fill = document.getElementById('rc-bat-fill');
   fill.style.width = v + '%';
@@ -927,8 +947,11 @@ function clearReceive() {
   document.getElementById('rc-bat').value = 100;
   document.getElementById('rc-grade').value = '';
   document.querySelectorAll('#rc-grade-picker .grade-btn').forEach(function(b){ b.classList.remove('sel'); });
+  var sel = document.getElementById('rc-model-sel'); if(sel) { sel.selectedIndex=0; sel.style.display='none'; }
+  var r = document.querySelector('input[name="rc-src-type"][value="ร้านค้า"]'); if(r) r.checked=true;
   updBat();
   setTodayDate();
+  updateChecklistSection('iPhone');
 }
 
 function saveReceive() {
@@ -936,6 +959,7 @@ function saveReceive() {
   if (!code) { showToast('กรุณากรอกรหัส Stock', true); return; }
   var data = {
     code      : code,
+    sourceType: (document.querySelector('input[name="rc-src-type"]:checked')||{value:''}).value,
     source    : document.getElementById('rc-source').value,
     type      : document.getElementById('rc-type').value,
     model     : document.getElementById('rc-model').value,
@@ -1438,8 +1462,98 @@ function statusBadge(s) {
   return map[s] || '<span class="badge badge-gray">'+htmlEsc(s||'-')+'</span>';
 }
 
+// ===================================================================
+//  MODEL LISTS
+// ===================================================================
+var MODEL_LISTS = {
+  iPhone: [
+    'iPhone SE (Gen 2)','iPhone SE (Gen 3)',
+    'iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max',
+    'iPhone 12','iPhone 12 mini','iPhone 12 Pro','iPhone 12 Pro Max',
+    'iPhone 13','iPhone 13 mini','iPhone 13 Pro','iPhone 13 Pro Max',
+    'iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max',
+    'iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max',
+    'iPhone 16','iPhone 16 Plus','iPhone 16 Pro','iPhone 16 Pro Max',
+    'iPhone 17','iPhone 17 Plus','iPhone 17 Pro','iPhone 17 Pro Max',
+  ],
+  iPad: [
+    'iPad (Gen 9)','iPad (Gen 10)',
+    'iPad mini 5','iPad mini 6','iPad mini 7',
+    'iPad Air 4','iPad Air 5','iPad Air 11" M2','iPad Air 13" M2',
+    'iPad Pro 11" M1','iPad Pro 11" M2','iPad Pro 11" M4',
+    'iPad Pro 12.9" M1','iPad Pro 12.9" M2','iPad Pro 13" M4',
+  ],
+  MacBook: [
+    'MacBook Air 13" M1','MacBook Air 13" M2','MacBook Air 13" M3',
+    'MacBook Air 15" M2','MacBook Air 15" M3',
+    'MacBook Pro 13" M1','MacBook Pro 13" M2',
+    'MacBook Pro 14" M1 Pro','MacBook Pro 14" M2 Pro','MacBook Pro 14" M3 Pro','MacBook Pro 14" M4 Pro',
+    'MacBook Pro 16" M1 Pro','MacBook Pro 16" M2 Pro','MacBook Pro 16" M3 Pro','MacBook Pro 16" M4 Pro',
+    'iMac 24" M1','iMac 24" M3','iMac 24" M4',
+    'Mac mini M1','Mac mini M2','Mac mini M4',
+  ],
+  'Apple Watch': ['Apple Watch SE','Apple Watch Series 7','Apple Watch Series 8','Apple Watch Series 9','Apple Watch Series 10','Apple Watch Ultra','Apple Watch Ultra 2'],
+  AirPods: ['AirPods 2','AirPods 3','AirPods 4','AirPods Pro 2','AirPods Pro 3','AirPods Max'],
+  Android: ['Samsung Galaxy S24','Samsung Galaxy S25','Samsung Galaxy A55','OPPO Find X8','Xiaomi 15'],
+  Acc: ['Apple Pencil 1','Apple Pencil 2','Apple Pencil Pro','Magic Keyboard','Magic Mouse','MagSafe Charger'],
+};
+
+// checklist items per type
+var CHECK_ITEMS = {
+  iPhone: ['1. กล่อง / อุปกรณ์','2. จอภาพ/การทัชสกรีน','3. ลำโพง บน/ล่าง','4. ปุ่มเพิ่ม/ลดเสียง','5. Touch ID / Face ID','6. Wifi/Bluetooth/Airdrop','7. กล้องหน้า','8. กล้องหลัง','9. ไมค์','10. ปุ่มเปิด-ปิดเสียง','11. ปุ่มเปิด-ปิดเครื่อง','12. ไฟฉาย/แฟลช','13. การชาร์จ','14. เทสซิม/การรับสัญญาณ','15. ประกันเครื่อง','16. ติดล็อคซิม(เครือข่าย)'],
+  iPad: ['1. กล่อง / อุปกรณ์','2. จอภาพ/การทัชสกรีน','3. ลำโพง','4. ปุ่มเพิ่ม/ลดเสียง','5. Touch ID / Face ID','6. Wifi/Bluetooth','7. กล้องหน้า','8. กล้องหลัง','9. ไมค์','10. ปุ่มเปิด-ปิดเครื่อง','11. ไฟฉาย/แฟลช','12. การชาร์จ','13. ประกันเครื่อง'],
+  MacBook: ['1. กล่อง / อุปกรณ์','2. จอภาพ','3. ลำโพง','4. ปุ่มเพิ่ม/ลดเสียง','5. Touch ID','6. Wifi/Bluetooth/Airdrop','7. กล้องหน้า','8. ไมค์','9. ปุ่มคีย์บอร์ด','10. ปุ่มเปิด/ปิดเครื่อง','11. บานพับจอ','12. Track pad','13. Touch bar','14. Port USB/ช่องการชาร์จ','15. รูหูฟัง'],
+  default: ['1. กล่อง / อุปกรณ์','2. จอภาพ/การทัชสกรีน','3. ลำโพง','4. ประกันเครื่อง','5. Wifi/Bluetooth','6. ไมค์','7. ปุ่มเปิด/ปิดเครื่อง','8. การชาร์จ'],
+};
+
 function updateModelList() {
-  // ไม่ต้องทำอะไร — ใช้ input text เอง
+  var devtype = document.getElementById('rc-devtype').value;
+  var sel = document.getElementById('rc-model-sel');
+  var inp = document.getElementById('rc-model');
+  var models = MODEL_LISTS[devtype] || [];
+  if (models.length) {
+    sel.innerHTML = '<option value="">เลือกรุ่น...</option>'
+      + models.map(function(m){ return '<option value="'+m+'">'+m+'</option>'; }).join('');
+    sel.style.display = 'block';
+    inp.placeholder = 'หรือพิมพ์รุ่นเอง';
+  } else {
+    sel.style.display = 'none';
+    inp.placeholder = 'พิมพ์รุ่น...';
+  }
+  inp.value = '';
+  updateChecklistSection(devtype);
+}
+
+function updateChecklistSection(devtype) {
+  var items = CHECK_ITEMS[devtype] || CHECK_ITEMS.default;
+  var el = document.getElementById('rc-checklist');
+  if (!el) return;
+  el.innerHTML = items.map(function(item, i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f2f2f7;">'
+      +'<span style="font-size:12px;color:#8e8e93;width:20px;flex-shrink:0;">'+(i+1)+'</span>'
+      +'<span style="flex:1;font-size:13px;">'+item.replace(/^\d+\. /,'')+'</span>'
+      +'<select onchange="updateCheckSummary()" style="padding:4px 8px;border-radius:6px;border:1px solid #e5e5ea;font-size:12px;outline:none;font-family:inherit;color:#1d1d1f;">'
+      +'<option value="ปกติ">✅ ปกติ</option>'
+      +'<option value="ไม่ปกติ">❌ ไม่ปกติ</option>'
+      +'<option value="-">- ไม่เช็ค</option>'
+      +'</select>'
+      +'<input type="text" placeholder="หมายเหตุ" style="width:110px;padding:4px 8px;border-radius:6px;border:1px solid #e5e5ea;font-size:12px;outline:none;font-family:inherit;">'
+      +'</div>';
+  }).join('');
+  updateCheckSummary();
+}
+
+function updateCheckSummary() {
+  var sels = document.querySelectorAll('#rc-checklist select');
+  var pass = 0, fail = 0;
+  sels.forEach(function(s){ if(s.value==='ปกติ') pass++; else if(s.value==='ไม่ปกติ') fail++; });
+  var el = document.getElementById('rc-check-summary');
+  if (el) el.textContent = 'ผ่าน '+pass+' รายการ' + (fail?' | ไม่ปกติ '+fail+' รายการ':'') + ' ✅';
+}
+
+function toggleSourceInput() {
+  var type = document.querySelector('input[name="rc-src-type"]:checked');
+  if (type) document.getElementById('rc-source').placeholder = type.value === 'ร้านค้า' ? 'ชื่อร้านค้า' : 'ชื่อลูกค้า';
 }
 </script>
 </body>
