@@ -322,28 +322,34 @@ input[type=range]{accent-color:#007aff;width:100%;}
 
     <!-- STOCK -->
     <div class="page" id="page-stock">
+      <div id="stock-summary-bar" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;"></div>
+      <div id="stock-stale-alert" style="display:none;background:#fff4e6;border:1px solid #ff9500;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#c45000;"></div>
       <div class="card">
         <div class="card-header">
           <span class="card-title">Stock ทั้งหมด</span>
           <div class="topbar-right" style="margin-left:auto;">
             <div class="search-wrap">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="ค้นหา..." id="stock-search" oninput="renderStock()">
+              <input type="text" placeholder="ค้นหา รุ่น/รหัส/สี..." id="stock-search" oninput="renderStock()">
             </div>
           </div>
         </div>
         <div class="filter-bar">
-          <span class="chip active" onclick="setChip(this,'stock-status','')" data-group="stock-status">ทั้งหมด</span>
+          <span class="chip active" onclick="setChip(this,'stock-type','')" data-group="stock-type">📦 ทั้งหมด</span>
+          <span class="chip" onclick="setChip(this,'stock-type','iphone')" data-group="stock-type">📱 iPhone</span>
+          <span class="chip" onclick="setChip(this,'stock-type','ipad')" data-group="stock-type">📱 iPad</span>
+          <span class="chip" onclick="setChip(this,'stock-type','mac')" data-group="stock-type">💻 Mac</span>
+          <span class="chip" onclick="setChip(this,'stock-type','watch')" data-group="stock-type">⌚ Watch</span>
+          <span class="chip" onclick="setChip(this,'stock-type','airpods')" data-group="stock-type">🎧 Acc</span>
+          <span style="border-left:1px solid #e5e5ea;margin:0 6px;"></span>
+          <span class="chip active" onclick="setChip(this,'stock-status','')" data-group="stock-status">สถานะทั้งหมด</span>
           <span class="chip" onclick="setChip(this,'stock-status','พร้อมขาย')" data-group="stock-status">พร้อมขาย</span>
           <span class="chip" onclick="setChip(this,'stock-status','ของถึง')" data-group="stock-status">ของถึง</span>
           <span class="chip" onclick="setChip(this,'stock-status','รอเช็ค')" data-group="stock-status">รอเช็ค</span>
           <span class="chip" onclick="setChip(this,'stock-status','ขายแล้ว')" data-group="stock-status">ขายแล้ว</span>
-          <span class="chip" onclick="setChip(this,'stock-type','iPhone')" data-group="stock-type">iPhone</span>
-          <span class="chip" onclick="setChip(this,'stock-type','iPad')" data-group="stock-type">iPad</span>
-          <span class="chip" onclick="setChip(this,'stock-type','Mac')" data-group="stock-type">Mac</span>
         </div>
         <table>
-          <thead><tr><th>รหัส</th><th>รุ่น</th><th>ความจุ</th><th>สี</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>ทุน</th><th>สถานะ</th><th></th></tr></thead>
+          <thead><tr><th>รหัส</th><th>รุ่น</th><th>ความจุ</th><th>สี</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>ทุน</th><th>สถานะ</th><th style="text-align:center;">คงเหลือ</th><th></th></tr></thead>
           <tbody id="stock-tbody"></tbody>
         </table>
       </div>
@@ -664,6 +670,17 @@ input[type=range]{accent-color:#007aff;width:100%;}
         <div class="stat-card orange"><div class="stat-label">เกินกำหนด</div><div class="stat-num" id="inst-overdue">0</div></div>
         <div class="stat-card green"><div class="stat-label">ยอดค้างรับรวม</div><div class="stat-num" id="inst-pending">-</div></div>
       </div>
+      <div class="card" style="padding:16px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;color:#8e8e93;margin-bottom:10px;">สร้าง/แก้ไขสัญญาผ่อน — กรอกรหัสเครื่องเพื่อดึงข้อมูล</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;">
+          <div class="field" style="flex:1;">
+            <label>รหัสเครื่อง (MC)</label>
+            <input type="text" id="inst-mc-input" placeholder="เช่น MC-1234" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <button class="btn btn-secondary" onclick="lookupInstDevice()">🔍 ดึงข้อมูล</button>
+        </div>
+        <div id="inst-device-info" style="display:none;background:#f5f5f7;border-radius:10px;padding:12px;font-size:13px;margin-bottom:8px;"></div>
+      </div>
       <div class="card">
         <div class="card-header"><span class="card-title">รายการผ่อนชำระ</span></div>
         <div id="inst-list">
@@ -905,6 +922,56 @@ function updateBadges() {
 // ===================================================================
 //  STOCK TABLE
 // ===================================================================
+function renderStockSummary(list) {
+  // Summary cards: unique model+storage+color+grade combos for พร้อมขาย
+  var available = list.filter(function(d){ return d.statusKey === 'พร้อมขาย'; });
+  var summary = {};
+  available.forEach(function(d) {
+    var key = [d.model, d.storage, d.color, d.grade].filter(Boolean).join(' · ');
+    summary[key] = (summary[key]||0) + 1;
+  });
+  var bar = document.getElementById('stock-summary-bar');
+  if (!bar) return;
+  var keys = Object.keys(summary);
+  if (!keys.length) { bar.innerHTML = ''; return; }
+  bar.innerHTML = '<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;padding:6px 0;width:100%;">สรุปพร้อมขาย</div>'
+    + keys.map(function(k) {
+      return '<div style="background:#fff;border:1px solid #e5e5ea;border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;">'
+        + '<span style="font-weight:500;color:#1d1d1f;">'+k+'</span>'
+        + '<span style="background:#e8f8ec;color:#1a7f37;font-weight:700;padding:2px 8px;border-radius:20px;font-size:12px;">'+summary[k]+'</span>'
+        + '</div>';
+    }).join('');
+
+  // Stale alert: พร้อมขาย/ของถึง นานกว่า 180 วัน
+  var now = Date.now();
+  var stale = list.filter(function(d) {
+    if (d.statusKey === 'ขายแล้ว') return false;
+    var dateStr = d.readyDate || d.date;
+    if (!dateStr) return false;
+    var diff = (now - new Date(dateStr).getTime()) / (1000*60*60*24);
+    return diff > 180;
+  });
+  var alertEl = document.getElementById('stock-stale-alert');
+  if (!alertEl) return;
+  if (stale.length) {
+    alertEl.style.display = 'block';
+    alertEl.innerHTML = '⚠️ <strong>แจ้งเตือน Stock ค้างนาน:</strong> มี '
+      + stale.length + ' เครื่องที่อยู่ใน Stock เกิน 6 เดือน: '
+      + stale.map(function(d){ return '<span style="font-family:monospace;">'+d.code+'</span> '+d.model; }).join(', ');
+  } else {
+    alertEl.style.display = 'none';
+  }
+}
+
+function deleteDevice(code) {
+  if (!confirm('ลบ ' + code + ' ออกจาก Stock? (ข้อมูลจะถูกลบในระบบ)')) return;
+  api('updateDeviceStatus', { code: code, status: 'ลบแล้ว' }).then(function() {
+    devices = devices.filter(function(d){ return d.code !== code; });
+    showToast('ลบ ' + code + ' เรียบร้อย');
+    renderStock(); renderDashboard(); updateBadges();
+  }).catch(function(e){ showToast('ลบไม่ได้: '+e.message, true); });
+}
+
 function renderStock() {
   var q       = (document.getElementById('stock-search')||{}).value||'';
   var statusF = chipFilters['stock-status'] || '';
@@ -972,6 +1039,13 @@ function renderStock() {
     return (a.code||'').localeCompare(b.code||'');
   });
 
+  // Build stock count map (พร้อมขาย)
+  var stockCount = {};
+  list.filter(function(d){ return d.statusKey === 'พร้อมขาย'; }).forEach(function(d) {
+    var k = [d.model, d.storage, d.color, d.grade].join('|');
+    stockCount[k] = (stockCount[k]||0) + 1;
+  });
+
   var rows = '';
   var lastBranch = '__none__';
 
@@ -1000,7 +1074,15 @@ function renderStock() {
       + '<td style="font-size:12px;color:#8e8e93;">'+htmlEsc(d.branch||'-')+'</td>'
       + '<td class="mono" style="font-size:12px;">'+(d.cost?Number(d.cost).toLocaleString():'-')+'</td>'
       + '<td>'+statusBadge(d.statusKey)+'</td>'
-      + '<td><button class="btn btn-secondary btn-sm" onclick="showDeviceDetail(this.dataset.code)" data-code="'+htmlEsc(d.code)+'">ดู</button></td>'
+      + (function(){
+          var k = [d.model,d.storage,d.color,d.grade].join('|');
+          var cnt = stockCount[k]||0;
+          return '<td style="text-align:center;">'+(d.statusKey==='พร้อมขาย'?'<span style="background:#e8f8ec;color:#1a7f37;font-weight:700;padding:2px 8px;border-radius:20px;font-size:11px;">'+cnt+'</span>':'-')+'</td>';
+        })()
+      + '<td style="display:flex;gap:4px;">'
+      + '<button class="btn btn-secondary btn-sm" onclick="showDeviceDetail(this.dataset.code)" data-code="'+htmlEsc(d.code)+'">ดู</button>'
+      + '<button class="btn btn-sm" style="background:#fdecea;color:#c0392b;border:none;" onclick="deleteDevice(this.dataset.code)" data-code="'+htmlEsc(d.code)+'" title="ลบ">✕</button>'
+      + '</td>'
       + '</tr>';
   });
 
@@ -1075,7 +1157,7 @@ function saveReceive() {
   if (!code) { showToast('กรุณากรอกรหัส Stock', true); return; }
   var data = {
     code      : code,
-    sourceType: (document.querySelector('input[name="rc-src-type"]:checked')||{value:''}).value,
+    sourceType: (function(){ var rr=document.getElementsByName('rc-src-type'); for(var i=0;i<rr.length;i++){if(rr[i].checked)return rr[i].value;} return ''; })(),
     source    : document.getElementById('rc-source').value,
     type      : document.getElementById('rc-type').value,
     model     : document.getElementById('rc-model').value,
@@ -1385,6 +1467,7 @@ function showReviewDetail(idx) {
     +'<div><span style="color:#8e8e93">อ้างอิง 1:</span> '+htmlEsc(r.ref1Name||'-')+(r.ref1Phone?' ('+r.ref1Phone+')':'')+'</div>'
     +'<div><span style="color:#8e8e93">อ้างอิง 2:</span> '+htmlEsc(r.ref2Name||'-')+(r.ref2Phone?' ('+r.ref2Phone+')':'')+'</div>'
     +(r.idphoto?'<div style="grid-column:1/-1;"><a href="'+r.idphoto+'" target="_blank" class="btn btn-secondary btn-sm">📷 รูปบัตรประชาชน</a></div>':'')
+    +'<div style="grid-column:1/-1;"><div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">Statement</div><input type="text" id="ap-statement" placeholder="ลิงก์ Statement..." style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
     +'</div>'
     +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">ราคา + งวด</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">'
@@ -1501,6 +1584,40 @@ function addSaleRecord(data) {
 // ===================================================================
 //  INSTALLMENT
 // ===================================================================
+function lookupInstDevice() {
+  var mc = document.getElementById('inst-mc-input').value.trim();
+  if (!mc) { showToast('กรุณากรอกรหัสเครื่อง', true); return; }
+  api('getDeviceData', { code: mc }).then(function(d) {
+    var el = document.getElementById('inst-device-info');
+    if (!d || !d.found) {
+      el.style.display = 'block';
+      el.innerHTML = '<span style="color:#ff3b30;">❌ ไม่พบรหัส '+mc+' ในระบบ</span>';
+      return;
+    }
+    el.style.display = 'block';
+    el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'
+      + '<div><span style="color:#8e8e93">รุ่น:</span> <strong>'+htmlEsc(d.model||'-')+'</strong></div>'
+      + '<div><span style="color:#8e8e93">ความจุ:</span> '+htmlEsc(d.storage||'-')+'</div>'
+      + '<div><span style="color:#8e8e93">สี:</span> '+htmlEsc(d.color||'-')+'</div>'
+      + '<div><span style="color:#8e8e93">เกรด:</span> '+gradeHtml(d.grade)+'</div>'
+      + '<div><span style="color:#8e8e93">SN:</span> <span style="font-family:monospace;font-size:11px;">'+htmlEsc(d.sn||'-')+'</span></div>'
+      + '<div><span style="color:#8e8e93">สถานะ:</span> '+statusBadge(d.status||d.statusKey||'-')+'</div>'
+      + '</div>'
+      + '<div style="margin-top:10px;padding-top:10px;border-top:1px solid #e5e5ea;display:flex;gap:8px;">'
+      + '<button class="btn btn-blue btn-sm" onclick="openApproveWithDevice(this.dataset.mc)" data-mc="'+htmlEsc(mc)+'">📋 สร้างสัญญาผ่อน</button>'
+      + '</div>';
+    showToast('พบข้อมูล ' + mc);
+  }).catch(function(e){ showToast('ค้นหาไม่ได้: '+e.message, true); });
+}
+
+function openApproveWithDevice(mc) {
+  var d = devices.find(function(x){ return x.code === mc || x.code === 'MC-'+mc; });
+  if (!d) { showToast('ไม่พบเครื่องใน Stock', true); return; }
+  // Pre-select device in review modal — open approve modal with this device
+  showToast('กรุณาไปที่ ตรวจเอกสาร เพื่ออนุมัติสัญญา');
+  showPage('review');
+}
+
 function renderInstallment() {
   // ดึงจาก reviewData ที่ผ่านแล้วและมีข้อมูลสัญญา
   var list = reviewData.filter(function(r){ return r.status === 'ผ่าน' && r.contractNo; });
@@ -1684,8 +1801,11 @@ function updateCheckSummary() {
 }
 
 function toggleSourceInput() {
-  var type = document.querySelector('input[name="rc-src-type"]:checked');
-  if (type) document.getElementById('rc-source').placeholder = type.value === 'ร้านค้า' ? 'ชื่อร้านค้า' : 'ชื่อลูกค้า';
+  var radios = document.getElementsByName('rc-src-type');
+  var val = '';
+  for (var i=0; i<radios.length; i++) { if (radios[i].checked) { val = radios[i].value; break; } }
+  var el = document.getElementById('rc-source');
+  if (el) el.placeholder = val.indexOf('shop') >= 0 || val === 'ร้านค้า' ? 'ชื่อร้านค้า' : 'ชื่อลูกค้า';
 }
 </script>
 </body>
