@@ -67,7 +67,7 @@ html,body{height:100%;background:#f5f5f7;color:#1d1d1f;font-family:-apple-system
 .stat-card.orange .stat-num{color:#ff9500;}
 
 /* BRANCH GRID */
-.branch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
+.branch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;max-height:none;}
 .branch-card{background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:16px 18px;}
 .branch-name{font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 .branch-dot{width:6px;height:6px;border-radius:50%;background:#34c759;}
@@ -344,33 +344,33 @@ input[type=range]{accent-color:#007aff;width:100%;}
         </div>
       </div>
 
-      <!-- Import Excel + Recent -->
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">รับเข้าล่าสุด</span>
-            <span class="card-count" id="d-recent-count"></span>
+      <!-- Import Excel -->
+      <div class="card" style="padding:16px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:2px;">📥 นำเข้า Stock จาก Excel / CSV</div>
+            <div style="font-size:11px;color:#8e8e93;">อัพโหลดไฟล์แล้วระบบจะบันทึกลง Stock อัตโนมัติ</div>
           </div>
-          <table>
-            <thead><tr><th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th></tr></thead>
-            <tbody id="d-recent-tbody"></tbody>
-          </table>
-        </div>
-        <div>
-          <!-- Import Excel Card -->
-          <div class="card" style="padding:16px;">
-            <div style="font-size:13px;font-weight:600;margin-bottom:4px;">📥 นำเข้า Stock จาก Excel</div>
-            <div style="font-size:11px;color:#8e8e93;margin-bottom:12px;">อัพโหลดไฟล์ .xlsx / .csv</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="file" id="import-file" accept=".xlsx,.csv" style="display:none;" onchange="handleImportFile(this)">
-            <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-bottom:8px;" onclick="document.getElementById('import-file').click()">
-              📂 เลือกไฟล์ Excel / CSV
-            </button>
-            <button class="btn btn-secondary" style="width:100%;justify-content:center;font-size:12px;" onclick="showImportGuide()">
-              📋 ดูวิธีสร้างไฟล์ Excel
-            </button>
-            <div id="import-status" style="margin-top:10px;font-size:12px;"></div>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('import-file').click()">📂 เลือกไฟล์</button>
+            <button class="btn btn-secondary btn-sm" onclick="showImportGuide()">📋 ดูวิธีสร้างไฟล์</button>
+            <button class="btn btn-secondary btn-sm" onclick="downloadSampleExcel()">⬇️ Template</button>
           </div>
         </div>
+        <div id="import-status" style="margin-top:8px;font-size:12px;"></div>
+      </div>
+
+      <!-- Recent Table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">รับเข้าล่าสุด</span>
+          <span class="card-count" id="d-recent-count"></span>
+        </div>
+        <table>
+          <thead><tr><th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th></tr></thead>
+          <tbody id="d-recent-tbody"></tbody>
+        </table>
       </div>
     </div>
 
