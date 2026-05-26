@@ -953,7 +953,7 @@ function renderStock() {
       + '<td style="font-size:12px;color:#8e8e93;">'+htmlEsc(d.branch||'-')+'</td>'
       + '<td class="mono" style="font-size:12px;">'+(d.cost?Number(d.cost).toLocaleString():'-')+'</td>'
       + '<td>'+statusBadge(d.statusKey)+'</td>'
-      + '<td><button class="btn btn-secondary btn-sm" onclick="showDeviceDetail(\''+htmlEsc(d.code)+'\')">ดู</button></td>'
+      + '<td><button class="btn btn-secondary btn-sm" onclick="showDeviceDetail(this.dataset.code)" data-code="'+htmlEsc(d.code)+'">ดู</button></td>'
       + '</tr>';
   });
 
