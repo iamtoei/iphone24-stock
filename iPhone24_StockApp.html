@@ -784,7 +784,7 @@ input[type=range]{accent-color:#007aff;width:100%;}
 // ===================================================================
 //  CONFIG
 // ===================================================================
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby36MBEzaVeucD4jf7HpvzJHHR2R_i4Hl2SBnHyam8ulH9SKmlnQlZzJ_FyYGkqpcWXUw/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGI_mH3i_ff8WgcZJD_wjW46M_p1TZ0DJSoPs1zHwISx4c4t-kESEmEmz1XwJJ-hviUw/exec';
 var FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSedcygoeJAhlim3dCqYoHewdxYJ7F3CDAF6rZEaohHWVY4qJQ/viewform';
 
 var BRANCHES = ['สันติธรรม','แจ่มฟ้า','หน้ามอ','ศึกษา'];
@@ -1379,6 +1379,7 @@ function renderStock() {
         })()
       + '<td style="display:flex;gap:4px;">'
       + '<button class="btn btn-secondary btn-sm" onclick="showDeviceDetail(this.dataset.code)" data-code="'+htmlEsc(d.code)+'">ดู</button>'
+      + '<button class="btn btn-blue btn-sm" onclick="showEditDevice(this.dataset.code)" data-code="'+htmlEsc(d.code)+'">แก้ไข</button>'
       + '<button class="btn btn-sm" style="background:#fdecea;color:#c0392b;border:none;" onclick="deleteDevice(this.dataset.code)" data-code="'+htmlEsc(d.code)+'" title="ลบ">✕</button>'
       + '</td>'
       + '</tr>';
@@ -1388,6 +1389,63 @@ function renderStock() {
     '<tr><td colspan="10" style="text-align:center;color:#8e8e93;padding:24px;">ไม่พบข้อมูล</td></tr>';
 }
 
+
+function showEditDevice(code) {
+  var d = devices.find(function(x){ return x.code === code; });
+  if (!d) return;
+  var modal = document.getElementById('modal-device');
+  modal.innerHTML = '<div class="modal-title">✏️ แก้ไขเครื่อง</div>'
+    + '<div class="modal-sub" style="font-family:monospace;">'+htmlEsc(d.code||'')+'</div>'
+    + '<div class="form-grid" style="margin-bottom:16px;">'
+    + '<div class="field"><label>รุ่น</label><input id="ed-model" value="'+htmlEsc(d.model||'')+'" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;"></div>'
+    + '<div class="field"><label>ความจุ</label><input id="ed-storage" value="'+htmlEsc(d.storage||'')+'" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;"></div>'
+    + '<div class="field"><label>สี</label><input id="ed-color" value="'+htmlEsc(d.color||'')+'" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;"></div>'
+    + '<div class="field"><label>เกรด</label><select id="ed-grade" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;">'
+    + ['A++','A+','A','B','C','D'].map(function(g){ return '<option value="'+g+'"'+(d.grade===g?' selected':'')+'>'+g+'</option>'; }).join('')
+    + '</select></div>'
+    + '<div class="field"><label>แบต %</label><input id="ed-bat" type="number" min="0" max="100" value="'+(d.bat||0)+'" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;"></div>'
+    + '<div class="field"><label>ราคาทุน ฿</label><input id="ed-cost" type="number" value="'+(d.cost||0)+'" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;"></div>'
+    + '<div class="field"><label>SN / IMEI</label><input id="ed-sn" value="'+htmlEsc(d.sn||'')+'" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;"></div>'
+    + '<div class="field"><label>สาขา</label><select id="ed-branch" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;">'
+    + BRANCHES.map(function(b){ return '<option value="'+b+'"'+(d.branch===b?' selected':'')+'>'+b+'</option>'; }).join('')
+    + '</select></div>'
+    + '<div class="field"><label>สถานะ</label><select id="ed-status" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;">'
+    + ['ของถึง','รอเช็ค','พร้อมขาย','ขายแล้ว'].map(function(s){ return '<option value="'+s+'"'+(d.statusKey===s?' selected':'')+'>'+s+'</option>'; }).join('')
+    + '</select></div>'
+    + '<div class="field"><label>แหล่งที่มา</label><input id="ed-source" value="'+htmlEsc(d.source||'')+'" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;width:100%;"></div>'
+    + '</div>'
+    + '<div style="display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid #f2f2f7;">'
+    + '<button class="btn btn-secondary" onclick="closeModal(&quot;overlay-device&quot;)">ยกเลิก</button>'
+    + '<button class="btn btn-primary" onclick="saveEditDevice(this.dataset.code)" data-code="'+htmlEsc(code)+'">💾 บันทึก</button>'
+    + '</div>';
+  document.getElementById('overlay-device').classList.add('open');
+}
+
+function saveEditDevice(code) {
+  var d = devices.find(function(x){ return x.code === code; });
+  if (!d) return;
+  var updated = {
+    code      : code,
+    model     : document.getElementById('ed-model').value,
+    storage   : document.getElementById('ed-storage').value,
+    color     : document.getElementById('ed-color').value,
+    grade     : document.getElementById('ed-grade').value,
+    bat       : parseInt(document.getElementById('ed-bat').value)||0,
+    cost      : parseFloat(document.getElementById('ed-cost').value)||0,
+    sn        : document.getElementById('ed-sn').value,
+    branch    : document.getElementById('ed-branch').value,
+    statusKey : document.getElementById('ed-status').value,
+    source    : document.getElementById('ed-source').value,
+  };
+  showToast('⏳ กำลังบันทึก...');
+  api('saveDevice', updated).then(function() {
+    Object.assign(d, updated);
+    try { localStorage.setItem('ip24_devices', JSON.stringify(devices)); } catch(e) {}
+    closeModal('overlay-device');
+    renderStock(); renderDashboard(); updateBadges();
+    showToast('แก้ไข '+code+' เรียบร้อย ✓');
+  }).catch(function(e){ showToast('บันทึกไม่ได้: '+e.message, true); });
+}
 
 function showDeviceDetail(code) {
   var d = devices.find(function(x){ return x.code === code; });
@@ -1618,24 +1676,31 @@ function saveReceive() {
   if (receiveMode === 'check') {
     // เพิ่ม checklist data
     var sels = document.querySelectorAll('#rc-checklist select');
-    var pass = 0, fail = 0, failList = [];
+    var pass = 0, fail = 0, failList = [], checkItems = [];
     sels.forEach(function(s, i) {
       var item = s.closest('div').querySelector('span:nth-child(2)');
-      var label = item ? item.textContent : ('รายการ '+(i+1));
-      if (s.value === 'ปกติ') pass++;
-      else if (s.value === 'ไม่ปกติ') { fail++; failList.push(label); }
+      var label = item ? item.textContent.trim() : ('รายการ '+(i+1));
+      var noteEl = s.closest('div').querySelector('input[type=text]');
+      var note = noteEl ? noteEl.value : '';
+      var result = s.value;
+      if (result === 'ปกติ') pass++;
+      else if (result === 'ไม่ปกติ') { fail++; failList.push(label); }
+      checkItems.push({ label: label, result: result, note: note });
     });
-    data.passCount = pass;
-    data.failCount = fail;
-    data.failList  = failList;
-    data.mc        = code;
-    data.warSt     = data.warranty;
-    data.warDate   = data.warrantyDate;
-    data.faceJo    = data.screen;
+    data.passCount  = pass;
+    data.failCount  = fail;
+    data.failList   = failList;
+    data.checkItems = checkItems;
+    data.mc         = code;
+    data.warSt      = data.warranty;
+    data.warDate    = data.warrantyDate;
+    data.faceJo     = data.screen;
+    // ใช้ writeCheckSheet แทน saveCheckResult เพื่อเขียนลง Sheet ด้วย
+    action = 'writeCheckSheet';
   }
   showToast('⏳ กำลังบันทึก...');
   api(action, data).then(function() {
-    var msg = receiveMode === 'check' ? 'เช็คละเอียด ' + code + ' เรียบร้อย ✓ สถานะ → พร้อมขาย' : 'บันทึกเครื่อง ' + code + ' เรียบร้อย ✓';
+    var msg = receiveMode === 'check' ? 'เช็คละเอียด ' + code + ' เรียบร้อย ✓ บันทึกลงชีตแล้ว' : 'บันทึกเครื่อง ' + code + ' เรียบร้อย ✓';
     showToast(msg);
     // update local
     var idx = devices.findIndex(function(x){ return x.code === code; });
