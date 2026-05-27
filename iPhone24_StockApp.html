@@ -356,6 +356,7 @@ input[type=range]{accent-color:#007aff;width:100%;}
             <button class="btn btn-primary btn-sm" onclick="document.getElementById('import-file').click()">📂 เลือกไฟล์</button>
             <button class="btn btn-secondary btn-sm" onclick="showImportGuide()">📋 ดูวิธีสร้างไฟล์</button>
             <button class="btn btn-secondary btn-sm" onclick="downloadSampleExcel()">⬇️ Template</button>
+            <button class="btn btn-sm" style="background:#fdecea;color:#c0392b;border:none;" onclick="clearAllStock()">🗑 ล้าง Stock ทั้งหมด</button>
           </div>
         </div>
         <div id="import-status" style="margin-top:8px;font-size:12px;"></div>
@@ -1191,6 +1192,25 @@ function handleImportFile(input) {
   };
   reader.readAsText(file, 'UTF-8');
   input.value = ''; // reset
+}
+
+function clearAllStock() {
+  if (!confirm('ลบ Stock ทั้งหมดออกจากระบบ? ข้อมูลจะหายถาวร')) return;
+  if (!confirm('ยืนยันอีกครั้ง — ลบจริงๆ ใช่ไหม?')) return;
+  
+  var statusEl = document.getElementById('import-status');
+  statusEl.innerHTML = '⏳ กำลังล้าง Stock...';
+  
+  api('clearAllStock').then(function(res) {
+    devices = [];
+    try { localStorage.removeItem('ip24_devices'); } catch(e) {}
+    renderDashboard(); renderStock(); renderSellList(); updateBadges();
+    statusEl.innerHTML = '✅ ล้าง Stock เรียบร้อย — พร้อม import ใหม่';
+    showToast('ล้าง Stock เรียบร้อย ✓');
+  }).catch(function(e) {
+    statusEl.innerHTML = '❌ ล้างไม่ได้: ' + e.message;
+    showToast('ล้างไม่ได้: ' + e.message, true);
+  });
 }
 
 function updateBadges() {
