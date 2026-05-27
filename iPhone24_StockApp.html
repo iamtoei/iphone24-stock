@@ -1424,6 +1424,7 @@ function showEditDevice(code) {
 function saveEditDevice(code) {
   var d = devices.find(function(x){ return x.code === code; });
   if (!d) return;
+  var newStatus = document.getElementById('ed-status').value;
   var updated = {
     code      : code,
     model     : document.getElementById('ed-model').value,
@@ -1434,10 +1435,12 @@ function saveEditDevice(code) {
     cost      : parseFloat(document.getElementById('ed-cost').value)||0,
     sn        : document.getElementById('ed-sn').value,
     branch    : document.getElementById('ed-branch').value,
-    statusKey : document.getElementById('ed-status').value,
+    statusKey : newStatus,
     source    : document.getElementById('ed-source').value,
+    status    : newStatus,
   };
   showToast('⏳ กำลังบันทึก...');
+  // ใช้ saveDevice เพื่อให้ writeBranchStock ทำงานด้วย
   api('saveDevice', updated).then(function() {
     Object.assign(d, updated);
     try { localStorage.setItem('ip24_devices', JSON.stringify(devices)); } catch(e) {}
