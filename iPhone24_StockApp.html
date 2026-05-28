@@ -1,221 +1,1011 @@
-<!-- =====================================================================
-  PATCH v3 — Index.html
-  วิธีใช้: แทนที่ฟังก์ชัน showReviewDetail() ใน <script> เดิมทั้งหมด
-  และเพิ่มฟังก์ชัน ap* ต่อท้าย script เดิม (ก่อน </script>)
-  ===================================================================== -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iPhone 24 — Stock System</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+html,body{height:100%;background:#f5f5f7;color:#1d1d1f;font-family:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:14px;}
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:220px;min-width:220px;height:100vh;background:#fff;border-right:1px solid #e5e5ea;display:flex;flex-direction:column;flex-shrink:0;}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid #f2f2f7;}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:#1d1d1f;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-name{font-size:15px;font-weight:600;color:#1d1d1f;letter-spacing:-.3px;}
+.logo-sub{font-size:10px;color:#8e8e93;letter-spacing:.5px;text-transform:uppercase;margin-top:1px;}
+.nav{padding:8px;flex:1;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;color:#3a3a3c;font-size:13px;font-weight:400;transition:background .12s;margin-bottom:1px;border:none;background:transparent;width:100%;text-align:left;font-family:inherit;}
+.nav-item:hover{background:#f5f5f7;} .nav-item.active{background:#f5f5f7;color:#1d1d1f;font-weight:500;}
+.nav-icon{font-size:15px;width:22px;text-align:center;opacity:.7;} .nav-item.active .nav-icon{opacity:1;}
+.nav-badge{margin-left:auto;background:#1d1d1f;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center;}
+.sidebar-bottom{padding:10px 8px;border-top:1px solid #f2f2f7;}
+.branch-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;font-size:12px;color:#3a3a3c;font-family:inherit;cursor:pointer;outline:none;}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0;}
+.topbar{height:52px;min-height:52px;background:#fff;border-bottom:1px solid #e5e5ea;display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.topbar-title{font-size:15px;font-weight:600;color:#1d1d1f;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.content{flex:1;overflow-y:auto;padding:20px 24px;}
+.page{display:none;} .page.show{display:block;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .12s;font-family:inherit;white-space:nowrap;}
+.btn-primary{background:#1d1d1f;color:#fff;} .btn-primary:hover{background:#3a3a3c;}
+.btn-secondary{background:#f5f5f7;color:#1d1d1f;border:1px solid #e5e5ea;} .btn-secondary:hover{background:#e5e5ea;}
+.btn-green{background:#34c759;color:#fff;} .btn-green:hover{background:#28a745;}
+.btn-blue{background:#007aff;color:#fff;} .btn-blue:hover{background:#0062cc;}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.card{background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden;}
+.card-header{padding:14px 18px;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;}
+.card-title{font-size:13px;font-weight:600;color:#1d1d1f;}
+.card-count{font-size:12px;color:#8e8e93;margin-left:auto;}
+.stats-row{display:flex;gap:12px;margin-bottom:18px;}
+.stat-card{flex:1;background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:16px 18px;}
+.stat-label{font-size:11px;color:#8e8e93;margin-bottom:6px;font-weight:500;}
+.stat-num{font-size:26px;font-weight:700;color:#1d1d1f;letter-spacing:-1px;line-height:1;}
+.stat-sub{font-size:11px;color:#8e8e93;margin-top:4px;}
+.stat-card.green .stat-num{color:#34c759;} .stat-card.blue .stat-num{color:#007aff;} .stat-card.orange .stat-num{color:#ff9500;}
+.branch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
+.branch-card{background:#fff;border-radius:14px;border:1px solid #e5e5ea;padding:16px 18px;}
+.branch-name{font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.branch-dot{width:6px;height:6px;border-radius:50%;background:#34c759;}
+.branch-stats{display:flex;} .bstat{flex:1;text-align:center;} .bstat+.bstat{border-left:1px solid #f2f2f7;}
+.bstat-num{font-size:20px;font-weight:700;color:#1d1d1f;} .bstat-label{font-size:10px;color:#8e8e93;margin-top:3px;}
+.bstat-num.green{color:#34c759;} .bstat-num.orange{color:#ff9500;}
+table{width:100%;border-collapse:collapse;}
+thead th{text-align:left;font-size:11px;font-weight:600;color:#8e8e93;padding:10px 14px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid #f2f2f7;background:#fafafa;white-space:nowrap;}
+tbody td{padding:11px 14px;border-bottom:1px solid #f2f2f7;font-size:13px;color:#1d1d1f;vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;} tbody tr:hover{background:#fafafa;}
+.mono{font-family:'SF Mono','Courier New',monospace;font-size:12px;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;}
+.badge-green{background:#e8f8ec;color:#1a7f37;} .badge-gray{background:#f5f5f7;color:#6e6e73;}
+.badge-orange{background:#fff4e6;color:#c45000;} .badge-blue{background:#e8f0fe;color:#1a56db;}
+.badge-red{background:#fdecea;color:#c0392b;}
+.grade{display:inline-flex;align-items:center;justify-content:center;width:30px;height:22px;border-radius:5px;font-size:11px;font-weight:700;font-family:'SF Mono','Courier New',monospace;}
+.g-app{background:#fff4e6;color:#c45000;} .g-ap{background:#e8f8ec;color:#1a7f37;}
+.g-a{background:#e8f0fe;color:#1a56db;} .g-b{background:#fef9e7;color:#7d6608;}
+.g-c{background:#fdecea;color:#c0392b;} .g-d{background:#f5f5f7;color:#6e6e73;}
+.bat-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-family:'SF Mono','Courier New',monospace;}
+.bat-bar{width:32px;height:4px;background:#e5e5ea;border-radius:2px;overflow:hidden;}
+.bat-fill{height:100%;border-radius:2px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;} .form-full{grid-column:1/-1;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.3px;text-transform:uppercase;}
+.field input,.field select,.field textarea{padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;background:#fff;font-size:13px;color:#1d1d1f;outline:none;font-family:inherit;transition:border .12s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#007aff;box-shadow:0 0 0 3px rgba(0,122,255,.1);}
+.field textarea{resize:vertical;min-height:60px;}
+.grade-picker{display:flex;gap:6px;flex-wrap:wrap;}
+.grade-btn{padding:5px 12px;border-radius:8px;border:1px solid #e5e5ea;background:#f5f5f7;color:#3a3a3c;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;font-family:'SF Mono','Courier New',monospace;}
+.grade-btn.sel{background:#1d1d1f;color:#fff;border-color:#1d1d1f;}
+.bat-display-bar{flex:1;height:6px;background:#e5e5ea;border-radius:3px;overflow:hidden;}
+.bat-display-fill{height:100%;border-radius:3px;background:#34c759;transition:width .2s,background .2s;}
+.bat-val{font-size:13px;font-family:'SF Mono','Courier New',monospace;color:#3a3a3c;min-width:36px;}
+.filter-bar{display:flex;gap:6px;padding:12px 18px;border-bottom:1px solid #f2f2f7;overflow-x:auto;flex-shrink:0;}
+.chip{padding:4px 12px;border-radius:20px;font-size:12px;border:1px solid #e5e5ea;color:#3a3a3c;cursor:pointer;white-space:nowrap;background:#fff;transition:all .12s;font-family:inherit;}
+.chip.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f;font-weight:500;}
+.search-wrap{display:flex;align-items:center;gap:8px;background:#f5f5f7;border-radius:8px;padding:7px 12px;border:1px solid transparent;transition:border .12s;}
+.search-wrap:focus-within{border-color:#007aff;background:#fff;}
+.search-wrap input{background:none;border:none;outline:none;font-size:13px;color:#1d1d1f;width:180px;font-family:inherit;}
+.search-wrap input::placeholder{color:#c7c7cc;}
+.sell-layout{display:grid;grid-template-columns:1fr 340px;gap:16px;}
+.device-list{max-height:280px;overflow-y:auto;}
+.device-row{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:background .1s;border-bottom:1px solid #f2f2f7;}
+.device-row:last-child{border-bottom:none;} .device-row:hover{background:#fafafa;} .device-row.selected{background:#f0f7ff;}
+.device-row-icon{font-size:20px;width:30px;text-align:center;}
+.device-row-info{flex:1;min-width:0;}
+.device-row-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.device-row-meta{font-size:11px;color:#8e8e93;font-family:'SF Mono','Courier New',monospace;margin-top:2px;}
+.device-check{width:20px;height:20px;border-radius:50%;border:2px solid #e5e5ea;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.device-row.selected .device-check{background:#007aff;border-color:#007aff;color:#fff;}
+.price-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.price-label{font-size:12px;color:#8e8e93;width:90px;flex-shrink:0;font-weight:500;}
+.price-input{flex:1;padding:8px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:14px;font-weight:600;color:#1d1d1f;outline:none;font-family:inherit;}
+.price-input:focus{border-color:#007aff;}
+.profit-card{background:#e8f8ec;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.profit-card.loss{background:#fdecea;}
+.profit-value{font-size:20px;font-weight:700;color:#1a7f37;font-family:'SF Mono','Courier New',monospace;}
+.profit-card.loss .profit-value{color:#c0392b;}
+.mode-tabs{display:flex;gap:2px;background:#f5f5f7;border-radius:10px;padding:3px;}
+.mode-tab{flex:1;padding:7px;text-align:center;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;transition:all .12s;font-family:inherit;color:#8e8e93;}
+.mode-tab.active{background:#fff;color:#1d1d1f;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.receive-layout{display:grid;grid-template-columns:1fr 320px;gap:16px;}
+.recent-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#f5f5f7;margin-bottom:8px;}
+.recent-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0;}
+.recent-info{flex:1;min-width:0;}
+.recent-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.recent-meta{font-size:11px;color:#8e8e93;margin-top:2px;font-family:'SF Mono','Courier New',monospace;}
+.review-row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f2f2f7;cursor:pointer;transition:background .1s;}
+.review-row:hover{background:#fafafa;}
+.review-avatar{width:36px;height:36px;border-radius:10px;background:#f5f5f7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.review-info{flex:1;min-width:0;}
+.review-name{font-size:13px;font-weight:500;}
+.review-meta{font-size:11px;color:#8e8e93;margin-top:2px;font-family:'SF Mono','Courier New',monospace;}
+.inst-row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f2f2f7;cursor:pointer;}
+.inst-row:hover{background:#fafafa;}
+.inst-info{flex:1;min-width:0;}
+.inst-name{font-size:13px;font-weight:500;}
+.inst-meta{font-size:11px;color:#8e8e93;margin-top:2px;font-family:'SF Mono','Courier New',monospace;}
+.progress-bar{height:3px;background:#e5e5ea;border-radius:2px;overflow:hidden;margin-top:6px;}
+.progress-fill{height:100%;border-radius:2px;background:#007aff;}
+.inst-right{text-align:right;flex-shrink:0;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border-radius:18px;width:600px;max-width:94vw;max-height:90vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.15);}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:#8e8e93;margin-bottom:20px;}
+.empty{text-align:center;padding:48px 20px;}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-text{font-size:13px;color:#8e8e93;}
+.toast{position:fixed;bottom:24px;right:24px;z-index:200;background:#1d1d1f;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all .25s cubic-bezier(.34,1.4,.64,1);box-shadow:0 8px 30px rgba(0,0,0,.2);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:#34c759;flex-shrink:0;}
+.toast-dot.err{background:#ff3b30;}
+.ap-dropzone{border:2px dashed #e5e5ea;border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:#fafafa;transition:all .15s;margin-bottom:8px;}
+.ap-dropzone:hover,.ap-dropzone.dragover{border-color:#007aff;background:#f0f7ff;}
+@media print{.sidebar,.topbar,.btn,.overlay{display:none!important;}.main{height:auto;overflow:visible;}}
+#print-area{display:none;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="logo-wrap"><div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="9" y1="7" x2="15" y2="7"/><circle cx="12" cy="17" r="1.2" fill="#fff" stroke="none"/></svg></div><div><div class="logo-name">iPhone 24</div><div class="logo-sub">Stock System</div></div></div></div>
+  <nav class="nav">
+    <button class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">◈</span> Dashboard</button>
+    <button class="nav-item" onclick="showPage('stock')"><span class="nav-icon">▦</span> Stock<span class="nav-badge" id="stock-badge">0</span></button>
+    <button class="nav-item" onclick="showPage('receive')"><span class="nav-icon">↓</span> รับเครื่องเข้า</button>
+    <button class="nav-item" onclick="showPage('sell')"><span class="nav-icon">↗</span> ขาย</button>
+    <button class="nav-item" onclick="showPage('review');loadReview();"><span class="nav-icon">🔍</span> ตรวจเอกสาร<span class="nav-badge" id="review-badge">0</span></button>
+    <button class="nav-item" onclick="showPage('installment')"><span class="nav-icon">📋</span> ผ่อนชำระ</button>
+  </nav>
+  <div class="sidebar-bottom"><select class="branch-select" id="branch-filter" onchange="applyBranchFilter()"><option value="">ทุกสาขา</option></select></div>
+</div>
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Dashboard</span>
+    <div class="topbar-right">
+      <button class="btn btn-secondary btn-sm" onclick="syncFromServer()" id="sync-btn">⟳ ซิงค์</button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('receive')">+ รับเครื่องเข้า</button>
+    </div>
+  </div>
+  <div class="content">
 
-<!-- ══════════════════════════════════════════════════════════════════
-  STEP 1 — ค้นหาบรรทัดนี้ใน <script> เดิม:
-    function showReviewDetail(idx) {
-  แล้วแทนที่ทั้งฟังก์ชัน (จนถึง } ปิดสุดท้าย) ด้วยโค้ดด้านล่าง
-══════════════════════════════════════════════════════════════════ -->
-<script id="patch-showReviewDetail-replacement">
-/*
-  ── แทนที่ฟังก์ชัน showReviewDetail เดิมทั้งหมด ──────────────────────
-  (ลบตั้งแต่ function showReviewDetail(idx) { ... } ออกทั้งก้อน
-   แล้ววางอันนี้แทน)
-*/
-function showReviewDetail(idx) {
-  // reset upload state
-  _apFiles    = [];
-  _apUploaded = [];
+    <div class="page show" id="page-dashboard">
+      <div class="stats-row">
+        <div class="stat-card green"><div class="stat-label">พร้อมขาย</div><div class="stat-num" id="d-ready">0</div><div class="stat-sub">เครื่อง</div></div>
+        <div class="stat-card"><div class="stat-label">ขายแล้ว</div><div class="stat-num" id="d-sold">0</div><div class="stat-sub">เครื่อง</div></div>
+        <div class="stat-card orange"><div class="stat-label">รอเช็คเครื่อง</div><div class="stat-num" id="d-check">0</div><div class="stat-sub">เครื่อง</div></div>
+        <div class="stat-card blue"><div class="stat-label">Stock ทั้งหมด</div><div class="stat-num" id="d-total">0</div><div class="stat-sub">เครื่องในระบบ</div></div>
+      </div>
+      <div class="branch-grid" id="branch-grid"></div>
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-header"><span class="card-title">💰 ต้นทุน Stock (เฉพาะยังไม่ขาย)</span><span class="card-count" id="d-cost-total" style="font-size:13px;font-weight:700;color:#1d1d1f;"></span></div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);">
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;"><div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">📱 iPhone</div><div style="font-size:16px;font-weight:700;" id="dc-iphone">-</div><div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-iphone"></div></div>
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;"><div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">📱 iPad</div><div style="font-size:16px;font-weight:700;" id="dc-ipad">-</div><div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-ipad"></div></div>
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;"><div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">💻 Mac</div><div style="font-size:16px;font-weight:700;" id="dc-mac">-</div><div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-mac"></div></div>
+          <div style="padding:14px 16px;border-right:1px solid #f2f2f7;"><div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">⌚ Watch</div><div style="font-size:16px;font-weight:700;" id="dc-watch">-</div><div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-watch"></div></div>
+          <div style="padding:14px 16px;"><div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:6px;">🎧 Acc</div><div style="font-size:16px;font-weight:700;" id="dc-acc">-</div><div style="font-size:11px;color:#8e8e93;margin-top:3px;" id="dcc-acc"></div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div><div style="font-size:13px;font-weight:600;margin-bottom:2px;">📥 นำเข้า Stock จาก Excel / CSV</div><div style="font-size:11px;color:#8e8e93;">อัพโหลดไฟล์แล้วระบบจะบันทึกลง Stock อัตโนมัติ</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="file" id="import-file" accept=".xlsx,.csv" style="display:none;" onchange="handleImportFile(this)">
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('import-file').click()">📂 เลือกไฟล์</button>
+            <button class="btn btn-secondary btn-sm" onclick="downloadSampleExcel()">⬇️ Template</button>
+            <button class="btn btn-sm" style="background:#fdecea;color:#c0392b;border:none;" onclick="clearAllStock()">🗑 ล้าง Stock</button>
+          </div>
+        </div>
+        <div id="import-status" style="margin-top:8px;font-size:12px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">รับเข้าล่าสุด</span><span class="card-count" id="d-recent-count"></span></div>
+        <table><thead><tr><th>รหัส</th><th>รุ่น</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>สถานะ</th></tr></thead><tbody id="d-recent-tbody"></tbody></table>
+      </div>
+    </div>
 
-  var r = reviewData[idx];
-  if (!r) return;
-  var readyDevices = devices.filter(function(d){ return d.statusKey === 'พร้อมขาย'; });
-  var deviceOpts = readyDevices.map(function(d, i) {
-    return '<div id="ap-dev-'+i+'" onclick="selApproveDevice('+i+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;background:#fff;transition:background .1s;">'
+    <div class="page" id="page-stock">
+      <div id="stock-summary-bar" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;"></div>
+      <div id="stock-stale-alert" style="display:none;background:#fff4e6;border:1px solid #ff9500;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#c45000;"></div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Stock ทั้งหมด</span><div class="topbar-right" style="margin-left:auto;"><div class="search-wrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="ค้นหา รุ่น/รหัส/สี..." id="stock-search" oninput="renderStock()"></div></div></div>
+        <div class="filter-bar">
+          <span class="chip active" onclick="setChip(this,'stock-type','')" data-group="stock-type">📦 ทั้งหมด</span>
+          <span class="chip" onclick="setChip(this,'stock-type','iphone')" data-group="stock-type">📱 iPhone</span>
+          <span class="chip" onclick="setChip(this,'stock-type','ipad')" data-group="stock-type">📱 iPad</span>
+          <span class="chip" onclick="setChip(this,'stock-type','mac')" data-group="stock-type">💻 Mac</span>
+          <span class="chip" onclick="setChip(this,'stock-type','watch')" data-group="stock-type">⌚ Watch</span>
+          <span class="chip" onclick="setChip(this,'stock-type','airpods')" data-group="stock-type">🎧 Acc</span>
+          <span style="border-left:1px solid #e5e5ea;margin:0 6px;"></span>
+          <span class="chip active" onclick="setChip(this,'stock-status','')" data-group="stock-status">สถานะทั้งหมด</span>
+          <span class="chip" onclick="setChip(this,'stock-status','พร้อมขาย')" data-group="stock-status">พร้อมขาย</span>
+          <span class="chip" onclick="setChip(this,'stock-status','ของถึง')" data-group="stock-status">ของถึง</span>
+          <span class="chip" onclick="setChip(this,'stock-status','รอเช็ค')" data-group="stock-status">รอเช็ค</span>
+          <span class="chip" onclick="setChip(this,'stock-status','ขายแล้ว')" data-group="stock-status">ขายแล้ว</span>
+        </div>
+        <table><thead><tr><th>รหัส</th><th>รุ่น</th><th>ความจุ</th><th>สี</th><th>เกรด</th><th>แบต</th><th>สาขา</th><th>ทุน</th><th>สถานะ</th><th style="text-align:center;">คงเหลือ</th><th></th></tr></thead><tbody id="stock-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="page" id="page-receive">
+      <div class="receive-layout">
+        <div class="card" style="padding:20px;">
+          <div class="mode-tabs" style="margin-bottom:18px;max-width:400px;">
+            <button class="mode-tab active" id="rc-tab-new" onclick="setReceiveMode('new',this)">📥 รับเครื่องใหม่</button>
+            <button class="mode-tab" id="rc-tab-check" onclick="setReceiveMode('check',this)">🔍 เช็คละเอียด</button>
+          </div>
+          <div id="rc-lookup-bar" style="display:none;background:#f5f5f7;border-radius:12px;padding:14px;margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:600;color:#8e8e93;margin-bottom:8px;">กรอกรหัสเครื่องที่ต้องการเช็คละเอียด</div>
+            <div style="display:flex;gap:8px;"><input type="text" id="rc-lookup-mc" placeholder="MC-XXXX" oninput="this.value=this.value.toUpperCase()" style="flex:1;padding:9px 12px;border-radius:9px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"><button class="btn btn-primary" onclick="lookupForCheck()">ดึงข้อมูล →</button></div>
+            <div id="rc-lookup-result" style="margin-top:8px;font-size:12px;color:#8e8e93;"></div>
+          </div>
+          <div id="rc-form-title" style="font-size:15px;font-weight:600;margin-bottom:18px;">รับเครื่องเข้าระบบ</div>
+          <div class="form-grid">
+            <div class="field"><label>รหัส STOCK *</label><input type="text" id="rc-code" placeholder="MC-XXXX" oninput="this.value=this.value.toUpperCase()"></div>
+            <div class="field"><label>แหล่งที่มา</label>
+              <div style="display:flex;gap:12px;margin-top:2px;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;color:#1d1d1f;cursor:pointer;text-transform:none;letter-spacing:0;"><input type="radio" name="rc-src-type" value="ร้านค้า" onchange="toggleSourceInput()" checked style="accent-color:#007aff;"> 🏪 ร้านค้า</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;color:#1d1d1f;cursor:pointer;text-transform:none;letter-spacing:0;"><input type="radio" name="rc-src-type" value="ลูกค้า" onchange="toggleSourceInput()" style="accent-color:#007aff;"> 👤 ลูกค้า</label>
+              </div>
+              <input type="text" id="rc-source" placeholder="ชื่อร้านค้า / ชื่อลูกค้า" style="margin-top:6px;">
+            </div>
+            <div class="field"><label>ประเภทสินค้า</label><select id="rc-devtype" onchange="updateModelList()"><option value="">เลือกประเภท...</option><option value="iPhone">iPhone</option><option value="iPad">iPad</option><option value="MacBook">MacBook</option><option value="Apple Watch">Apple Watch</option><option value="AirPods">AirPods</option><option value="Android">Android</option><option value="Acc">Acc</option></select></div>
+            <div class="field form-full"><label>รุ่น</label><select id="rc-model-sel" onchange="this.value&&(document.getElementById('rc-model').value=this.value);" style="display:none;margin-bottom:6px;"><option value="">เลือกรุ่น...</option></select><input type="text" id="rc-model" placeholder="เลือกประเภทก่อน หรือพิมพ์เอง"></div>
+            <div class="field"><label>ความจุ</label><select id="rc-storage"><option value="">เลือก...</option><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option><option>2TB</option></select></div>
+            <div class="field"><label>สี</label><input type="text" id="rc-color" placeholder="สี"></div>
+            <div class="field"><label>IMEI / Serial Number</label><input type="text" id="rc-sn" placeholder="SN หรือ IMEI"></div>
+            <div class="field"><label>ประเภท</label><select id="rc-type"><option value="มือสอง">มือสอง</option><option value="มือหนึ่ง">มือหนึ่ง</option><option value="New">New</option><option value="Demo">Demo</option></select></div>
+            <div class="field"><label>ราคาทุน (฿)</label><input type="number" id="rc-cost" placeholder="0"></div>
+            <div class="field"><label>สาขา</label><select id="rc-branch"></select></div>
+            <div class="field"><label>สถานะ</label><select id="rc-status"><option value="ของถึง">ของถึง (ยังไม่เช็ค)</option><option value="พร้อมขาย">พร้อมขาย (เช็คแล้ว)</option><option value="รอเช็ค">รอเช็ค</option></select></div>
+            <div class="field"><label>วันที่รับเข้า</label><input type="date" id="rc-date"></div>
+          </div>
+          <div style="margin:16px 0 8px;font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">ผลการตรวจเช็ค</div>
+          <div id="rc-checklist" style="margin-bottom:10px;border:1px solid #e5e5ea;border-radius:10px;padding:0 12px;max-height:260px;overflow-y:auto;"></div>
+          <div id="rc-check-summary" style="font-size:12px;color:#34c759;font-weight:500;margin-bottom:10px;"></div>
+          <div class="form-grid">
+            <div class="field"><label>⭐ เกรด</label><div class="grade-picker" id="rc-grade-picker"><button class="grade-btn" onclick="selGrade(this,'A++')">A++</button><button class="grade-btn" onclick="selGrade(this,'A+')">A+</button><button class="grade-btn" onclick="selGrade(this,'A')">A</button><button class="grade-btn" onclick="selGrade(this,'B')">B</button><button class="grade-btn" onclick="selGrade(this,'C')">C</button><button class="grade-btn" onclick="selGrade(this,'D')">D</button></div><input type="hidden" id="rc-grade" value=""></div>
+            <div class="field"><label>แบตเตอรี่ %</label><div style="display:flex;align-items:center;gap:8px;"><input type="number" id="rc-bat" min="0" max="100" value="100" oninput="updBat()" style="flex:1;"><div class="bat-display-bar" style="flex:2;"><div class="bat-display-fill" id="rc-bat-fill" style="width:100%"></div></div><span class="bat-val" id="rc-bat-val">100%</span></div></div>
+            <div class="field"><label>CC (รอบชาร์จ)</label><input type="number" id="rc-cc" placeholder="0"></div>
+            <div class="field"><label>สถานะแบต</label><select id="rc-batst"><option value="">เลือก...</option><option>แบตแท้</option><option>เปลี่ยนแท้</option><option>เปลี่ยนมาใช้แล้ว</option><option>ไม่ทราบ</option></select></div>
+            <div class="field"><label>ประกันศูนย์</label><select id="rc-warranty"><option value="">เลือก...</option><option>มีประกันศูนย์</option><option>หมดประกัน</option><option>ไม่มีประกัน</option></select></div>
+            <div class="field"><label>วันหมดประกัน</label><input type="text" id="rc-wardate" placeholder="เช่น 18-9-26"></div>
+            <div class="field"><label>สภาพจอ</label><input type="text" id="rc-screen" placeholder="สวยไร้รอย / มีรอย..."></div>
+            <div class="field"><label>สภาพบอดี้</label><input type="text" id="rc-body" placeholder="สวย / มีรอย..."></div>
+            <div class="field form-full"><label>หมายเหตุ / อื่นๆ</label><textarea id="rc-note" rows="2" placeholder="หมายเหตุเพิ่มเติม"></textarea></div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px;">
+            <button class="btn btn-secondary" onclick="clearReceive()">ล้าง</button>
+            <button class="btn btn-primary" id="rc-save-btn" onclick="saveReceive()">บันทึกเครื่อง →</button>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="padding:16px;">
+            <div style="font-size:12px;font-weight:600;color:#8e8e93;margin-bottom:12px;">รับเข้าวันนี้ (<span id="rc-today-count">0</span> เครื่อง)</div>
+            <div id="rc-today-list"><div class="empty"><div class="empty-icon">📥</div><div class="empty-text">ยังไม่มีเครื่องเข้าวันนี้</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-sell">
+      <div class="mode-tabs" style="margin-bottom:16px;max-width:320px;">
+        <button class="mode-tab active" onclick="setSellMode('cash',this)">💵 ขายสด</button>
+        <button class="mode-tab" onclick="setSellMode('inst',this)">📋 ขายผ่อน</button>
+      </div>
+      <div class="sell-layout">
+        <div>
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-header"><span class="card-title">เลือกเครื่อง (พร้อมขาย)</span><div class="search-wrap" style="margin-left:auto;"><input type="text" placeholder="ค้นหา..." id="sell-search" oninput="renderSellList()"></div></div>
+            <div class="device-list" id="sell-device-list"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="padding:16px;margin-bottom:14px;">
+            <div id="sell-selected-info" style="background:#f5f5f7;border-radius:10px;padding:12px;font-size:13px;color:#8e8e93;text-align:center;margin-bottom:12px;">← เลือกเครื่องจากรายการ</div>
+            <div class="price-row"><span class="price-label">ราคาขาย ฿</span><input type="number" id="sell-price" class="price-input" placeholder="0" oninput="calcProfit()"></div>
+            <div id="sell-inst-fields" style="display:none;">
+              <div class="price-row"><span class="price-label">เงินดาวน์ ฿</span><input type="number" id="sell-down" class="price-input" placeholder="0"></div>
+              <div class="price-row"><span class="price-label">ค่างวด/เดือน ฿</span><input type="number" id="sell-monthly" class="price-input" placeholder="0"></div>
+              <div class="price-row"><span class="price-label">จำนวนงวด</span><input type="number" id="sell-months" class="price-input" placeholder="12"></div>
+            </div>
+            <div class="profit-card" id="profit-card" style="margin-bottom:12px;"><span style="font-size:11px;color:#1a7f37;font-weight:500;">กำไรประมาณ</span><span class="profit-value" id="profit-val">0 ฿</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+              <div class="field"><label>ชื่อลูกค้า</label><input type="text" id="sell-cust" placeholder="ชื่อลูกค้า"></div>
+              <div class="field"><label>เบอร์โทร</label><input type="text" id="sell-phone" placeholder="0812345678"></div>
+              <div class="field"><label>อาชีพ</label><select id="sell-occupation"><option value="">เลือก...</option><option>นักศึกษา</option><option>พนักงานประจำ</option><option>ธุรกิจส่วนตัว</option><option>ข้าราชการ</option><option>อาชีพอิสระ</option><option>อื่นๆ</option></select></div>
+              <div class="field"><label>ช่วงอายุ</label><select id="sell-age"><option value="">เลือก...</option><option>ต่ำกว่า 18</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55 ขึ้นไป</option></select></div>
+              <div class="field"><label>เพศ</label><select id="sell-gender"><option value="">เลือก...</option><option>ชาย</option><option>หญิง</option><option>อื่นๆ</option></select></div>
+              <div class="field"><label>ประเภทบัตร</label><select id="sell-card"><option value="">เลือก...</option><option>บัตรประชาชน</option><option>บัตรขาวชมพู</option><option>พาสปอร์ต</option><option>อื่นๆ</option></select></div>
+              <div class="field"><label>จังหวัด</label><input type="text" id="sell-province" placeholder="เช่น เชียงใหม่"></div>
+              <div class="field"><label>ช่องทาง</label><select id="sell-channel"><option>Walk in</option><option>FB</option><option>Line</option><option>Instagram</option><option>ลูกค้าเก่า</option></select></div>
+              <div class="field"><label>ชำระโดย</label><select id="sell-paytype"><option value="cash">เงินสด</option><option value="transfer">โอน</option><option value="both">สด+โอน</option></select></div>
+              <div class="field"><label>พนักงาน</label><input type="text" id="sell-staff" placeholder="ชื่อพนักงาน"></div>
+            </div>
+            <button class="btn btn-green" style="width:100%;justify-content:center;font-size:14px;padding:10px;" onclick="confirmSell()">✓ ยืนยันการขาย</button>
+          </div>
+          <div id="sell-doc-btns" style="display:none;gap:8px;flex-direction:column;">
+            <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="printReceipt()">🧾 ใบเสร็จ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-review">
+      <div class="stats-row" style="margin-bottom:14px;">
+        <div class="stat-card"><div class="stat-label">รอพิจารณา</div><div class="stat-num orange" id="rv-wait">0</div></div>
+        <div class="stat-card green"><div class="stat-label">อนุมัติแล้ว</div><div class="stat-num" id="rv-ok">0</div></div>
+        <div class="stat-card"><div class="stat-label">ยกเลิก</div><div class="stat-num" id="rv-cancel">0</div></div>
+        <div style="display:flex;align-items:center;"><button class="btn btn-secondary" onclick="loadReview()">↻ รีเฟรช</button></div>
+      </div>
+      <div class="card">
+        <div class="filter-bar">
+          <span class="chip active" onclick="setChip(this,'rv-status','')" data-group="rv-status">ทั้งหมด</span>
+          <span class="chip" onclick="setChip(this,'rv-status','รอพิจารณา')" data-group="rv-status">รอพิจารณา</span>
+          <span class="chip" onclick="setChip(this,'rv-status','ผ่าน')" data-group="rv-status">อนุมัติแล้ว</span>
+          <span class="chip" onclick="setChip(this,'rv-status','ยกเลิก')" data-group="rv-status">ยกเลิก</span>
+        </div>
+        <div id="review-list"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-installment">
+      <div class="stats-row" style="margin-bottom:14px;">
+        <div class="stat-card blue"><div class="stat-label">สัญญาทั้งหมด</div><div class="stat-num" id="inst-total">0</div></div>
+        <div class="stat-card orange"><div class="stat-label">เกินกำหนด</div><div class="stat-num" id="inst-overdue">0</div></div>
+        <div class="stat-card green"><div class="stat-label">ยอดค้างรับรวม</div><div class="stat-num" id="inst-pending">-</div></div>
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;color:#8e8e93;margin-bottom:10px;">สร้าง/แก้ไขสัญญาผ่อน — กรอกรหัสเครื่องเพื่อดึงข้อมูล</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;">
+          <div class="field" style="flex:1;"><label>รหัสเครื่อง (MC)</label><input type="text" id="inst-mc-input" placeholder="เช่น MC-1234" oninput="this.value=this.value.toUpperCase()"></div>
+          <button class="btn btn-secondary" onclick="lookupInstDevice()">🔍 ดึงข้อมูล</button>
+        </div>
+        <div id="inst-device-info" style="display:none;background:#f5f5f7;border-radius:10px;padding:12px;font-size:13px;margin-bottom:8px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">รายการผ่อนชำระ</span></div>
+        <div id="inst-list"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีสัญญาผ่อน</div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="overlay" id="overlay-approve"><div class="modal" id="modal-approve"></div></div>
+<div class="overlay" id="overlay-device"><div class="modal" id="modal-device"></div></div>
+<div class="toast" id="toast"><div class="toast-dot" id="toast-dot"></div><span id="toast-msg"></span></div>
+<div id="print-area"></div>
+
+<script>
+// ============================================================
+//  CONFIG + STATE
+// ============================================================
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbyn_te12cSvSOQxIXcPawtZ3CvC0VZV7QzxX7U5a3hIRekfigdzpQpP8CCiXDVcWmP0sA/exec';
+var BRANCHES = ['สันติธรรม','แจ่มฟ้า','หน้ามอ','ศึกษา'];
+var devices=[], reviewData=[], todayReceived=[], selectedDevice=null;
+var sellMode='cash', chipFilters={}, lastSale=null, receiveMode='new';
+var _apFiles=[], _apUploaded=[];
+
+// ============================================================
+//  API
+// ============================================================
+var IS_GAS=(function(){ try{ return typeof google!=='undefined'&&google.script&&google.script.run; }catch(e){ return false; } })();
+
+function api(action, payload) {
+  return new Promise(function(resolve, reject) {
+    if (IS_GAS) {
+      google.script.run
+        .withSuccessHandler(function(r){ r&&r.ok?resolve(r.data):reject(new Error(r?r.error:'err')); })
+        .withFailureHandler(function(e){ reject(new Error(e.message)); })
+        .callServer(action, payload||{});
+    } else {
+      var url = GAS_URL+'?action='+encodeURIComponent(action)+'&payload='+encodeURIComponent(JSON.stringify(payload||{}));
+      fetch(url).then(function(r){ return r.json(); })
+        .then(function(r){ if(r&&r.ok) resolve(r.data); else reject(new Error(r?r.error:'API error')); })
+        .catch(function(){ try{ resolve(localFallback(action,payload||{})); }catch(e){ reject(e); } });
+    }
+  });
+}
+
+function localFallback(action, d) {
+  var st=JSON.parse(localStorage.getItem('ip24_stock')||'[]');
+  switch(action) {
+    case 'getStock': return st;
+    case 'addDevice': case 'saveDevice':
+      var dev=d.device||d, idx=st.findIndex(function(x){ return x.code===dev.code; });
+      if(idx>=0) st[idx]=Object.assign(st[idx],dev); else st.push(dev);
+      localStorage.setItem('ip24_stock',JSON.stringify(st)); return {success:true};
+    case 'updateDeviceStatus': case 'confirmSale':
+      var code=d.deviceCode||d.code, item=st.find(function(x){ return x.code===code; });
+      if(item){ item.statusKey=d.status||'ขายแล้ว'; if(d.soldPrice) item.soldPrice=d.soldPrice; }
+      localStorage.setItem('ip24_stock',JSON.stringify(st)); return {success:true};
+    case 'getReviewList': return [];
+    case 'uploadPhoto': return {success:true,url:'#',previewUrl:'#',mc:d.mc,filename:d.filename};
+    default: return {};
+  }
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+window.onload = function() {
+  setTodayDate(); initBranches(); loadStock(true); updateChecklistSection('iPhone');
+  setTimeout(function(){ loadReview(true); }, 2000);
+};
+function pad(n){ return n<10?'0'+n:n; }
+function setTodayDate(){ var d=new Date(),el=document.getElementById('rc-date'); if(el) el.value=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function initBranches(){
+  var sel=document.getElementById('branch-filter');
+  BRANCHES.forEach(function(b){ var o=document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
+  var b2=document.getElementById('rc-branch');
+  if(b2){ b2.innerHTML=''; BRANCHES.forEach(function(b){ var o=document.createElement('option'); o.value=b; o.textContent=b; b2.appendChild(o); }); }
+}
+
+// ============================================================
+//  NAV
+// ============================================================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('show'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('page-'+id).classList.add('show');
+  var t={dashboard:'Dashboard',stock:'Stock',receive:'รับเครื่องเข้า',sell:'ขาย',review:'ตรวจเอกสาร',installment:'ผ่อนชำระ'};
+  document.getElementById('topbar-title').textContent=t[id]||id;
+  document.querySelectorAll('.nav-item').forEach(function(n){ if((n.getAttribute('onclick')||'').indexOf("'"+id+"'")>=0) n.classList.add('active'); });
+  if(id==='stock') renderStock();
+  if(id==='sell') renderSellList();
+  if(id==='installment') renderInstallment();
+}
+
+// ============================================================
+//  LOAD / SYNC
+// ============================================================
+function loadStock(silent){
+  try{ var c=localStorage.getItem('ip24_devices'); if(c){ devices=JSON.parse(c); renderDashboard(); renderStock(); renderSellList(); updateBadges(); } }catch(e){}
+  if(!silent) document.getElementById('sync-btn').textContent='⟳ กำลังโหลด...';
+  api('getStock').then(function(data){
+    devices=data||[];
+    try{ localStorage.setItem('ip24_devices',JSON.stringify(devices)); }catch(e){}
+    renderDashboard(); renderStock(); renderSellList(); updateBadges();
+    document.getElementById('sync-btn').textContent='⟳ ซิงค์';
+    if(!silent) showToast('อัพเดต Stock แล้ว ✓');
+  }).catch(function(e){ document.getElementById('sync-btn').textContent='⟳ ซิงค์'; if(!silent) showToast('โหลดไม่ได้: '+e.message,true); });
+}
+function syncFromServer(){ loadStock(false); }
+function updateBadges(){
+  document.getElementById('stock-badge').textContent=devices.filter(function(d){ return d.statusKey==='พร้อมขาย'; }).length;
+}
+function applyBranchFilter(){ renderDashboard(); renderStock(); renderSellList(); }
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+function fmtB(n){ if(!n) return '0 ฿'; if(n>=1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'')+'M ฿'; if(n>=1000) return (n/1000).toFixed(1).replace(/\.0$/,'')+'K ฿'; return n.toLocaleString()+' ฿'; }
+
+function renderDashboard(){
+  var branch=document.getElementById('branch-filter').value;
+  var list=branch?devices.filter(function(d){ return d.branch===branch; }):devices;
+  document.getElementById('d-ready').textContent=list.filter(function(d){ return d.statusKey==='พร้อมขาย'; }).length;
+  document.getElementById('d-sold').textContent=list.filter(function(d){ return d.statusKey==='ขายแล้ว'; }).length;
+  document.getElementById('d-check').textContent=list.filter(function(d){ return d.statusKey==='ของถึง'||d.statusKey==='รอเช็ค'; }).length;
+  document.getElementById('d-total').textContent=list.length;
+  var grid=document.getElementById('branch-grid'); grid.innerHTML='';
+  BRANCHES.forEach(function(b){
+    var bl=devices.filter(function(d){ return d.branch===b; });
+    var br=bl.filter(function(d){ return d.statusKey==='พร้อมขาย'; }).length;
+    var bs=bl.filter(function(d){ return d.statusKey==='ขายแล้ว'; }).length;
+    var bc=bl.filter(function(d){ return d.statusKey==='ของถึง'||d.statusKey==='รอเช็ค'; }).length;
+    grid.innerHTML+='<div class="branch-card"><div class="branch-name"><div class="branch-dot"></div>'+b+'</div><div class="branch-stats"><div class="bstat"><div class="bstat-num green">'+br+'</div><div class="bstat-label">พร้อมขาย</div></div><div class="bstat"><div class="bstat-num">'+bs+'</div><div class="bstat-label">ขายแล้ว</div></div><div class="bstat"><div class="bstat-num orange">'+bc+'</div><div class="bstat-label">รอเช็ค</div></div></div></div>';
+  });
+  var tbody=document.getElementById('d-recent-tbody');
+  var recent=list.slice().reverse().slice(0,15);
+  tbody.innerHTML=recent.length?recent.map(function(d){ return '<tr><td class="mono">'+htmlEsc(d.code||'-')+'</td><td>'+htmlEsc(d.model||'-')+'</td><td>'+gradeHtml(d.grade)+'</td><td>'+batHtml(d.bat)+'</td><td>'+htmlEsc(d.branch||'-')+'</td><td>'+statusBadge(d.statusKey)+'</td></tr>'; }).join(''):'<tr><td colspan="6" style="text-align:center;color:#8e8e93;padding:20px;">ยังไม่มีข้อมูล</td></tr>';
+  document.getElementById('d-recent-count').textContent=recent.length+' รายการล่าสุด';
+  var unsold=list.filter(function(d){ return d.statusKey!=='ขายแล้ว'&&d.statusKey!=='ลบแล้ว'; });
+  var types={iphone:'iphone',ipad:'ipad',mac:'mac',watch:'watch',acc:'airpods|acc|pencil|android'};
+  var totalCost=0;
+  Object.keys(types).forEach(function(t){
+    var kws=types[t].split('|');
+    var items=unsold.filter(function(d){ var ml=(d.model||'').toLowerCase()+' '+(d.type||'').toLowerCase(); return kws.some(function(k){ return ml.includes(k); }); });
+    var cost=items.reduce(function(s,d){ return s+(Number(d.cost)||0); },0);
+    totalCost+=cost;
+    var el=document.getElementById('dc-'+t); if(el) el.textContent=cost>0?fmtB(cost):'-';
+    var elc=document.getElementById('dcc-'+t); if(elc) elc.textContent=items.length+' เครื่อง';
+  });
+  var tc=document.getElementById('d-cost-total'); if(tc) tc.textContent='รวม '+fmtB(totalCost);
+}
+
+// ============================================================
+//  IMPORT
+// ============================================================
+function downloadSampleExcel(){
+  var h=['code','model','storage','color','grade','type','cost','sn','branch','source','bat','statusKey','note'];
+  var s=[['MC-0001','iPhone 16 Pro','256GB','ดำ','A+','มือสอง','18000','SN123456','สันติธรรม','Maccafe','95','ของถึง',''],['MC-0002','iPhone 15 Pro Max','512GB','ขาว','A','มือสอง','20000','SN789012','แจ่มฟ้า','ลูกค้า','88','พร้อมขาย','']];
+  var csv=[h.join(',')].concat(s.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); })).join('\n');
+  var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='iPhone24_Stock_Template.csv'; a.click(); URL.revokeObjectURL(url);
+  showToast('ดาวน์โหลด Template เรียบร้อย');
+}
+function handleImportFile(input){
+  var file=input.files[0]; if(!file) return;
+  var statusEl=document.getElementById('import-status'); statusEl.textContent='⏳ กำลังอ่านไฟล์...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var text=e.target.result.replace(/^\ufeff/,'');
+      var lines=text.split(/\r?\n/).filter(function(l){ return l.trim(); });
+      if(lines.length<2){ statusEl.textContent='❌ ไม่พบข้อมูลในไฟล์'; return; }
+      function parseCSV(line){ var r=[],cur='',q=false; for(var i=0;i<line.length;i++){ var c=line[i]; if(c==='"'){ q=!q; }else if(c===','&&!q){ r.push(cur.trim()); cur=''; }else cur+=c; } r.push(cur.trim()); return r; }
+      var headers=parseCSV(lines[0]).map(function(h){ return h.replace(/^"|"$/g,'').toLowerCase().trim(); });
+      var imported=lines.slice(1).map(function(l){ var r=parseCSV(l); var o={}; headers.forEach(function(h,i){ o[h]=(r[i]||'').replace(/^"|"$/g,'').trim(); }); return o; }).filter(function(d){ return d.code||d.model; });
+      if(!imported.length){ statusEl.textContent='❌ ไม่พบข้อมูลที่ถูกต้อง'; return; }
+      statusEl.innerHTML='📦 พบ <strong>'+imported.length+'</strong> รายการ กำลังนำเข้า...';
+      var ok=0,fail=0,BATCH=50,batches=[],bIdx=0;
+      for(var b=0;b<imported.length;b+=BATCH) batches.push(imported.slice(b,b+BATCH));
+      function mapD(d){ return {code:d.code||'',model:d.model||'',storage:d.storage||'',color:d.color||'',grade:d.grade||'',type:d.type||'มือสอง',cost:Number(d.cost)||0,sn:d.sn||'',branch:d.branch||'',source:d.source||'',bat:Number(d.bat)||0,statusKey:d.statuskey||d.statusKey||d.status||'ของถึง',note:d.note||''}; }
+      function runBatch(){
+        if(bIdx>=batches.length){ statusEl.innerHTML='✅ นำเข้าสำเร็จ <strong>'+ok+'</strong> รายการ'+(fail?' · ล้มเหลว '+fail:''); loadStock(true); return; }
+        var batch=batches[bIdx++].map(mapD);
+        statusEl.innerHTML='⏳ นำเข้า '+(bIdx*BATCH)+'/'+imported.length+'...';
+        api('batchSaveDevices',{devices:batch}).then(function(res){ ok+=res.saved||batch.length; fail+=res.failed||0; runBatch(); }).catch(function(){ Promise.all(batch.map(function(d){ return api('saveDevice',d).then(function(){ ok++; }).catch(function(){ fail++; }); })).then(runBatch); });
+      }
+      runBatch();
+    }catch(err){ statusEl.textContent='❌ อ่านไฟล์ไม่ได้: '+err.message; }
+  };
+  reader.readAsText(file,'UTF-8'); input.value='';
+}
+function clearAllStock(){
+  if(!confirm('ลบ Stock ทั้งหมด?')) return; if(!confirm('ยืนยันอีกครั้ง')) return;
+  var el=document.getElementById('import-status'); el.innerHTML='⏳ กำลังล้าง...';
+  api('clearAllStock').then(function(){ devices=[]; try{ localStorage.removeItem('ip24_devices'); }catch(e){} renderDashboard(); renderStock(); renderSellList(); updateBadges(); el.innerHTML='✅ ล้าง Stock เรียบร้อย'; showToast('ล้าง Stock เรียบร้อย ✓'); }).catch(function(e){ el.innerHTML='❌ '+e.message; showToast(e.message,true); });
+}
+
+// ============================================================
+//  STOCK TABLE
+// ============================================================
+function renderStock(){
+  var q=(document.getElementById('stock-search')||{}).value||'';
+  var statusF=chipFilters['stock-status']||'', typeF=chipFilters['stock-type']||'', branchF=document.getElementById('branch-filter').value;
+  var genOrder=['SE','SE2','SE3','11 Pro Max','11 Pro','iPhone 11','12 mini','12 Pro Max','12 Pro','iPhone 12','13 mini','13 Pro Max','13 Pro','iPhone 13','14 Plus','14 Pro Max','14 Pro','iPhone 14','15 Plus','15 Pro Max','15 Pro','iPhone 15','16 Plus','16 Pro Max','16 Pro','iPhone 16','17 Plus','17 Pro Max','17 Pro','iPhone 17'];
+  function mRank(m){ var ml=(m||'').toLowerCase(); for(var i=0;i<genOrder.length;i++){ if(ml.includes(genOrder[i].toLowerCase())) return i; } return 999; }
+  var list=devices.filter(function(d){
+    if(statusF&&d.statusKey!==statusF) return false;
+    if(typeF){ var ml=(d.model||'').toLowerCase(); if(!ml.includes(typeF)&&!(d.type||'').toLowerCase().includes(typeF)) return false; }
+    if(branchF&&d.branch!==branchF) return false;
+    if(q){ var s=(d.code+d.model+d.sn+d.branch+d.color+d.grade).toLowerCase(); if(!s.includes(q.toLowerCase())) return false; }
+    return true;
+  });
+  var bOrd={}; BRANCHES.forEach(function(b,i){ bOrd[b]=i; });
+  list.sort(function(a,b){ var bd=(bOrd[a.branch]||99)-(bOrd[b.branch]||99); if(bd!==0) return bd; var md=mRank(a.model)-mRank(b.model); if(md!==0) return md; return (a.code||'').localeCompare(b.code||''); });
+  var stockCount={};
+  list.filter(function(d){ return d.statusKey==='พร้อมขาย'; }).forEach(function(d){ var k=[d.model,d.storage,d.color,d.grade].join('|'); stockCount[k]=(stockCount[k]||0)+1; });
+  var rows='', lastBranch='__';
+  list.forEach(function(d){
+    var bv=d.branch||'(ไม่ระบุ)';
+    if(!branchF&&bv!==lastBranch){
+      lastBranch=bv;
+      var bItems=list.filter(function(x){ return (x.branch||'(ไม่ระบุ)')===bv; });
+      var bR=bItems.filter(function(x){ return x.statusKey==='พร้อมขาย'; }).length;
+      rows+='<tr style="background:#f0f0f5;border-top:2px solid #e5e5ea;"><td colspan="11" style="padding:8px 14px;"><span style="width:8px;height:8px;border-radius:50%;background:#34c759;display:inline-block;margin-right:8px;vertical-align:middle;"></span><strong style="font-size:12px;">'+htmlEsc(bv)+'</strong><span style="font-size:11px;color:#8e8e93;"> · '+bItems.length+' เครื่อง · พร้อมขาย '+bR+'</span></td></tr>';
+    }
+    var k=[d.model,d.storage,d.color,d.grade].join('|');
+    rows+='<tr><td class="mono" style="font-size:11px;color:#8e8e93;">'+htmlEsc(d.code||'-')+'</td><td style="font-weight:500;">'+htmlEsc(d.model||'-')+'</td><td class="mono">'+htmlEsc(d.storage||'-')+'</td><td>'+htmlEsc(d.color||'-')+'</td><td>'+gradeHtml(d.grade)+'</td><td>'+batHtml(d.bat)+'</td><td style="font-size:12px;color:#8e8e93;">'+htmlEsc(d.branch||'-')+'</td><td class="mono" style="font-size:12px;">'+(d.cost?Number(d.cost).toLocaleString():'-')+'</td><td>'+statusBadge(d.statusKey)+'</td>'
+      +'<td style="text-align:center;">'+(d.statusKey==='พร้อมขาย'?'<span style="background:#e8f8ec;color:#1a7f37;font-weight:700;padding:2px 8px;border-radius:20px;font-size:11px;">'+(stockCount[k]||0)+'</span>':'-')+'</td>'
+      +'<td style="display:flex;gap:4px;padding:8px 14px;"><button class="btn btn-secondary btn-sm" onclick="showDeviceDetail(\''+htmlEsc(d.code)+'\')">ดู</button><button class="btn btn-blue btn-sm" onclick="showEditDevice(\''+htmlEsc(d.code)+'\')">แก้ไข</button><button class="btn btn-sm" style="background:#fdecea;color:#c0392b;border:none;" onclick="deleteDevice(\''+htmlEsc(d.code)+'\')">✕</button></td></tr>';
+  });
+  document.getElementById('stock-tbody').innerHTML=rows||'<tr><td colspan="11" style="text-align:center;color:#8e8e93;padding:24px;">ไม่พบข้อมูล</td></tr>';
+}
+
+function deleteDevice(code){
+  if(!confirm('ลบ '+code+' ออกจาก Stock?')) return;
+  api('updateDeviceStatus',{code:code,status:'ลบแล้ว'}).then(function(){ devices=devices.filter(function(d){ return d.code!==code; }); showToast('ลบ '+code+' เรียบร้อย'); renderStock(); renderDashboard(); updateBadges(); }).catch(function(e){ showToast('ลบไม่ได้: '+e.message,true); });
+}
+
+function showEditDevice(code){
+  var d=devices.find(function(x){ return x.code===code; }); if(!d) return;
+  var modal=document.getElementById('modal-device');
+  var inp=function(id,val){ return '<input id="'+id+'" value="'+htmlEsc(val||'')+'" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;">'; };
+  var num=function(id,val){ return '<input id="'+id+'" type="number" value="'+(val||0)+'" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;">'; };
+  var sel=function(id,opts,cur){ return '<select id="'+id+'" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;">'+opts.map(function(o){ return '<option value="'+o+'"'+(o===cur?' selected':'')+'>'+o+'</option>'; }).join('')+'</select>'; };
+  modal.innerHTML='<div class="modal-title">✏️ แก้ไขเครื่อง</div><div class="modal-sub" style="font-family:monospace;">'+htmlEsc(d.code||'')+'</div>'
+    +'<div class="form-grid" style="margin-bottom:16px;">'
+    +'<div class="field"><label>รุ่น</label>'+inp('ed-model',d.model)+'</div>'
+    +'<div class="field"><label>ความจุ</label>'+inp('ed-storage',d.storage)+'</div>'
+    +'<div class="field"><label>สี</label>'+inp('ed-color',d.color)+'</div>'
+    +'<div class="field"><label>เกรด</label>'+sel('ed-grade',['A++','A+','A','B','C','D'],d.grade)+'</div>'
+    +'<div class="field"><label>แบต %</label>'+num('ed-bat',d.bat)+'</div>'
+    +'<div class="field"><label>ราคาทุน ฿</label>'+num('ed-cost',d.cost)+'</div>'
+    +'<div class="field"><label>SN / IMEI</label>'+inp('ed-sn',d.sn)+'</div>'
+    +'<div class="field"><label>สาขา</label>'+sel('ed-branch',BRANCHES,d.branch)+'</div>'
+    +'<div class="field"><label>สถานะ</label>'+sel('ed-status',['ของถึง','รอเช็ค','พร้อมขาย','ขายแล้ว'],d.statusKey)+'</div>'
+    +'<div class="field"><label>แหล่งที่มา</label>'+inp('ed-source',d.source)+'</div>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid #f2f2f7;">'
+    +'<button class="btn btn-secondary" onclick="closeModal(\'overlay-device\')">ยกเลิก</button>'
+    +'<button class="btn btn-primary" onclick="saveEditDevice(\''+htmlEsc(code)+'\')">💾 บันทึก</button></div>';
+  document.getElementById('overlay-device').classList.add('open');
+}
+function saveEditDevice(code){
+  var d=devices.find(function(x){ return x.code===code; }); if(!d) return;
+  var g=function(id){ return document.getElementById(id); };
+  var updated={code:code,model:g('ed-model').value,storage:g('ed-storage').value,color:g('ed-color').value,grade:g('ed-grade').value,bat:parseInt(g('ed-bat').value)||0,cost:parseFloat(g('ed-cost').value)||0,sn:g('ed-sn').value,branch:g('ed-branch').value,statusKey:g('ed-status').value,source:g('ed-source').value};
+  updated.status=updated.statusKey;
+  showToast('⏳ กำลังบันทึก...');
+  api('saveDevice',updated).then(function(){ Object.assign(d,updated); try{ localStorage.setItem('ip24_devices',JSON.stringify(devices)); }catch(e){} closeModal('overlay-device'); renderStock(); renderDashboard(); updateBadges(); showToast('แก้ไข '+code+' เรียบร้อย ✓'); }).catch(function(e){ showToast('บันทึกไม่ได้: '+e.message,true); });
+}
+function showDeviceDetail(code){
+  var d=devices.find(function(x){ return x.code===code; }); if(!d) return;
+  var modal=document.getElementById('modal-device');
+  modal.innerHTML='<div class="modal-title">'+htmlEsc(d.model||'-')+'</div><div class="modal-sub" style="font-family:monospace;">'+htmlEsc(d.code||'')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:14px;">'
+    +'<div><span style="color:#8e8e93">สถานะ: </span>'+statusBadge(d.statusKey)+'</div><div><span style="color:#8e8e93">เกรด: </span>'+gradeHtml(d.grade)+'</div>'
+    +'<div><span style="color:#8e8e93">ความจุ: </span>'+htmlEsc(d.storage||'-')+'</div><div><span style="color:#8e8e93">สี: </span>'+htmlEsc(d.color||'-')+'</div>'
+    +'<div><span style="color:#8e8e93">แบต: </span>'+batHtml(d.bat)+'</div><div><span style="color:#8e8e93">SN/IMEI: </span><span class="mono">'+htmlEsc(d.sn||'-')+'</span></div>'
+    +'<div><span style="color:#8e8e93">สาขา: </span>'+htmlEsc(d.branch||'-')+'</div><div><span style="color:#8e8e93">ราคาทุน: </span>'+(d.cost?Number(d.cost).toLocaleString()+'฿':'-')+'</div>'
+    +'</div>'+(d.note?'<div style="padding:10px;background:#f5f5f7;border-radius:8px;font-size:12px;margin-bottom:14px;">'+htmlEsc(d.note)+'</div>':'')
+    +'<div style="display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid #f2f2f7;">'+(d.statusKey==='พร้อมขาย'?'<button class="btn btn-green btn-sm" onclick="closeModal(\'overlay-device\');showPage(\'sell\');">ขายเครื่องนี้</button>':'')+'<button class="btn btn-secondary" onclick="closeModal(\'overlay-device\')">ปิด</button></div>';
+  document.getElementById('overlay-device').classList.add('open');
+}
+
+// ============================================================
+//  RECEIVE
+// ============================================================
+function selGrade(btn,g){ document.querySelectorAll('#rc-grade-picker .grade-btn').forEach(function(b){ b.classList.remove('sel'); }); btn.classList.add('sel'); document.getElementById('rc-grade').value=g; }
+function updBat(){ var v=Math.min(100,Math.max(0,parseInt(document.getElementById('rc-bat').value)||0)); document.getElementById('rc-bat-val').textContent=v+'%'; var fill=document.getElementById('rc-bat-fill'); fill.style.width=v+'%'; fill.style.background=v>=80?'#34c759':v>=50?'#ff9500':'#ff3b30'; }
+function clearReceive(){
+  ['rc-code','rc-source','rc-model','rc-sn','rc-cost','rc-cc','rc-wardate','rc-screen','rc-body','rc-note'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  ['rc-devtype','rc-storage','rc-type','rc-batst','rc-warranty','rc-status'].forEach(function(id){ var el=document.getElementById(id); if(el) el.selectedIndex=0; });
+  document.getElementById('rc-bat').value=100; document.getElementById('rc-grade').value='';
+  document.querySelectorAll('#rc-grade-picker .grade-btn').forEach(function(b){ b.classList.remove('sel'); });
+  var s=document.getElementById('rc-model-sel'); if(s){ s.selectedIndex=0; s.style.display='none'; }
+  var r=document.querySelector('input[name="rc-src-type"][value="ร้านค้า"]'); if(r) r.checked=true;
+  updBat(); setTodayDate(); updateChecklistSection('iPhone');
+}
+function setReceiveMode(mode,btn){
+  receiveMode=mode;
+  document.querySelectorAll('.mode-tab').forEach(function(t){ t.classList.remove('active'); }); btn.classList.add('active');
+  var lb=document.getElementById('rc-lookup-bar'),ft=document.getElementById('rc-form-title'),sb=document.getElementById('rc-save-btn');
+  if(mode==='check'){ lb.style.display='block'; ft.textContent='🔍 เช็คละเอียด'; }
+  else{ lb.style.display='none'; ft.textContent='รับเครื่องเข้าระบบ'; }
+  if(sb) sb.textContent=mode==='check'?'✓ บันทึกผลเช็คละเอียด':'บันทึกเครื่อง →';
+}
+function lookupForCheck(){
+  var mc=document.getElementById('rc-lookup-mc').value.trim(); if(!mc){ showToast('กรุณากรอกรหัสเครื่อง',true); return; }
+  var el=document.getElementById('rc-lookup-result'); el.textContent='⏳ กำลังค้นหา...';
+  var norm=mc.toUpperCase().startsWith('MC-')?mc.toUpperCase():'MC-'+mc.toUpperCase();
+  var d=devices.find(function(x){ return (x.code||'').toUpperCase()===norm||(x.code||'').toUpperCase()===mc.toUpperCase(); });
+  if(d){ fillReceiveForm(d); el.innerHTML='✅ พบข้อมูล: <strong>'+htmlEsc(d.model||'-')+'</strong>'; return; }
+  api('getDeviceData',{code:mc}).then(function(data){ if(!data||!data.found){ el.innerHTML='<span style="color:#ff3b30;">❌ ไม่พบ '+mc+'</span>'; return; } fillReceiveForm(data); el.innerHTML='✅ พบข้อมูล: <strong>'+htmlEsc(data.model||'-')+'</strong>'; }).catch(function(e){ el.innerHTML='<span style="color:#ff3b30;">❌ '+e.message+'</span>'; });
+}
+function fillReceiveForm(d){
+  var g=function(id){ return document.getElementById(id); };
+  if(g('rc-code')) g('rc-code').value=d.code||'';
+  if(g('rc-model')) g('rc-model').value=d.model||'';
+  if(g('rc-color')) g('rc-color').value=d.color||'';
+  if(g('rc-sn')) g('rc-sn').value=d.sn||'';
+  if(g('rc-cost')) g('rc-cost').value=d.cost||'';
+  if(d.bat&&g('rc-bat')){ g('rc-bat').value=d.bat; updBat(); }
+  if(d.grade){ g('rc-grade').value=d.grade; document.querySelectorAll('#rc-grade-picker .grade-btn').forEach(function(b){ b.classList.toggle('sel',b.textContent===d.grade); }); }
+  showToast('โหลดข้อมูล '+htmlEsc(d.code||d.model||'')+' เรียบร้อย');
+}
+function saveReceive(){
+  var code=document.getElementById('rc-code').value.trim(); if(!code){ showToast('กรุณากรอกรหัส Stock',true); return; }
+  var srcType=''; document.getElementsByName('rc-src-type').forEach(function(r){ if(r.checked) srcType=r.value; });
+  var g=function(id){ return (document.getElementById(id)||{}).value||''; };
+  var data={code:code,sourceType:srcType,source:g('rc-source'),type:g('rc-type'),model:g('rc-model'),storage:g('rc-storage'),color:g('rc-color'),sn:g('rc-sn'),cost:g('rc-cost'),branch:g('rc-branch'),statusKey:g('rc-status'),grade:g('rc-grade'),bat:g('rc-bat'),cc:g('rc-cc'),batSt:g('rc-batst'),warranty:g('rc-warranty'),warrantyDate:g('rc-wardate'),screen:g('rc-screen'),body:g('rc-body'),note:g('rc-note'),date:g('rc-date')};
+  if(receiveMode==='check'){
+    var sels=document.querySelectorAll('#rc-checklist select'),pass=0,fail=0,failList=[],checkItems=[];
+    sels.forEach(function(s,i){ var lbl=(s.closest('div').querySelector('span:nth-child(2)')||{}).textContent||('รายการ '+(i+1)); var noteEl=s.closest('div').querySelector('input[type=text]'); var result=s.value; if(result==='ปกติ') pass++; else if(result==='ไม่ปกติ'){ fail++; failList.push(lbl); } checkItems.push({label:lbl,result:result,note:noteEl?noteEl.value:''}); });
+    Object.assign(data,{passCount:pass,failCount:fail,failList:failList,checkItems:checkItems,mc:code});
+  }
+  showToast('⏳ กำลังบันทึก...');
+  var action=receiveMode==='check'?'writeCheckSheet':'saveDevice';
+  api(action,data).then(function(){
+    showToast((receiveMode==='check'?'เช็คละเอียด ':'บันทึกเครื่อง ')+code+' เรียบร้อย ✓');
+    var idx=devices.findIndex(function(x){ return x.code===code; });
+    if(idx>=0) Object.assign(devices[idx],data); else devices.push(Object.assign({id:code},data));
+    todayReceived.unshift(data); renderTodayList(); renderDashboard(); updateBadges();
+  }).catch(function(e){ showToast('บันทึกไม่ได้: '+e.message,true); });
+}
+function renderTodayList(){
+  var el=document.getElementById('rc-today-list'); document.getElementById('rc-today-count').textContent=todayReceived.length;
+  if(!todayReceived.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📥</div><div class="empty-text">ยังไม่มีเครื่องเข้าวันนี้</div></div>'; return; }
+  el.innerHTML=todayReceived.map(function(d){ return '<div class="recent-item"><div class="recent-icon">📱</div><div class="recent-info"><div class="recent-name">'+htmlEsc(d.model||'-')+'</div><div class="recent-meta">'+htmlEsc(d.code||'')+(d.grade?' · เกรด '+d.grade:'')+'</div></div>'+(d.grade?gradeHtml(d.grade):'')+'</div>'; }).join('');
+}
+
+// ============================================================
+//  SELL
+// ============================================================
+function setSellMode(mode,btn){ sellMode=mode; document.querySelectorAll('.mode-tab').forEach(function(t){ t.classList.remove('active'); }); btn.classList.add('active'); document.getElementById('sell-inst-fields').style.display=mode==='inst'?'block':'none'; }
+function renderSellList(){
+  var q=(document.getElementById('sell-search')||{}).value||'', branchF=document.getElementById('branch-filter').value;
+  var list=devices.filter(function(d){ if(d.statusKey!=='พร้อมขาย') return false; if(branchF&&d.branch!==branchF) return false; if(q){ var s=(d.code+d.model+d.color+d.grade+d.storage).toLowerCase(); return s.includes(q.toLowerCase()); } return true; });
+  var el=document.getElementById('sell-device-list');
+  el.innerHTML=list.length?list.map(function(d,i){ return '<div class="device-row" id="drow-'+i+'" onclick="selectSellDevice(\''+htmlEsc(d.code)+'\','+i+')"><div class="device-row-icon">📱</div><div class="device-row-info"><div class="device-row-name">'+htmlEsc(d.model||'-')+' '+htmlEsc(d.storage||'')+'</div><div class="device-row-meta">'+htmlEsc(d.code||'')+(d.color?' · '+d.color:'')+(d.bat?' · แบต '+d.bat+'%':'')+'</div></div><div>'+gradeHtml(d.grade)+'</div><div class="device-check" id="dcheck-'+i+'"></div></div>'; }).join(''):'<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">ไม่มีเครื่องพร้อมขาย</div></div>';
+}
+function selectSellDevice(code,idx){
+  selectedDevice=devices.find(function(d){ return d.code===code; });
+  document.querySelectorAll('.device-row').forEach(function(r){ r.classList.remove('selected'); }); document.querySelectorAll('.device-check').forEach(function(c){ c.textContent=''; c.style.background=''; c.style.borderColor='#e5e5ea'; c.style.color=''; });
+  var row=document.getElementById('drow-'+idx),chk=document.getElementById('dcheck-'+idx);
+  if(row) row.classList.add('selected'); if(chk){ chk.textContent='✓'; chk.style.background='#007aff'; chk.style.borderColor='#007aff'; chk.style.color='#fff'; }
+  if(selectedDevice){ document.getElementById('sell-selected-info').innerHTML='<div style="text-align:left;"><div style="font-size:14px;font-weight:600;margin-bottom:4px;">'+htmlEsc(selectedDevice.model||'-')+'</div><div style="font-size:12px;color:#8e8e93;font-family:monospace;">'+htmlEsc(selectedDevice.code||'')+(selectedDevice.color?' · '+selectedDevice.color:'')+(selectedDevice.storage?' · '+selectedDevice.storage:'')+'</div><div style="margin-top:6px;">'+gradeHtml(selectedDevice.grade)+' '+batHtml(selectedDevice.bat)+'</div><div style="margin-top:6px;font-size:12px;color:#8e8e93;">ทุน: '+(selectedDevice.cost?Number(selectedDevice.cost).toLocaleString()+'฿':'-')+'</div></div>'; document.getElementById('sell-price').value=''; calcProfit(); }
+}
+function calcProfit(){ if(!selectedDevice) return; var price=parseFloat(document.getElementById('sell-price').value)||0,cost=parseFloat(selectedDevice.cost)||0,profit=price-cost; var card=document.getElementById('profit-card'),val=document.getElementById('profit-val'); card.className='profit-card'+(profit<0?' loss':''); val.textContent=(profit>=0?'+':'')+profit.toLocaleString()+' ฿'; val.style.color=profit<0?'#c0392b':'#1a7f37'; }
+function confirmSell(){
+  if(!selectedDevice){ showToast('กรุณาเลือกเครื่องก่อน',true); return; }
+  var price=parseFloat(document.getElementById('sell-price').value); if(!price){ showToast('กรุณากรอกราคาขาย',true); return; }
+  var g=function(id){ return (document.getElementById(id)||{value:''}).value; };
+  var paytype=g('sell-paytype');
+  var payload={deviceCode:selectedDevice.code,code:selectedDevice.code,status:'ขายแล้ว',price:price,customer:g('sell-cust'),phone:g('sell-phone'),channel:g('sell-channel'),staff:g('sell-staff'),occupation:g('sell-occupation'),ageRange:g('sell-age'),gender:g('sell-gender'),cardType:g('sell-card'),province:g('sell-province'),cashAmount:paytype==='transfer'?0:price,transferAmount:paytype==='cash'?0:price,model:selectedDevice.model,cost:selectedDevice.cost,sn:selectedDevice.sn,type:sellMode==='inst'?'installment':'cash',saleType:sellMode==='inst'?'ขายผ่อน':'ขายสด',down:sellMode==='inst'?(parseFloat(g('sell-down'))||0):0,monthly:sellMode==='inst'?(parseFloat(g('sell-monthly'))||0):0,months:sellMode==='inst'?(parseInt(g('sell-months'))||0):0,addSale:true};
+  showToast('⏳ กำลังบันทึก...');
+  api('confirmSale',payload).then(function(){
+    var d=devices.find(function(x){ return x.code===selectedDevice.code; }); if(d){ d.statusKey='ขายแล้ว'; d.soldPrice=price; }
+    lastSale=Object.assign({device:selectedDevice},payload); showToast('ขาย '+selectedDevice.model+' เรียบร้อย ✓');
+    document.getElementById('sell-doc-btns').style.display='flex'; selectedDevice=null; renderDashboard(); renderSellList(); updateBadges();
+  }).catch(function(e){ showToast('บันทึกไม่ได้: '+e.message,true); });
+}
+function printReceipt(){
+  if(!lastSale){ showToast('ไม่มีข้อมูลการขาย',true); return; }
+  var d=lastSale.device||{}, grade=d.grade||'', today=new Date();
+  var dateStr=today.getDate()+'/'+(today.getMonth()+1)+'/'+today.getFullYear();
+  var warranty=getWarrantyText(grade,d.type||'');
+  var html='<div style="font-family:sans-serif;max-width:420px;margin:0 auto;padding:24px;font-size:13px;"><div style="text-align:center;margin-bottom:16px;"><div style="font-size:18px;font-weight:700;">iPhone 24</div><div style="font-size:11px;color:#666;">32/1 ถนนทองกวาว เชียงใหม่ | +66 92 482 0567</div><div style="font-size:14px;font-weight:600;margin-top:8px;border-top:2px solid #1d1d1f;border-bottom:2px solid #1d1d1f;padding:4px 0;">ใบเสร็จรับเงิน</div></div><table style="width:100%;font-size:12px;margin-bottom:12px;"><tr><td style="color:#666;">วันที่:</td><td style="text-align:right;">'+dateStr+'</td></tr><tr><td style="color:#666;">ลูกค้า:</td><td style="text-align:right;">'+htmlEsc(lastSale.customer||'-')+'</td></tr></table><div style="border-top:1px dashed #ccc;padding-top:10px;margin-bottom:10px;"><div style="font-weight:600;">'+htmlEsc(d.model||'-')+'</div><div style="font-size:11px;color:#666;">'+htmlEsc(d.storage||'')+(d.color?' · '+d.color:'')+'</div><div style="font-size:11px;margin-top:4px;">เกรด: '+htmlEsc(grade)+(d.bat?' | แบต '+d.bat+'%':'')+'</div></div><div style="border-top:1px dashed #ccc;padding-top:10px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;"><span>ราคา</span><span>'+Number(lastSale.price||0).toLocaleString()+' ฿</span></div></div><div style="font-size:11px;border-top:1px solid #1d1d1f;padding-top:10px;"><strong>ประกัน:</strong> '+htmlEsc(warranty)+'</div></div>';
+  document.getElementById('print-area').innerHTML=html; window.print();
+}
+function getWarrantyText(grade,type){ var g=(grade||'A').toUpperCase(),isNew=(type||'').includes('มือหนึ่ง')||(type||'').includes('New'); if(isNew) return 'ประกันศูนย์ 1 ปี / ประกันร้าน 2 ปี / ประกันแบต 3 ปี'; if(g==='D') return 'ไม่มีประกันใด ๆ'; if(g==='C') return 'ประกันแบต 7 วัน / ประกันร้าน 7 วัน'; return 'เปลี่ยนใจ 3 วัน / ประกันเครื่อง 30 วัน / ประกันร้าน 1 ปี / ประกันแบต 2 ปี'; }
+
+// ============================================================
+//  REVIEW
+// ============================================================
+function loadReview(silent){
+  try{ var c=localStorage.getItem('ip24_review'); if(c){ reviewData=JSON.parse(c); renderReview(); updateReviewBadges(); } else document.getElementById('review-list').innerHTML='<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">กำลังโหลด...</div></div>'; }catch(e){}
+  api('getReviewList').then(function(data){ reviewData=data||[]; try{ localStorage.setItem('ip24_review',JSON.stringify(reviewData)); }catch(e){} renderReview(); updateReviewBadges(); if(!silent) showToast('อัพเดตเอกสารแล้ว ✓'); }).catch(function(e){ if(!silent) showToast('โหลดไม่ได้: '+e.message,true); });
+}
+function updateReviewBadges(){
+  var wait=reviewData.filter(function(r){ return r.status==='รอพิจารณา'; }).length;
+  document.getElementById('review-badge').textContent=wait;
+  document.getElementById('rv-wait').textContent=wait;
+  document.getElementById('rv-ok').textContent=reviewData.filter(function(r){ return r.status==='ผ่าน'; }).length;
+  document.getElementById('rv-cancel').textContent=reviewData.filter(function(r){ return r.status==='ยกเลิก'; }).length;
+}
+function renderReview(){
+  var sf=chipFilters['rv-status']||'';
+  var list=sf?reviewData.filter(function(r){ return r.status===sf; }):reviewData;
+  var el=document.getElementById('review-list');
+  if(!list.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">ไม่มีรายการในหมวดนี้</div></div>'; return; }
+  el.innerHTML=list.map(function(r){
+    var i=reviewData.indexOf(r);
+    var stBadge=r.status==='ผ่าน'?'<span class="badge badge-green">อนุมัติแล้ว</span>':r.status==='ยกเลิก'?'<span class="badge badge-red">ยกเลิก</span>':'<span class="badge badge-orange">รอพิจารณา</span>';
+    return '<div class="review-row" onclick="showReviewDetail('+i+')"><div class="review-avatar">👤</div><div class="review-info"><div class="review-name">'+htmlEsc(r.name||'-')+'</div><div class="review-meta">'+htmlEsc(r.phone||'')+(r.submitDate?' · '+r.submitDate:'')+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'+stBadge+(r.contractNo?'<span style="font-size:11px;font-family:monospace;color:#8e8e93;">'+htmlEsc(r.contractNo)+'</span>':'')+'</div></div>';
+  }).join('');
+}
+function showReviewDetail(idx){
+  _apFiles=[]; _apUploaded=[];
+  var r=reviewData[idx]; if(!r) return;
+  var readyDevices=devices.filter(function(d){ return d.statusKey==='พร้อมขาย'; });
+  var devOpts=readyDevices.map(function(d,i){
+    return '<div id="ap-dev-'+i+'" onclick="selApproveDevice('+i+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;background:#fff;">'
       +'<div id="ap-chk-'+i+'" style="width:20px;height:20px;border-radius:50%;border:2px solid #e5e5ea;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;"></div>'
       +'<div><div style="font-size:13px;font-weight:500;">'+htmlEsc(d.model||'-')+' '+htmlEsc(d.storage||'')+'</div>'
-      +'<div style="font-size:11px;color:#8e8e93;font-family:monospace;">'+htmlEsc(d.code||'')+(d.color?' · '+d.color:'')+(d.grade?' · เกรด '+d.grade:'')+'</div></div>'
-      +'</div>';
-  }).join('') || '<div style="padding:16px;text-align:center;color:#8e8e93;font-size:13px;">ไม่มีเครื่องพร้อมขาย</div>';
+      +'<div style="font-size:11px;color:#8e8e93;font-family:monospace;">'+htmlEsc(d.code||'')+(d.color?' · '+d.color:'')+(d.grade?' · เกรด '+d.grade:'')+'</div></div></div>';
+  }).join('')||'<div style="padding:16px;text-align:center;color:#8e8e93;font-size:13px;">ไม่มีเครื่องพร้อมขาย</div>';
 
-  var modal = document.getElementById('modal-approve');
-  modal.innerHTML = '<div class="modal-title">'+htmlEsc(r.name||'-')+'</div>'
+  var fi=function(id,val,ph){ return '<input id="'+id+'" type="number" placeholder="'+(ph||'0')+'" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"'+(val?' value="'+val+'"':'')+'>'  ; };
+  var fd=function(id){ return '<input id="'+id+'" type="date" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;">'; };
+
+  var modal=document.getElementById('modal-approve');
+  modal.innerHTML='<div class="modal-title">'+htmlEsc(r.name||'-')+'</div>'
     +'<div class="modal-sub">ส่งฟอร์ม: '+htmlEsc(r.submitDate||'-')+(r.contractNo?' · '+r.contractNo:'')+'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:14px;">'
-    +'<div><span style="color:#8e8e93">เบอร์:</span> '+htmlEsc(r.phone||'-')+'</div>'
-    +'<div><span style="color:#8e8e93">อายุ:</span> '+htmlEsc(r.age||'-')+'</div>'
-    +'<div><span style="color:#8e8e93">บัตรประชาชน:</span> <span style="font-family:monospace;">'+htmlEsc(r.idcard||'-')+'</span></div>'
-    +'<div><span style="color:#8e8e93">สถานที่ทำงาน:</span> '+htmlEsc(r.workplace||'-')+'</div>'
-    +'<div style="grid-column:1/-1;"><span style="color:#8e8e93">ที่อยู่:</span> '+htmlEsc(r.addr||'-')+'</div>'
-    +'<div><span style="color:#8e8e93">อ้างอิง 1:</span> '+htmlEsc(r.ref1Name||'-')+(r.ref1Phone?' ('+r.ref1Phone+')':'')+'</div>'
-    +'<div><span style="color:#8e8e93">อ้างอิง 2:</span> '+htmlEsc(r.ref2Name||'-')+(r.ref2Phone?' ('+r.ref2Phone+')':'')+'</div>'
+    +'<div><span style="color:#8e8e93">เบอร์: </span>'+htmlEsc(r.phone||'-')+'</div>'
+    +'<div><span style="color:#8e8e93">อายุ: </span>'+htmlEsc(r.age||'-')+'</div>'
+    +'<div><span style="color:#8e8e93">บัตรประชาชน: </span><span style="font-family:monospace;">'+htmlEsc(r.idcard||'-')+'</span></div>'
+    +'<div><span style="color:#8e8e93">ที่ทำงาน: </span>'+htmlEsc(r.workplace||'-')+'</div>'
+    +'<div style="grid-column:1/-1;"><span style="color:#8e8e93">ที่อยู่: </span>'+htmlEsc(r.addr||'-')+'</div>'
+    +'<div><span style="color:#8e8e93">อ้างอิง 1: </span>'+htmlEsc(r.ref1Name||'-')+(r.ref1Phone?' ('+r.ref1Phone+')':'')+'</div>'
+    +'<div><span style="color:#8e8e93">อ้างอิง 2: </span>'+htmlEsc(r.ref2Name||'-')+(r.ref2Phone?' ('+r.ref2Phone+')':'')+'</div>'
     +(r.idphoto?'<div style="grid-column:1/-1;"><a href="'+r.idphoto+'" target="_blank" class="btn btn-secondary btn-sm">📷 รูปบัตรประชาชน</a></div>':'')
-    +'<div style="grid-column:1/-1;"><div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">Statement</div><input type="text" id="ap-statement" placeholder="ลิงก์ Statement..." style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'<div style="grid-column:1/-1;"><div style="font-size:11px;font-weight:600;color:#8e8e93;margin-bottom:4px;">STATEMENT</div><input type="text" id="ap-statement" placeholder="ลิงก์ Statement..." style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
     +'</div>'
     +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">ราคา + งวด</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">'
-    +'<div class="field"><label>ราคาขาย ฿</label><input id="ap-price" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
-    +'<div class="field"><label>เงินดาวน์ ฿</label><input id="ap-down" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
-    +'<div class="field"><label>ค่างวด/เดือน ฿</label><input id="ap-monthly" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
-    +'<div class="field"><label>จำนวนงวด (เดือน)</label><input id="ap-months" type="number" placeholder="12" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
-    +'<div class="field"><label>ชำระทุกวันที่</label><input id="ap-payday" type="number" placeholder="5" min="1" max="28" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
-    +'<div class="field"><label>เริ่มชำระวันที่</label><input id="ap-start" type="date" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'<div class="field"><label>ราคาขาย ฿</label>'+fi('ap-price','','0')+'</div>'
+    +'<div class="field"><label>เงินดาวน์ ฿</label>'+fi('ap-down','','0')+'</div>'
+    +'<div class="field"><label>ค่างวด/เดือน ฿</label>'+fi('ap-monthly','','0')+'</div>'
+    +'<div class="field"><label>จำนวนงวด (เดือน)</label>'+fi('ap-months','','12')+'</div>'
+    +'<div class="field"><label>ชำระทุกวันที่</label>'+fi('ap-payday','','5')+'</div>'
+    +'<div class="field"><label>เริ่มชำระวันที่</label>'+fd('ap-start')+'</div>'
     +'</div>'
     +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">เลือกเครื่อง</div>'
-    +'<div style="border:1px solid #e5e5ea;border-radius:10px;overflow:hidden;max-height:200px;overflow-y:auto;margin-bottom:14px;">'+deviceOpts+'</div>'
-
-    // ── ส่วนอัพโหลดรูป (เพิ่มใหม่) ──────────────────────────────
+    +'<div style="border:1px solid #e5e5ea;border-radius:10px;overflow:hidden;max-height:200px;overflow-y:auto;margin-bottom:14px;">'+devOpts+'</div>'
+    // ── UPLOAD SECTION ────────────────────────────────────────────
     +'<div style="margin-bottom:14px;">'
-    +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">📷 รูปสัญญา + รูปเครื่อง</div>'
-    +'<div id="ap-dropzone" ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)" onclick="document.getElementById(\'ap-file-input\').click()" style="border:2px dashed #e5e5ea;border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:#fafafa;transition:all .15s;margin-bottom:8px;">'
+    +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">📷 รูปสัญญา → Drive</div>'
+    +'<div id="ap-dropzone" class="ap-dropzone" ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)" onclick="document.getElementById(\'ap-file-input\').click()">'
     +'<div style="font-size:22px;margin-bottom:6px;">📁</div>'
     +'<div style="font-size:13px;font-weight:500;color:#3a3a3c;">วางรูปที่นี่ หรือคลิกเพื่อเลือกไฟล์</div>'
     +'<div style="font-size:11px;color:#8e8e93;margin-top:4px;">JPG, PNG, PDF · สูงสุด 10MB/ไฟล์</div>'
     +'</div>'
     +'<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" style="display:none;" onchange="apFilesSelected(this.files)">'
-    +'<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>'
-    +'<div style="margin-top:10px;display:flex;align-items:center;gap:8px;">'
+    +'<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>'
+    +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">'
     +'<button id="ap-upload-btn" class="btn btn-blue btn-sm" onclick="apUploadAll()" style="display:none;">☁️ อัพโหลดรูปทั้งหมด</button>'
     +'<span id="ap-upload-status" style="font-size:12px;color:#8e8e93;"></span>'
-    +'</div>'
-    +'</div>'
-    // ─────────────────────────────────────────────────────────────
-
-    +'<div id="ap-status" style="font-size:13px;color:#8e8e93;margin-bottom:10px;min-height:18px;"></div>'
+    +'</div></div>'
+    // ── END UPLOAD SECTION ────────────────────────────────────────
+    +'<div id="ap-status" style="font-size:13px;color:#8e8e93;min-height:18px;margin-bottom:10px;"></div>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid #f2f2f7;">'
     +'<button onclick="cancelReview('+idx+')" style="padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:#fdecea;border:none;color:#c0392b;font-family:inherit;">ยกเลิกคำขอ</button>'
     +'<button onclick="closeModal(\'overlay-approve\')" style="padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:inherit;">ปิด</button>'
     +'<button onclick="confirmApprove('+idx+')" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#34c759;border:none;color:#fff;font-family:inherit;">✓ อนุมัติ + ออกเอกสาร</button>'
     +'</div>';
-
   document.getElementById('overlay-approve').classList.add('open');
-  window._approveDeviceIdx = null;
+  window._approveDeviceIdx=null;
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  STEP 2 — เพิ่มฟังก์ชันด้านล่างนี้ต่อท้าย script เดิม (ก่อน </script>)
-// ══════════════════════════════════════════════════════════════════
-
-// ─── upload state ────────────────────────────────────────────────
-var _apFiles    = [];
-var _apUploaded = [];
-
-// ─── drag & drop ─────────────────────────────────────────────────
-function apDragOver(e) {
-  e.preventDefault();
-  var dz = document.getElementById('ap-dropzone');
-  if (dz) { dz.style.borderColor='#007aff'; dz.style.background='#f0f7ff'; }
-}
-function apDragLeave(e) {
-  var dz = document.getElementById('ap-dropzone');
-  if (dz) { dz.style.borderColor='#e5e5ea'; dz.style.background='#fafafa'; }
-}
-function apDrop(e) {
-  e.preventDefault(); apDragLeave(e);
-  apFilesSelected(e.dataTransfer.files);
-}
-
-// ─── เลือกไฟล์ ───────────────────────────────────────────────────
-function apFilesSelected(fileList) {
-  if (!fileList || !fileList.length) return;
-  for (var i = 0; i < fileList.length; i++) {
-    var f = fileList[i];
-    if (f.size > 10*1024*1024) { showToast(f.name+' ใหญ่เกิน 10MB', true); continue; }
-    _apFiles.push(f);
-    apAddPreview(f, _apFiles.length - 1);
+// ── UPLOAD helpers ────────────────────────────────────────────────
+function apDragOver(e){ e.preventDefault(); var dz=document.getElementById('ap-dropzone'); if(dz) dz.classList.add('dragover'); }
+function apDragLeave(){ var dz=document.getElementById('ap-dropzone'); if(dz) dz.classList.remove('dragover'); }
+function apDrop(e){ e.preventDefault(); apDragLeave(); apFilesSelected(e.dataTransfer.files); }
+function apFilesSelected(fileList){
+  if(!fileList||!fileList.length) return;
+  for(var i=0;i<fileList.length;i++){
+    var f=fileList[i];
+    if(f.size>10*1024*1024){ showToast(f.name+' ใหญ่เกิน 10MB',true); continue; }
+    _apFiles.push(f); apAddPreview(f,_apFiles.length-1);
   }
-  var btn = document.getElementById('ap-upload-btn');
-  if (btn) btn.style.display = 'inline-flex';
+  var btn=document.getElementById('ap-upload-btn'); if(btn) btn.style.display='inline-flex';
 }
-
-function apAddPreview(file, idx) {
-  var list = document.getElementById('ap-file-list');
-  if (!list) return;
-  var item = document.createElement('div');
-  item.id = 'ap-prev-'+idx;
-  item.style.cssText = 'position:relative;width:80px;height:80px;border-radius:10px;'
-    +'border:1px solid #e5e5ea;overflow:hidden;background:#f5f5f7;'
-    +'display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-  var rm = '<button onclick="apRemoveFile('+idx+')" style="position:absolute;top:3px;right:3px;'
-    +'width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;'
-    +'cursor:pointer;font-size:10px;line-height:1;">✕</button>';
-  var bd = '<div id="ap-badge-'+idx+'" style="display:none;position:absolute;bottom:3px;right:3px;'
-    +'background:#34c759;border-radius:50%;width:16px;height:16px;'
-    +'align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>';
-
-  if (file.type.startsWith('image/')) {
-    var reader = new FileReader();
-    reader.onload = (function(el,r,b){ return function(e){
-      el.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;">'+r+b;
-    }; })(item,rm,bd);
+function apAddPreview(file,idx){
+  var list=document.getElementById('ap-file-list'); if(!list) return;
+  var item=document.createElement('div');
+  item.id='ap-prev-'+idx;
+  item.style.cssText='position:relative;width:80px;height:80px;border-radius:10px;border:1px solid #e5e5ea;overflow:hidden;background:#f5f5f7;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+  var rm='<button onclick="apRemoveFile('+idx+')" style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:10px;line-height:1;">✕</button>';
+  var bd='<div id="ap-badge-'+idx+'" style="display:none;position:absolute;bottom:3px;right:3px;background:#34c759;border-radius:50%;width:16px;height:16px;align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>';
+  if(file.type.startsWith('image/')){
+    var reader=new FileReader();
+    reader.onload=(function(el,r,b){ return function(ev){ el.innerHTML='<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:cover;">'+r+b; }; })(item,rm,bd);
     reader.readAsDataURL(file);
-  } else {
-    item.innerHTML = '<div style="font-size:28px;">📄</div>'+rm+bd;
-  }
+  } else { item.innerHTML='<div style="font-size:28px;">📄</div>'+rm+bd; }
   list.appendChild(item);
 }
-
-function apRemoveFile(idx) {
-  _apFiles[idx] = null;
-  var el = document.getElementById('ap-prev-'+idx);
-  if (el) el.remove();
-  var btn = document.getElementById('ap-upload-btn');
-  if (btn) btn.style.display = _apFiles.filter(Boolean).length ? 'inline-flex' : 'none';
-}
-
-// ─── อัพโหลดทั้งหมด ──────────────────────────────────────────────
-function apUploadAll() {
-  var readyDevices = devices.filter(function(d){ return d.statusKey==='พร้อมขาย'; });
-  var devIdx = window._approveDeviceIdx;
-  var mc = (devIdx !== null && devIdx !== undefined && readyDevices[devIdx])
-    ? readyDevices[devIdx].code : '';
-  if (!mc) { showToast('กรุณาเลือกเครื่องก่อนอัพโหลดรูป', true); return; }
-
-  var queue = [];
-  _apFiles.forEach(function(f,i){ if(f) queue.push({file:f, idx:i}); });
-  if (!queue.length) { showToast('ไม่มีไฟล์ที่เลือก', true); return; }
-
-  var statusEl = document.getElementById('ap-upload-status');
-  var btn = document.getElementById('ap-upload-btn');
-  if (btn) btn.disabled = true;
-  if (statusEl) statusEl.textContent = '⏳ กำลังอัพโหลด 0/'+queue.length+'...';
-
-  var done = 0, fail = 0;
-  _apUploaded = [];
-
-  queue.forEach(function(item) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var dataUrl = e.target.result;
-      var b64 = dataUrl.indexOf(',')>=0 ? dataUrl.split(',')[1] : dataUrl;
-      api('uploadPhoto', {
-        mc: mc, filename: item.file.name,
-        mimeType: item.file.type||'image/jpeg', base64: b64
-      }).then(function(res) {
-        done++;
-        _apUploaded.push(res);
-        var badge = document.getElementById('ap-badge-'+item.idx);
-        if (badge) badge.style.display = 'flex';
-        if (statusEl) statusEl.textContent = '⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
-        checkDone();
-      }).catch(function(err) {
-        fail++;
-        showToast('อัพโหลด '+item.file.name+' ไม่ได้: '+err.message, true);
-        checkDone();
-      });
+function apRemoveFile(idx){ _apFiles[idx]=null; var el=document.getElementById('ap-prev-'+idx); if(el) el.remove(); var btn=document.getElementById('ap-upload-btn'); if(btn) btn.style.display=_apFiles.filter(Boolean).length?'inline-flex':'none'; }
+function apUploadAll(){
+  var readyDevices=devices.filter(function(d){ return d.statusKey==='พร้อมขาย'; });
+  var devIdx=window._approveDeviceIdx;
+  var mc=(devIdx!=null&&readyDevices[devIdx])?readyDevices[devIdx].code:'';
+  if(!mc){ showToast('กรุณาเลือกเครื่องก่อนอัพโหลดรูป',true); return; }
+  var queue=[]; _apFiles.forEach(function(f,i){ if(f) queue.push({file:f,idx:i}); });
+  if(!queue.length){ showToast('ไม่มีไฟล์ที่เลือก',true); return; }
+  var statusEl=document.getElementById('ap-upload-status'),btn=document.getElementById('ap-upload-btn');
+  if(btn) btn.disabled=true; if(statusEl) statusEl.textContent='⏳ กำลังอัพโหลด 0/'+queue.length+'...';
+  var done=0,fail=0; _apUploaded=[];
+  queue.forEach(function(item){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var parts=e.target.result.split(','); var b64=parts[1]||parts[0];
+      api('uploadPhoto',{mc:mc,filename:item.file.name,mimeType:item.file.type||'image/jpeg',base64:b64})
+        .then(function(res){
+          done++; _apUploaded.push(res);
+          var badge=document.getElementById('ap-badge-'+item.idx); if(badge){ badge.style.display='flex'; }
+          if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
+          checkUploadDone();
+        }).catch(function(err){ fail++; showToast('อัพโหลด '+item.file.name+' ไม่ได้: '+err.message,true); checkUploadDone(); });
     };
     reader.readAsDataURL(item.file);
   });
-
-  function checkDone() {
-    if (done+fail < queue.length) return;
-    if (btn) btn.disabled = false;
-    if (statusEl) statusEl.innerHTML = done>0
-      ? '✅ สำเร็จ '+done+' ไฟล์'+(fail?' · <span style="color:#ff3b30;">ล้มเหลว '+fail+'</span>':'')
-        +' · <a href="https://drive.google.com/drive/search?q='+encodeURIComponent(mc)
-        +'" target="_blank" style="color:#007aff;">ดูใน Drive</a>'
-      : '<span style="color:#ff3b30;">อัพโหลดล้มเหลวทั้งหมด</span>';
-    if (done>0) showToast('อัพโหลดรูป '+mc+' สำเร็จ '+done+' ไฟล์ ✓');
+  function checkUploadDone(){
+    if(done+fail<queue.length) return;
+    if(btn) btn.disabled=false;
+    if(statusEl) statusEl.innerHTML=done>0
+      ?'✅ สำเร็จ '+done+' ไฟล์'+(fail?' · <span style="color:#ff3b30;">ล้มเหลว '+fail+'</span>':'')
+       +' · <a href="https://drive.google.com/drive/search?q='+encodeURIComponent(mc)+'" target="_blank" style="color:#007aff;">ดูใน Drive</a>'
+      :'<span style="color:#ff3b30;">ล้มเหลวทั้งหมด</span>';
+    if(done>0) showToast('อัพโหลดรูป '+mc+' สำเร็จ '+done+' ไฟล์ ✓');
   }
 }
+function selApproveDevice(i){
+  window._approveDeviceIdx=i;
+  document.querySelectorAll('[id^="ap-chk-"]').forEach(function(c){ c.textContent=''; c.style.background=''; c.style.borderColor='#e5e5ea'; c.style.color=''; });
+  document.querySelectorAll('[id^="ap-dev-"]').forEach(function(r){ r.style.background='#fff'; });
+  var chk=document.getElementById('ap-chk-'+i),row=document.getElementById('ap-dev-'+i);
+  if(chk){ chk.textContent='✓'; chk.style.background='#007aff'; chk.style.borderColor='#007aff'; chk.style.color='#fff'; }
+  if(row) row.style.background='#f0f7ff';
+}
+function cancelReview(idx){
+  var r=reviewData[idx]; if(!r||!confirm('ยืนยันการยกเลิกคำขอของ '+r.name+'?')) return;
+  api('updateReviewStatus',{row:r.row,status:'ยกเลิก'}).then(function(){ showToast('ยกเลิกคำขอแล้ว'); closeModal('overlay-approve'); loadReview(); }).catch(function(e){ showToast('เกิดข้อผิดพลาด: '+e.message,true); });
+}
+function confirmApprove(idx){
+  var r=reviewData[idx]; if(!r) return;
+  if(window._approveDeviceIdx==null){ showToast('กรุณาเลือกเครื่องก่อน',true); return; }
+  var price=parseFloat((document.getElementById('ap-price')||{}).value)||0; if(!price){ showToast('กรุณากรอกราคาขาย',true); return; }
+  var readyDevices=devices.filter(function(d){ return d.statusKey==='พร้อมขาย'; });
+  var d=readyDevices[window._approveDeviceIdx]; if(!d){ showToast('ไม่พบเครื่องที่เลือก',true); return; }
+  document.getElementById('ap-status').textContent='⏳ กำลังดำเนินการ...';
+  var g=function(id){ return (document.getElementById(id)||{value:''}).value; };
+  var payload={row:r.row,contractNo:d.code,customerName:r.name,customerPhone:r.phone||'',customerIdcard:r.idcard||'',customerAge:r.age||'',customerAddr:r.addr||'',ref1Name:r.ref1Name||'',ref1Rel:r.ref1Rel||'',ref1Phone:r.ref1Phone||'',ref2Name:r.ref2Name||'',ref2Rel:r.ref2Rel||'',ref2Phone:r.ref2Phone||'',grade:d.grade||'',model:d.model||'',storage:d.storage||'',color:d.color||'',sn:d.sn||'',price:price,down:parseFloat(g('ap-down'))||0,monthly:parseFloat(g('ap-monthly'))||0,months:parseInt(g('ap-months'))||12,payDay:g('ap-payday'),startDate:g('ap-start')};
+  d.statusKey='ขายแล้ว';
+  api('approveContract',payload).then(function(res){
+    var st=document.getElementById('ap-status');
+    st.innerHTML='✅ เรียบร้อย! '+(res.contractUrl?'<a href="'+res.contractUrl+'" target="_blank" style="color:#007aff;">📄 สัญญา</a>':'')+(res.contractPdf?' · <a href="'+res.contractPdf+'" target="_blank" style="color:#34c759;font-weight:600;">PDF</a>':'');
+    showToast('อนุมัติ + สร้างสัญญาเรียบร้อย ✓'); renderDashboard(); renderSellList(); updateBadges(); loadReview();
+  }).catch(function(e){ document.getElementById('ap-status').textContent='❌ '+e.message; d.statusKey='พร้อมขาย'; });
+}
 
-// ─── reset เมื่อปิด modal ─────────────────────────────────────────
-var _origCloseModal2 = closeModal;
-closeModal = function(id) {
-  if (id==='overlay-approve') { _apFiles=[]; _apUploaded=[]; }
-  _origCloseModal2(id);
-};
+// ============================================================
+//  INSTALLMENT
+// ============================================================
+function lookupInstDevice(){
+  var mc=document.getElementById('inst-mc-input').value.trim(); if(!mc){ showToast('กรุณากรอกรหัสเครื่อง',true); return; }
+  api('getDeviceData',{code:mc}).then(function(d){
+    var el=document.getElementById('inst-device-info'); el.style.display='block';
+    if(!d||!d.found){ el.innerHTML='<span style="color:#ff3b30;">❌ ไม่พบรหัส '+mc+'</span>'; return; }
+    el.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"><div><span style="color:#8e8e93">รุ่น: </span><strong>'+htmlEsc(d.model||'-')+'</strong></div><div><span style="color:#8e8e93">สถานะ: </span>'+statusBadge(d.status||d.statusKey||'-')+'</div></div>';
+    showToast('พบข้อมูล '+mc);
+  }).catch(function(e){ showToast('ค้นหาไม่ได้: '+e.message,true); });
+}
+function renderInstallment(){
+  var list=reviewData.filter(function(r){ return r.status==='ผ่าน'&&r.contractNo; });
+  document.getElementById('inst-total').textContent=list.length;
+  document.getElementById('inst-overdue').textContent=0;
+  document.getElementById('inst-pending').textContent='-';
+  var el=document.getElementById('inst-list');
+  if(!list.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีสัญญาผ่อน</div></div>'; return; }
+  el.innerHTML=list.map(function(r){ return '<div class="inst-row"><div style="width:36px;height:36px;border-radius:10px;background:#f5f5f7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👤</div><div class="inst-info"><div class="inst-name">'+htmlEsc(r.name||'-')+'</div><div class="inst-meta">'+htmlEsc(r.contractNo||'')+'</div><div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div></div><div class="inst-right">'+(r.contractUrl?'<a href="'+r.contractUrl+'" target="_blank" class="btn btn-secondary btn-sm">📄</a>':'')+(r.contractPdf?' <a href="'+r.contractPdf+'" target="_blank" class="btn btn-blue btn-sm">PDF</a>':'')+'</div></div>'; }).join('');
+}
+
+// ============================================================
+//  CHIP FILTER
+// ============================================================
+function setChip(el,group,val){
+  document.querySelectorAll('[data-group="'+group+'"]').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active'); chipFilters[group]=val;
+  if(group.startsWith('stock')) renderStock();
+  if(group.startsWith('rv')) renderReview();
+}
+
+// ============================================================
+//  MODALS
+// ============================================================
+function closeModal(id){ document.getElementById(id).classList.remove('open'); if(id==='overlay-approve'){ _apFiles=[]; _apUploaded=[]; } }
+document.querySelectorAll('.overlay').forEach(function(o){ o.addEventListener('click',function(e){ if(e.target===o){ o.classList.remove('open'); _apFiles=[]; _apUploaded=[]; } }); });
+
+// ============================================================
+//  TOAST
+// ============================================================
+var _toastT;
+function showToast(msg,isErr){ var t=document.getElementById('toast'),d=document.getElementById('toast-dot'),m=document.getElementById('toast-msg'); d.className='toast-dot'+(isErr?' err':''); m.textContent=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(function(){ t.classList.remove('show'); },3000); }
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function htmlEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function gradeHtml(g){ var cls={'A++':'g-app','A+':'g-ap','A':'g-a','B':'g-b','C':'g-c','D':'g-d'}; return '<span class="grade '+(cls[g]||'g-a')+'">'+htmlEsc(g||'-')+'</span>'; }
+function batHtml(bat){ var v=parseFloat(bat)||0,c=v>=80?'#34c759':v>=50?'#ff9500':'#ff3b30'; return '<div class="bat-pill"><div class="bat-bar"><div class="bat-fill" style="width:'+v+'%;background:'+c+'"></div></div><span>'+v+'%</span></div>'; }
+function statusBadge(s){ var m={'พร้อมขาย':'<span class="badge badge-green">พร้อมขาย</span>','ขายแล้ว':'<span class="badge badge-gray">ขายแล้ว</span>','ของถึง':'<span class="badge badge-blue">ของถึง</span>','รอเช็ค':'<span class="badge badge-orange">รอเช็ค</span>'}; return m[s]||'<span class="badge badge-gray">'+htmlEsc(s||'-')+'</span>'; }
+function toggleSourceInput(){ var radios=document.getElementsByName('rc-src-type'),val=''; for(var i=0;i<radios.length;i++){ if(radios[i].checked){ val=radios[i].value; break; } } var el=document.getElementById('rc-source'); if(el) el.placeholder=val==='ร้านค้า'?'ชื่อร้านค้า':'ชื่อลูกค้า'; }
+
+// ============================================================
+//  MODEL LISTS + CHECKLIST
+// ============================================================
+var MODEL_LISTS={iPhone:['iPhone SE (Gen 2)','iPhone SE (Gen 3)','iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone 12','iPhone 12 mini','iPhone 12 Pro','iPhone 12 Pro Max','iPhone 13','iPhone 13 mini','iPhone 13 Pro','iPhone 13 Pro Max','iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max','iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max','iPhone 16','iPhone 16 Plus','iPhone 16 Pro','iPhone 16 Pro Max','iPhone 17','iPhone 17 Plus','iPhone 17 Pro','iPhone 17 Pro Max'],iPad:['iPad (Gen 9)','iPad (Gen 10)','iPad mini 5','iPad mini 6','iPad mini 7','iPad Air 4','iPad Air 5','iPad Air 11" M2','iPad Air 13" M2','iPad Pro 11" M4','iPad Pro 13" M4'],MacBook:['MacBook Air 13" M1','MacBook Air 13" M2','MacBook Air 13" M3','MacBook Air 15" M2','MacBook Air 15" M3','MacBook Pro 14" M3 Pro','MacBook Pro 14" M4 Pro','MacBook Pro 16" M3 Pro','MacBook Pro 16" M4 Pro','iMac 24" M4','Mac mini M4'],'Apple Watch':['Apple Watch SE','Apple Watch Series 8','Apple Watch Series 9','Apple Watch Series 10','Apple Watch Ultra 2'],AirPods:['AirPods 3','AirPods 4','AirPods Pro 2','AirPods Pro 3','AirPods Max'],Android:['Samsung Galaxy S25'],Acc:['Apple Pencil 1','Apple Pencil 2','Apple Pencil Pro','Magic Keyboard','Magic Mouse']};
+var CHECK_ITEMS={iPhone:['กล่อง / อุปกรณ์','จอภาพ/การทัชสกรีน','ลำโพง บน/ล่าง','ปุ่มเพิ่ม/ลดเสียง','Touch ID / Face ID','Wifi/Bluetooth/Airdrop','กล้องหน้า','กล้องหลัง','ไมค์','ปุ่มเปิด-ปิดเสียง','ปุ่มเปิด-ปิดเครื่อง','ไฟฉาย/แฟลช','การชาร์จ','เทสซิม/การรับสัญญาณ','ประกันเครื่อง','ติดล็อคซิม'],iPad:['กล่อง / อุปกรณ์','จอภาพ/การทัชสกรีน','ลำโพง','ปุ่มเพิ่ม/ลดเสียง','Touch ID / Face ID','Wifi/Bluetooth','กล้องหน้า','กล้องหลัง','ไมค์','ปุ่มเปิด-ปิดเครื่อง','ไฟฉาย/แฟลช','การชาร์จ','ประกันเครื่อง'],MacBook:['กล่อง / อุปกรณ์','จอภาพ','ลำโพง','ปุ่มเพิ่ม/ลดเสียง','Touch ID','Wifi/Bluetooth/Airdrop','กล้องหน้า','ไมค์','ปุ่มคีย์บอร์ด','ปุ่มเปิด/ปิดเครื่อง','บานพับจอ','Track pad','Touch bar','Port USB/ช่องการชาร์จ','รูหูฟัง'],default:['กล่อง / อุปกรณ์','จอภาพ/การทัชสกรีน','ลำโพง','ประกันเครื่อง','Wifi/Bluetooth','ไมค์','ปุ่มเปิด/ปิดเครื่อง','การชาร์จ']};
+
+function updateModelList(){
+  var devtype=document.getElementById('rc-devtype').value, sel=document.getElementById('rc-model-sel'), inp=document.getElementById('rc-model'), models=MODEL_LISTS[devtype]||[];
+  if(models.length){ sel.innerHTML='<option value="">เลือกรุ่น...</option>'+models.map(function(m){ return '<option value="'+m+'">'+m+'</option>'; }).join(''); sel.style.display='block'; inp.placeholder='หรือพิมพ์รุ่นเอง'; }
+  else{ sel.style.display='none'; inp.placeholder='พิมพ์รุ่น...'; }
+  inp.value=''; updateChecklistSection(devtype);
+}
+function updateChecklistSection(devtype){
+  var items=CHECK_ITEMS[devtype]||CHECK_ITEMS.default, el=document.getElementById('rc-checklist'); if(!el) return;
+  el.innerHTML=items.map(function(item,i){ return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f2f2f7;"><span style="font-size:12px;color:#8e8e93;width:20px;flex-shrink:0;">'+(i+1)+'</span><span style="flex:1;font-size:13px;">'+item+'</span><select onchange="updateCheckSummary()" style="padding:4px 8px;border-radius:6px;border:1px solid #e5e5ea;font-size:12px;outline:none;font-family:inherit;"><option value="ปกติ">✅ ปกติ</option><option value="ไม่ปกติ">❌ ไม่ปกติ</option><option value="-">- ไม่เช็ค</option></select><input type="text" placeholder="หมายเหตุ" style="width:110px;padding:4px 8px;border-radius:6px;border:1px solid #e5e5ea;font-size:12px;outline:none;font-family:inherit;"></div>'; }).join('');
+  updateCheckSummary();
+}
+function updateCheckSummary(){ var sels=document.querySelectorAll('#rc-checklist select'),pass=0,fail=0; sels.forEach(function(s){ if(s.value==='ปกติ') pass++; else if(s.value==='ไม่ปกติ') fail++; }); var el=document.getElementById('rc-check-summary'); if(el) el.textContent='ผ่าน '+pass+' รายการ'+(fail?' | ไม่ปกติ '+fail+' รายการ':'')+' ✅'; }
 </script>
+</body>
+</html>
