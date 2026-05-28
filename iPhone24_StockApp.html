@@ -1,47 +1,25 @@
 <!-- =====================================================================
-  PATCH — Index.html
-  เพิ่ม UI อัพโหลดรูป + JS uploadPhoto ใน modal อนุมัติสัญญา
-  ======================================================================
-
-  วิธีใช้:
-  1) ใน showReviewDetail() — ค้นหาบรรทัดนี้ใน modal.innerHTML:
-       '<div id="ap-status" style="...'
-     แล้วแทรก HTML_UPLOAD_SECTION ก่อนบรรทัดนั้น
-
-  2) วาง <script> JS_UPLOAD ไว้ท้าย <script> เดิม (ก่อน </script>)
+  PATCH v2 — Index.html
+  วางก้อน <script> นี้ต่อท้าย </script> เดิม (ก่อน </body>)
+  แก้ bug: closeModal is not defined
   ===================================================================== -->
-
-
-<!-- ============================================================
-  PART A — HTML ที่ต้องแทรกใน modal.innerHTML ของ showReviewDetail()
-  แทรกก่อนบรรทัด:  '<div id="ap-status" ...'
-  ============================================================ -->
-<!--
-แทน:
-  + '<div id="ap-status" style="font-size:13px;color:#8e8e93;margin-bottom:10px;min-height:18px;"></div>'
-
-ด้วย:
-  + buildUploadSection()
-  + '<div id="ap-status" style="font-size:13px;color:#8e8e93;margin-bottom:10px;min-height:18px;"></div>'
--->
-
-
-<!-- ============================================================
-  PART B — JavaScript (วางท้าย <script> เดิม)
-  ============================================================ -->
 <script>
+// รอให้ script หลักโหลดเสร็จก่อนทุกอย่าง
+window.addEventListener('load', function() {
+
 // ─────────────────────────────────────────────────────────────────────
-//  buildUploadSection()
-//  สร้าง HTML ของส่วนอัพโหลดรูปใน modal อนุมัติสัญญา
-//  เรียกใน showReviewDetail() แทน string literal
+//  State
+// ─────────────────────────────────────────────────────────────────────
+var _apFiles    = [];
+var _apUploaded = [];
+
+// ─────────────────────────────────────────────────────────────────────
+//  buildUploadSection — สร้าง HTML ส่วนอัพโหลด
 // ─────────────────────────────────────────────────────────────────────
 function buildUploadSection() {
-  return ''
-    + '<div style="margin-bottom:14px;">'
+  return '<div id="ap-upload-wrap" style="margin-bottom:14px;">'
     + '<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;'
     +   'letter-spacing:.3px;margin-bottom:8px;">📷 รูปสัญญา + รูปเครื่อง</div>'
-
-    // ── drop zone ──────────────────────────────────────────────────
     + '<div id="ap-dropzone" '
     +   'ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)" '
     +   'onclick="document.getElementById(\'ap-file-input\').click()" '
@@ -49,17 +27,11 @@ function buildUploadSection() {
     +   'cursor:pointer;background:#fafafa;transition:all .15s;margin-bottom:8px;">'
     +   '<div style="font-size:22px;margin-bottom:6px;">📁</div>'
     +   '<div style="font-size:13px;font-weight:500;color:#3a3a3c;">วางรูปที่นี่ หรือคลิกเพื่อเลือกไฟล์</div>'
-    +   '<div style="font-size:11px;color:#8e8e93;margin-top:4px;">รองรับ JPG, PNG, PDF · สูงสุด 10MB/ไฟล์</div>'
+    +   '<div style="font-size:11px;color:#8e8e93;margin-top:4px;">JPG, PNG, PDF · สูงสุด 10MB/ไฟล์</div>'
     + '</div>'
-
-    // ── hidden file input ───────────────────────────────────────────
     + '<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" '
     +   'style="display:none;" onchange="apFilesSelected(this.files)">'
-
-    // ── preview list ────────────────────────────────────────────────
     + '<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>'
-
-    // ── upload button ───────────────────────────────────────────────
     + '<div style="margin-top:10px;display:flex;align-items:center;gap:8px;">'
     +   '<button id="ap-upload-btn" class="btn btn-blue btn-sm" '
     +     'onclick="apUploadAll()" style="display:none;">☁️ อัพโหลดรูปทั้งหมด</button>'
@@ -69,49 +41,38 @@ function buildUploadSection() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-//  State
+//  Drag & Drop
 // ─────────────────────────────────────────────────────────────────────
-var _apFiles    = [];   // Array of File objects
-var _apUploaded = [];   // Array of { filename, url, previewUrl }
-
-// ─────────────────────────────────────────────────────────────────────
-//  Drag & Drop handlers
-// ─────────────────────────────────────────────────────────────────────
-function apDragOver(e) {
+window.apDragOver = function(e) {
   e.preventDefault();
   var dz = document.getElementById('ap-dropzone');
   if (dz) { dz.style.borderColor = '#007aff'; dz.style.background = '#f0f7ff'; }
-}
-function apDragLeave(e) {
+};
+window.apDragLeave = function(e) {
   var dz = document.getElementById('ap-dropzone');
   if (dz) { dz.style.borderColor = '#e5e5ea'; dz.style.background = '#fafafa'; }
-}
-function apDrop(e) {
+};
+window.apDrop = function(e) {
   e.preventDefault();
-  apDragLeave(e);
+  window.apDragLeave(e);
   apFilesSelected(e.dataTransfer.files);
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────
-//  เมื่อเลือกไฟล์
+//  เลือกไฟล์
 // ─────────────────────────────────────────────────────────────────────
-function apFilesSelected(fileList) {
+window.apFilesSelected = function(fileList) {
   if (!fileList || !fileList.length) return;
   for (var i = 0; i < fileList.length; i++) {
     var f = fileList[i];
-    if (f.size > 10 * 1024 * 1024) {
-      showToast(f.name + ' ใหญ่เกิน 10MB', true); continue;
-    }
+    if (f.size > 10 * 1024 * 1024) { showToast(f.name + ' ใหญ่เกิน 10MB', true); continue; }
     _apFiles.push(f);
     apAddPreview(f, _apFiles.length - 1);
   }
   var btn = document.getElementById('ap-upload-btn');
-  if (btn && _apFiles.length) btn.style.display = 'inline-flex';
-}
+  if (btn) btn.style.display = 'inline-flex';
+};
 
-// ─────────────────────────────────────────────────────────────────────
-//  สร้าง preview thumbnail
-// ─────────────────────────────────────────────────────────────────────
 function apAddPreview(file, idx) {
   var list = document.getElementById('ap-file-list');
   if (!list) return;
@@ -121,57 +82,46 @@ function apAddPreview(file, idx) {
     + 'border:1px solid #e5e5ea;overflow:hidden;background:#f5f5f7;'
     + 'display:flex;align-items:center;justify-content:center;flex-shrink:0;';
 
+  var removeBtn = '<button onclick="apRemoveFile(' + idx + ')" '
+    + 'style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;'
+    + 'background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:10px;'
+    + 'line-height:1;">✕</button>';
+  var badge = '<div id="ap-badge-' + idx + '" style="display:none;position:absolute;bottom:3px;'
+    + 'right:3px;background:#34c759;border-radius:50%;width:16px;height:16px;'
+    + 'align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>';
+
   if (file.type.startsWith('image/')) {
     var reader = new FileReader();
-    reader.onload = (function(el) {
+    reader.onload = (function(el, rb, bd) {
       return function(e) {
-        el.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;">'
-          + apRemoveBtn(idx) + apStatusBadge(idx);
+        el.innerHTML = '<img src="' + e.target.result
+          + '" style="width:100%;height:100%;object-fit:cover;">' + rb + bd;
       };
-    })(item);
+    })(item, removeBtn, badge);
     reader.readAsDataURL(file);
   } else {
-    item.innerHTML = '<div style="font-size:28px;">📄</div>'
-      + '<div style="position:absolute;bottom:2px;left:0;right:0;text-align:center;'
-      + 'font-size:9px;color:#8e8e93;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
-      + 'padding:0 4px;">' + htmlEsc(file.name) + '</div>'
-      + apRemoveBtn(idx) + apStatusBadge(idx);
+    item.innerHTML = '<div style="font-size:28px;">📄</div>' + removeBtn + badge;
   }
   list.appendChild(item);
 }
 
-function apRemoveBtn(idx) {
-  return '<button onclick="apRemoveFile(' + idx + ')" '
-    + 'style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;'
-    + 'background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:10px;'
-    + 'display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>';
-}
-
-function apStatusBadge(idx) {
-  return '<div id="ap-badge-' + idx + '" style="display:none;position:absolute;bottom:3px;'
-    + 'right:3px;background:#34c759;border-radius:50%;width:16px;height:16px;'
-    + 'display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>';
-}
-
-function apRemoveFile(idx) {
+window.apRemoveFile = function(idx) {
   _apFiles[idx] = null;
   var el = document.getElementById('ap-prev-' + idx);
   if (el) el.remove();
   var remaining = _apFiles.filter(Boolean).length;
   var btn = document.getElementById('ap-upload-btn');
   if (btn) btn.style.display = remaining ? 'inline-flex' : 'none';
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────
 //  อัพโหลดทั้งหมด
 // ─────────────────────────────────────────────────────────────────────
-function apUploadAll() {
-  // ดึง MC จาก device ที่เลือกใน modal
+window.apUploadAll = function() {
   var readyDevices = devices.filter(function(d) { return d.statusKey === 'พร้อมขาย'; });
   var devIdx = window._approveDeviceIdx;
   var mc = (devIdx !== null && devIdx !== undefined && readyDevices[devIdx])
-    ? readyDevices[devIdx].code
-    : '';
+    ? readyDevices[devIdx].code : '';
 
   if (!mc) { showToast('กรุณาเลือกเครื่องก่อนอัพโหลดรูป', true); return; }
 
@@ -186,58 +136,70 @@ function apUploadAll() {
   var done = 0, failed = 0;
   _apUploaded = [];
 
-  function uploadOne(fileObj, originalIdx) {
+  var uploadQueue = [];
+  _apFiles.forEach(function(f, idx) { if (f) uploadQueue.push({ file: f, idx: idx }); });
+
+  uploadQueue.forEach(function(item) {
     var reader = new FileReader();
     reader.onload = function(e) {
-      // แยก base64 ออกจาก data URL
       var dataUrl = e.target.result;
       var base64  = dataUrl.indexOf(',') >= 0 ? dataUrl.split(',')[1] : dataUrl;
-
       api('uploadPhoto', {
-        mc       : mc,
-        filename : fileObj.name,
-        mimeType : fileObj.type || 'image/jpeg',
-        base64   : base64
+        mc: mc, filename: item.file.name,
+        mimeType: item.file.type || 'image/jpeg', base64: base64
       }).then(function(res) {
         done++;
         _apUploaded.push(res);
-        // ติ๊กถูก thumbnail
-        var badge = document.getElementById('ap-badge-' + originalIdx);
-        if (badge) badge.style.display = 'flex';
-        // อัพเดต status
-        if (statusEl) statusEl.textContent = '⏳ ' + done + '/' + filesToUpload.length + ' เสร็จแล้ว...';
+        var badge = document.getElementById('ap-badge-' + item.idx);
+        if (badge) { badge.style.display = 'flex'; }
+        if (statusEl) statusEl.textContent = '⏳ ' + done + '/' + uploadQueue.length + ' เสร็จแล้ว...';
         checkDone();
       }).catch(function(err) {
         failed++;
-        showToast('อัพโหลด ' + fileObj.name + ' ไม่ได้: ' + err.message, true);
+        showToast('อัพโหลด ' + item.file.name + ' ไม่ได้: ' + err.message, true);
         checkDone();
       });
     };
-    reader.readAsDataURL(fileObj);
-  }
+    reader.readAsDataURL(item.file);
+  });
 
   function checkDone() {
-    if (done + failed < filesToUpload.length) return;
+    if (done + failed < uploadQueue.length) return;
     if (btn) btn.disabled = false;
     if (statusEl) {
       statusEl.innerHTML = done > 0
         ? '✅ อัพโหลดสำเร็จ ' + done + ' ไฟล์'
-            + (failed ? ' · <span style="color:#ff3b30;">ล้มเหลว ' + failed + '</span>' : '')
-            + ' → <a href="https://drive.google.com/drive/search?q=' + encodeURIComponent(mc)
-            + '" target="_blank" style="color:#007aff;">ดูใน Drive</a>'
+          + (failed ? ' · <span style="color:#ff3b30;">ล้มเหลว ' + failed + '</span>' : '')
+          + ' · <a href="https://drive.google.com/drive/search?q=' + encodeURIComponent(mc)
+          + '" target="_blank" style="color:#007aff;">ดูใน Drive</a>'
         : '<span style="color:#ff3b30;">อัพโหลดล้มเหลวทั้งหมด</span>';
     }
     if (done > 0) showToast('อัพโหลดรูป ' + mc + ' สำเร็จ ' + done + ' ไฟล์ ✓');
   }
-
-  // กำหนด originalIdx ให้ถูกต้องจาก _apFiles (ไม่ใช่ filesToUpload)
-  var uploadQueue = [];
-  _apFiles.forEach(function(f, idx) { if (f) uploadQueue.push({ file: f, idx: idx }); });
-  uploadQueue.forEach(function(item) { uploadOne(item.file, item.idx); });
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────
-//  Reset เมื่อปิด modal
+//  Patch showReviewDetail — แทรก upload section ใน modal
+//  ทำหลัง window.load เพื่อให้ showReviewDetail ถูก declare แล้ว
+// ─────────────────────────────────────────────────────────────────────
+var _origShowReviewDetail = showReviewDetail;
+showReviewDetail = function(idx) {
+  // reset state ทุกครั้งที่เปิด modal ใหม่
+  _apFiles    = [];
+  _apUploaded = [];
+
+  _origShowReviewDetail(idx);
+
+  // แทรก upload section ก่อน #ap-status
+  var statusEl = document.getElementById('ap-status');
+  if (!statusEl) return;
+  var wrap = document.createElement('div');
+  wrap.innerHTML = buildUploadSection();
+  statusEl.parentNode.insertBefore(wrap.firstChild, statusEl);
+};
+
+// ─────────────────────────────────────────────────────────────────────
+//  Patch closeModal — reset state เมื่อปิด modal
 // ─────────────────────────────────────────────────────────────────────
 var _origCloseModal = closeModal;
 closeModal = function(id) {
@@ -248,23 +210,5 @@ closeModal = function(id) {
   _origCloseModal(id);
 };
 
-// ─────────────────────────────────────────────────────────────────────
-//  Patch showReviewDetail — แทรก buildUploadSection() ใน modal HTML
-// ─────────────────────────────────────────────────────────────────────
-var _origShowReviewDetail = showReviewDetail;
-showReviewDetail = function(idx) {
-  _origShowReviewDetail(idx);          // สร้าง modal เดิมก่อน
-
-  // reset state
-  _apFiles    = [];
-  _apUploaded = [];
-
-  // หาตำแหน่ง ap-status แล้วแทรก upload section ก่อนหน้า
-  var statusEl = document.getElementById('ap-status');
-  if (!statusEl) return;
-
-  var uploadDiv = document.createElement('div');
-  uploadDiv.innerHTML = buildUploadSection();
-  statusEl.parentNode.insertBefore(uploadDiv.firstChild, statusEl);
-};
+}); // end window.addEventListener('load')
 </script>
