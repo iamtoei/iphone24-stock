@@ -1,162 +1,199 @@
 <!-- =====================================================================
-  PATCH v2 — Index.html
-  วางก้อน <script> นี้ต่อท้าย </script> เดิม (ก่อน </body>)
-  แก้ bug: closeModal is not defined
+  PATCH v3 — Index.html
+  วิธีใช้: แทนที่ฟังก์ชัน showReviewDetail() ใน <script> เดิมทั้งหมด
+  และเพิ่มฟังก์ชัน ap* ต่อท้าย script เดิม (ก่อน </script>)
   ===================================================================== -->
-<script>
-// รอให้ script หลักโหลดเสร็จก่อนทุกอย่าง
-window.addEventListener('load', function() {
 
-// ─────────────────────────────────────────────────────────────────────
-//  State
-// ─────────────────────────────────────────────────────────────────────
+<!-- ══════════════════════════════════════════════════════════════════
+  STEP 1 — ค้นหาบรรทัดนี้ใน <script> เดิม:
+    function showReviewDetail(idx) {
+  แล้วแทนที่ทั้งฟังก์ชัน (จนถึง } ปิดสุดท้าย) ด้วยโค้ดด้านล่าง
+══════════════════════════════════════════════════════════════════ -->
+<script id="patch-showReviewDetail-replacement">
+/*
+  ── แทนที่ฟังก์ชัน showReviewDetail เดิมทั้งหมด ──────────────────────
+  (ลบตั้งแต่ function showReviewDetail(idx) { ... } ออกทั้งก้อน
+   แล้ววางอันนี้แทน)
+*/
+function showReviewDetail(idx) {
+  // reset upload state
+  _apFiles    = [];
+  _apUploaded = [];
+
+  var r = reviewData[idx];
+  if (!r) return;
+  var readyDevices = devices.filter(function(d){ return d.statusKey === 'พร้อมขาย'; });
+  var deviceOpts = readyDevices.map(function(d, i) {
+    return '<div id="ap-dev-'+i+'" onclick="selApproveDevice('+i+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f2f2f7;display:flex;align-items:center;gap:10px;background:#fff;transition:background .1s;">'
+      +'<div id="ap-chk-'+i+'" style="width:20px;height:20px;border-radius:50%;border:2px solid #e5e5ea;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;"></div>'
+      +'<div><div style="font-size:13px;font-weight:500;">'+htmlEsc(d.model||'-')+' '+htmlEsc(d.storage||'')+'</div>'
+      +'<div style="font-size:11px;color:#8e8e93;font-family:monospace;">'+htmlEsc(d.code||'')+(d.color?' · '+d.color:'')+(d.grade?' · เกรด '+d.grade:'')+'</div></div>'
+      +'</div>';
+  }).join('') || '<div style="padding:16px;text-align:center;color:#8e8e93;font-size:13px;">ไม่มีเครื่องพร้อมขาย</div>';
+
+  var modal = document.getElementById('modal-approve');
+  modal.innerHTML = '<div class="modal-title">'+htmlEsc(r.name||'-')+'</div>'
+    +'<div class="modal-sub">ส่งฟอร์ม: '+htmlEsc(r.submitDate||'-')+(r.contractNo?' · '+r.contractNo:'')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:14px;">'
+    +'<div><span style="color:#8e8e93">เบอร์:</span> '+htmlEsc(r.phone||'-')+'</div>'
+    +'<div><span style="color:#8e8e93">อายุ:</span> '+htmlEsc(r.age||'-')+'</div>'
+    +'<div><span style="color:#8e8e93">บัตรประชาชน:</span> <span style="font-family:monospace;">'+htmlEsc(r.idcard||'-')+'</span></div>'
+    +'<div><span style="color:#8e8e93">สถานที่ทำงาน:</span> '+htmlEsc(r.workplace||'-')+'</div>'
+    +'<div style="grid-column:1/-1;"><span style="color:#8e8e93">ที่อยู่:</span> '+htmlEsc(r.addr||'-')+'</div>'
+    +'<div><span style="color:#8e8e93">อ้างอิง 1:</span> '+htmlEsc(r.ref1Name||'-')+(r.ref1Phone?' ('+r.ref1Phone+')':'')+'</div>'
+    +'<div><span style="color:#8e8e93">อ้างอิง 2:</span> '+htmlEsc(r.ref2Name||'-')+(r.ref2Phone?' ('+r.ref2Phone+')':'')+'</div>'
+    +(r.idphoto?'<div style="grid-column:1/-1;"><a href="'+r.idphoto+'" target="_blank" class="btn btn-secondary btn-sm">📷 รูปบัตรประชาชน</a></div>':'')
+    +'<div style="grid-column:1/-1;"><div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">Statement</div><input type="text" id="ap-statement" placeholder="ลิงก์ Statement..." style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'</div>'
+    +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">ราคา + งวด</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">'
+    +'<div class="field"><label>ราคาขาย ฿</label><input id="ap-price" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'<div class="field"><label>เงินดาวน์ ฿</label><input id="ap-down" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'<div class="field"><label>ค่างวด/เดือน ฿</label><input id="ap-monthly" type="number" placeholder="0" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'<div class="field"><label>จำนวนงวด (เดือน)</label><input id="ap-months" type="number" placeholder="12" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'<div class="field"><label>ชำระทุกวันที่</label><input id="ap-payday" type="number" placeholder="5" min="1" max="28" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'<div class="field"><label>เริ่มชำระวันที่</label><input id="ap-start" type="date" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+    +'</div>'
+    +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">เลือกเครื่อง</div>'
+    +'<div style="border:1px solid #e5e5ea;border-radius:10px;overflow:hidden;max-height:200px;overflow-y:auto;margin-bottom:14px;">'+deviceOpts+'</div>'
+
+    // ── ส่วนอัพโหลดรูป (เพิ่มใหม่) ──────────────────────────────
+    +'<div style="margin-bottom:14px;">'
+    +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">📷 รูปสัญญา + รูปเครื่อง</div>'
+    +'<div id="ap-dropzone" ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)" onclick="document.getElementById(\'ap-file-input\').click()" style="border:2px dashed #e5e5ea;border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:#fafafa;transition:all .15s;margin-bottom:8px;">'
+    +'<div style="font-size:22px;margin-bottom:6px;">📁</div>'
+    +'<div style="font-size:13px;font-weight:500;color:#3a3a3c;">วางรูปที่นี่ หรือคลิกเพื่อเลือกไฟล์</div>'
+    +'<div style="font-size:11px;color:#8e8e93;margin-top:4px;">JPG, PNG, PDF · สูงสุด 10MB/ไฟล์</div>'
+    +'</div>'
+    +'<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" style="display:none;" onchange="apFilesSelected(this.files)">'
+    +'<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>'
+    +'<div style="margin-top:10px;display:flex;align-items:center;gap:8px;">'
+    +'<button id="ap-upload-btn" class="btn btn-blue btn-sm" onclick="apUploadAll()" style="display:none;">☁️ อัพโหลดรูปทั้งหมด</button>'
+    +'<span id="ap-upload-status" style="font-size:12px;color:#8e8e93;"></span>'
+    +'</div>'
+    +'</div>'
+    // ─────────────────────────────────────────────────────────────
+
+    +'<div id="ap-status" style="font-size:13px;color:#8e8e93;margin-bottom:10px;min-height:18px;"></div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid #f2f2f7;">'
+    +'<button onclick="cancelReview('+idx+')" style="padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:#fdecea;border:none;color:#c0392b;font-family:inherit;">ยกเลิกคำขอ</button>'
+    +'<button onclick="closeModal(\'overlay-approve\')" style="padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:#f5f5f7;border:1px solid #e5e5ea;color:#1d1d1f;font-family:inherit;">ปิด</button>'
+    +'<button onclick="confirmApprove('+idx+')" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#34c759;border:none;color:#fff;font-family:inherit;">✓ อนุมัติ + ออกเอกสาร</button>'
+    +'</div>';
+
+  document.getElementById('overlay-approve').classList.add('open');
+  window._approveDeviceIdx = null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  STEP 2 — เพิ่มฟังก์ชันด้านล่างนี้ต่อท้าย script เดิม (ก่อน </script>)
+// ══════════════════════════════════════════════════════════════════
+
+// ─── upload state ────────────────────────────────────────────────
 var _apFiles    = [];
 var _apUploaded = [];
 
-// ─────────────────────────────────────────────────────────────────────
-//  buildUploadSection — สร้าง HTML ส่วนอัพโหลด
-// ─────────────────────────────────────────────────────────────────────
-function buildUploadSection() {
-  return '<div id="ap-upload-wrap" style="margin-bottom:14px;">'
-    + '<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;'
-    +   'letter-spacing:.3px;margin-bottom:8px;">📷 รูปสัญญา + รูปเครื่อง</div>'
-    + '<div id="ap-dropzone" '
-    +   'ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)" '
-    +   'onclick="document.getElementById(\'ap-file-input\').click()" '
-    +   'style="border:2px dashed #e5e5ea;border-radius:12px;padding:18px;text-align:center;'
-    +   'cursor:pointer;background:#fafafa;transition:all .15s;margin-bottom:8px;">'
-    +   '<div style="font-size:22px;margin-bottom:6px;">📁</div>'
-    +   '<div style="font-size:13px;font-weight:500;color:#3a3a3c;">วางรูปที่นี่ หรือคลิกเพื่อเลือกไฟล์</div>'
-    +   '<div style="font-size:11px;color:#8e8e93;margin-top:4px;">JPG, PNG, PDF · สูงสุด 10MB/ไฟล์</div>'
-    + '</div>'
-    + '<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" '
-    +   'style="display:none;" onchange="apFilesSelected(this.files)">'
-    + '<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>'
-    + '<div style="margin-top:10px;display:flex;align-items:center;gap:8px;">'
-    +   '<button id="ap-upload-btn" class="btn btn-blue btn-sm" '
-    +     'onclick="apUploadAll()" style="display:none;">☁️ อัพโหลดรูปทั้งหมด</button>'
-    +   '<span id="ap-upload-status" style="font-size:12px;color:#8e8e93;"></span>'
-    + '</div>'
-    + '</div>';
+// ─── drag & drop ─────────────────────────────────────────────────
+function apDragOver(e) {
+  e.preventDefault();
+  var dz = document.getElementById('ap-dropzone');
+  if (dz) { dz.style.borderColor='#007aff'; dz.style.background='#f0f7ff'; }
+}
+function apDragLeave(e) {
+  var dz = document.getElementById('ap-dropzone');
+  if (dz) { dz.style.borderColor='#e5e5ea'; dz.style.background='#fafafa'; }
+}
+function apDrop(e) {
+  e.preventDefault(); apDragLeave(e);
+  apFilesSelected(e.dataTransfer.files);
 }
 
-// ─────────────────────────────────────────────────────────────────────
-//  Drag & Drop
-// ─────────────────────────────────────────────────────────────────────
-window.apDragOver = function(e) {
-  e.preventDefault();
-  var dz = document.getElementById('ap-dropzone');
-  if (dz) { dz.style.borderColor = '#007aff'; dz.style.background = '#f0f7ff'; }
-};
-window.apDragLeave = function(e) {
-  var dz = document.getElementById('ap-dropzone');
-  if (dz) { dz.style.borderColor = '#e5e5ea'; dz.style.background = '#fafafa'; }
-};
-window.apDrop = function(e) {
-  e.preventDefault();
-  window.apDragLeave(e);
-  apFilesSelected(e.dataTransfer.files);
-};
-
-// ─────────────────────────────────────────────────────────────────────
-//  เลือกไฟล์
-// ─────────────────────────────────────────────────────────────────────
-window.apFilesSelected = function(fileList) {
+// ─── เลือกไฟล์ ───────────────────────────────────────────────────
+function apFilesSelected(fileList) {
   if (!fileList || !fileList.length) return;
   for (var i = 0; i < fileList.length; i++) {
     var f = fileList[i];
-    if (f.size > 10 * 1024 * 1024) { showToast(f.name + ' ใหญ่เกิน 10MB', true); continue; }
+    if (f.size > 10*1024*1024) { showToast(f.name+' ใหญ่เกิน 10MB', true); continue; }
     _apFiles.push(f);
     apAddPreview(f, _apFiles.length - 1);
   }
   var btn = document.getElementById('ap-upload-btn');
   if (btn) btn.style.display = 'inline-flex';
-};
+}
 
 function apAddPreview(file, idx) {
   var list = document.getElementById('ap-file-list');
   if (!list) return;
   var item = document.createElement('div');
-  item.id = 'ap-prev-' + idx;
+  item.id = 'ap-prev-'+idx;
   item.style.cssText = 'position:relative;width:80px;height:80px;border-radius:10px;'
-    + 'border:1px solid #e5e5ea;overflow:hidden;background:#f5f5f7;'
-    + 'display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-
-  var removeBtn = '<button onclick="apRemoveFile(' + idx + ')" '
-    + 'style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;'
-    + 'background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:10px;'
-    + 'line-height:1;">✕</button>';
-  var badge = '<div id="ap-badge-' + idx + '" style="display:none;position:absolute;bottom:3px;'
-    + 'right:3px;background:#34c759;border-radius:50%;width:16px;height:16px;'
-    + 'align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>';
+    +'border:1px solid #e5e5ea;overflow:hidden;background:#f5f5f7;'
+    +'display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+  var rm = '<button onclick="apRemoveFile('+idx+')" style="position:absolute;top:3px;right:3px;'
+    +'width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;'
+    +'cursor:pointer;font-size:10px;line-height:1;">✕</button>';
+  var bd = '<div id="ap-badge-'+idx+'" style="display:none;position:absolute;bottom:3px;right:3px;'
+    +'background:#34c759;border-radius:50%;width:16px;height:16px;'
+    +'align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>';
 
   if (file.type.startsWith('image/')) {
     var reader = new FileReader();
-    reader.onload = (function(el, rb, bd) {
-      return function(e) {
-        el.innerHTML = '<img src="' + e.target.result
-          + '" style="width:100%;height:100%;object-fit:cover;">' + rb + bd;
-      };
-    })(item, removeBtn, badge);
+    reader.onload = (function(el,r,b){ return function(e){
+      el.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;">'+r+b;
+    }; })(item,rm,bd);
     reader.readAsDataURL(file);
   } else {
-    item.innerHTML = '<div style="font-size:28px;">📄</div>' + removeBtn + badge;
+    item.innerHTML = '<div style="font-size:28px;">📄</div>'+rm+bd;
   }
   list.appendChild(item);
 }
 
-window.apRemoveFile = function(idx) {
+function apRemoveFile(idx) {
   _apFiles[idx] = null;
-  var el = document.getElementById('ap-prev-' + idx);
+  var el = document.getElementById('ap-prev-'+idx);
   if (el) el.remove();
-  var remaining = _apFiles.filter(Boolean).length;
   var btn = document.getElementById('ap-upload-btn');
-  if (btn) btn.style.display = remaining ? 'inline-flex' : 'none';
-};
+  if (btn) btn.style.display = _apFiles.filter(Boolean).length ? 'inline-flex' : 'none';
+}
 
-// ─────────────────────────────────────────────────────────────────────
-//  อัพโหลดทั้งหมด
-// ─────────────────────────────────────────────────────────────────────
-window.apUploadAll = function() {
-  var readyDevices = devices.filter(function(d) { return d.statusKey === 'พร้อมขาย'; });
+// ─── อัพโหลดทั้งหมด ──────────────────────────────────────────────
+function apUploadAll() {
+  var readyDevices = devices.filter(function(d){ return d.statusKey==='พร้อมขาย'; });
   var devIdx = window._approveDeviceIdx;
   var mc = (devIdx !== null && devIdx !== undefined && readyDevices[devIdx])
     ? readyDevices[devIdx].code : '';
-
   if (!mc) { showToast('กรุณาเลือกเครื่องก่อนอัพโหลดรูป', true); return; }
 
-  var filesToUpload = _apFiles.filter(Boolean);
-  if (!filesToUpload.length) { showToast('ไม่มีไฟล์ที่เลือก', true); return; }
+  var queue = [];
+  _apFiles.forEach(function(f,i){ if(f) queue.push({file:f, idx:i}); });
+  if (!queue.length) { showToast('ไม่มีไฟล์ที่เลือก', true); return; }
 
   var statusEl = document.getElementById('ap-upload-status');
   var btn = document.getElementById('ap-upload-btn');
   if (btn) btn.disabled = true;
-  if (statusEl) statusEl.textContent = '⏳ กำลังอัพโหลด 0/' + filesToUpload.length + '...';
+  if (statusEl) statusEl.textContent = '⏳ กำลังอัพโหลด 0/'+queue.length+'...';
 
-  var done = 0, failed = 0;
+  var done = 0, fail = 0;
   _apUploaded = [];
 
-  var uploadQueue = [];
-  _apFiles.forEach(function(f, idx) { if (f) uploadQueue.push({ file: f, idx: idx }); });
-
-  uploadQueue.forEach(function(item) {
+  queue.forEach(function(item) {
     var reader = new FileReader();
     reader.onload = function(e) {
       var dataUrl = e.target.result;
-      var base64  = dataUrl.indexOf(',') >= 0 ? dataUrl.split(',')[1] : dataUrl;
+      var b64 = dataUrl.indexOf(',')>=0 ? dataUrl.split(',')[1] : dataUrl;
       api('uploadPhoto', {
         mc: mc, filename: item.file.name,
-        mimeType: item.file.type || 'image/jpeg', base64: base64
+        mimeType: item.file.type||'image/jpeg', base64: b64
       }).then(function(res) {
         done++;
         _apUploaded.push(res);
-        var badge = document.getElementById('ap-badge-' + item.idx);
-        if (badge) { badge.style.display = 'flex'; }
-        if (statusEl) statusEl.textContent = '⏳ ' + done + '/' + uploadQueue.length + ' เสร็จแล้ว...';
+        var badge = document.getElementById('ap-badge-'+item.idx);
+        if (badge) badge.style.display = 'flex';
+        if (statusEl) statusEl.textContent = '⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
         checkDone();
       }).catch(function(err) {
-        failed++;
-        showToast('อัพโหลด ' + item.file.name + ' ไม่ได้: ' + err.message, true);
+        fail++;
+        showToast('อัพโหลด '+item.file.name+' ไม่ได้: '+err.message, true);
         checkDone();
       });
     };
@@ -164,51 +201,21 @@ window.apUploadAll = function() {
   });
 
   function checkDone() {
-    if (done + failed < uploadQueue.length) return;
+    if (done+fail < queue.length) return;
     if (btn) btn.disabled = false;
-    if (statusEl) {
-      statusEl.innerHTML = done > 0
-        ? '✅ อัพโหลดสำเร็จ ' + done + ' ไฟล์'
-          + (failed ? ' · <span style="color:#ff3b30;">ล้มเหลว ' + failed + '</span>' : '')
-          + ' · <a href="https://drive.google.com/drive/search?q=' + encodeURIComponent(mc)
-          + '" target="_blank" style="color:#007aff;">ดูใน Drive</a>'
-        : '<span style="color:#ff3b30;">อัพโหลดล้มเหลวทั้งหมด</span>';
-    }
-    if (done > 0) showToast('อัพโหลดรูป ' + mc + ' สำเร็จ ' + done + ' ไฟล์ ✓');
+    if (statusEl) statusEl.innerHTML = done>0
+      ? '✅ สำเร็จ '+done+' ไฟล์'+(fail?' · <span style="color:#ff3b30;">ล้มเหลว '+fail+'</span>':'')
+        +' · <a href="https://drive.google.com/drive/search?q='+encodeURIComponent(mc)
+        +'" target="_blank" style="color:#007aff;">ดูใน Drive</a>'
+      : '<span style="color:#ff3b30;">อัพโหลดล้มเหลวทั้งหมด</span>';
+    if (done>0) showToast('อัพโหลดรูป '+mc+' สำเร็จ '+done+' ไฟล์ ✓');
   }
-};
+}
 
-// ─────────────────────────────────────────────────────────────────────
-//  Patch showReviewDetail — แทรก upload section ใน modal
-//  ทำหลัง window.load เพื่อให้ showReviewDetail ถูก declare แล้ว
-// ─────────────────────────────────────────────────────────────────────
-var _origShowReviewDetail = showReviewDetail;
-showReviewDetail = function(idx) {
-  // reset state ทุกครั้งที่เปิด modal ใหม่
-  _apFiles    = [];
-  _apUploaded = [];
-
-  _origShowReviewDetail(idx);
-
-  // แทรก upload section ก่อน #ap-status
-  var statusEl = document.getElementById('ap-status');
-  if (!statusEl) return;
-  var wrap = document.createElement('div');
-  wrap.innerHTML = buildUploadSection();
-  statusEl.parentNode.insertBefore(wrap.firstChild, statusEl);
-};
-
-// ─────────────────────────────────────────────────────────────────────
-//  Patch closeModal — reset state เมื่อปิด modal
-// ─────────────────────────────────────────────────────────────────────
-var _origCloseModal = closeModal;
+// ─── reset เมื่อปิด modal ─────────────────────────────────────────
+var _origCloseModal2 = closeModal;
 closeModal = function(id) {
-  if (id === 'overlay-approve') {
-    _apFiles    = [];
-    _apUploaded = [];
-  }
-  _origCloseModal(id);
+  if (id==='overlay-approve') { _apFiles=[]; _apUploaded=[]; }
+  _origCloseModal2(id);
 };
-
-}); // end window.addEventListener('load')
 </script>
