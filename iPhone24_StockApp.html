@@ -392,6 +392,7 @@ var _apFiles=[], _apUploaded=[];
 //  API
 // ============================================================
 var IS_GAS=(function(){ try{ return typeof google!=='undefined'&&google.script&&google.script.run; }catch(e){ return false; } })();
+var _cbIdx=0;
 
 function api(action, payload) {
   return new Promise(function(resolve, reject) {
@@ -401,10 +402,33 @@ function api(action, payload) {
         .withFailureHandler(function(e){ reject(new Error(e.message)); })
         .callServer(action, payload||{});
     } else {
-      var url = GAS_URL+'?action='+encodeURIComponent(action)+'&payload='+encodeURIComponent(JSON.stringify(payload||{}));
-      fetch(url).then(function(r){ return r.json(); })
-        .then(function(r){ if(r&&r.ok) resolve(r.data); else reject(new Error(r?r.error:'API error')); })
-        .catch(function(){ try{ resolve(localFallback(action,payload||{})); }catch(e){ reject(e); } });
+      var cbName = '_gcb_' + (++_cbIdx) + '_' + Date.now();
+      var timer = setTimeout(function(){
+        delete window[cbName];
+        try{ resolve(localFallback(action,payload||{})); }catch(e){ reject(new Error('timeout')); }
+      }, 15000);
+      window[cbName] = function(r){
+        clearTimeout(timer);
+        delete window[cbName];
+        var s = document.getElementById('_jsonp_'+cbName);
+        if(s) s.parentNode.removeChild(s);
+        if(r&&r.ok) resolve(r.data);
+        else reject(new Error(r?r.error:'API error'));
+      };
+      var url = GAS_URL
+        +'?action='+encodeURIComponent(action)
+        +'&payload='+encodeURIComponent(JSON.stringify(payload||{}))
+        +'&callback='+cbName;
+      var s = document.createElement('script');
+      s.id = '_jsonp_'+cbName;
+      s.src = url;
+      s.onerror = function(){
+        clearTimeout(timer);
+        delete window[cbName];
+        s.parentNode && s.parentNode.removeChild(s);
+        try{ resolve(localFallback(action,payload||{})); }catch(e){ reject(e); }
+      };
+      document.head.appendChild(s);
     }
   });
 }
