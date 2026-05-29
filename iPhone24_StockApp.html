@@ -141,6 +141,35 @@ tbody tr:last-child td{border-bottom:none;} tbody tr:hover{background:#fafafa;}
 .ap-dropzone{border:2px dashed #e5e5ea;border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:#fafafa;transition:all .15s;margin-bottom:8px;}
 .ap-dropzone:hover,.ap-dropzone.dragover{border-color:#007aff;background:#f0f7ff;}
 @media print{.sidebar,.topbar,.btn,.overlay{display:none!important;}.main{height:auto;overflow:visible;}}
+@media(max-width:768px){
+.app{flex-direction:column;}
+.sidebar{width:100%;min-width:unset;height:auto;position:fixed;top:0;left:0;right:0;z-index:50;flex-direction:row;border-right:none;border-bottom:1px solid #e5e5ea;}
+.sidebar-logo{padding:10px 14px;border-bottom:none;border-right:1px solid #f2f2f7;}
+.nav{display:none;flex-direction:row;padding:6px 8px;gap:4px;overflow-x:auto;}
+.nav.open{display:flex;}
+.nav-item{padding:6px 10px;white-space:nowrap;font-size:12px;}
+.sidebar-bottom{display:none;}
+.mobile-menu-btn{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border:none;background:transparent;cursor:pointer;font-size:22px;color:#1d1d1f;margin-left:auto;flex-shrink:0;}
+.main{padding-top:52px;}
+.topbar{position:fixed;top:52px;left:0;right:0;z-index:40;padding:0 14px;}
+.content{padding:14px;}
+.stats-row{flex-wrap:wrap;gap:8px;}
+.stat-card{min-width:calc(50% - 4px);}
+.branch-grid{grid-template-columns:1fr 1fr;}
+.sell-layout{grid-template-columns:1fr;}
+.receive-layout{grid-template-columns:1fr;}
+.modal{padding:18px;max-height:95vh;}
+.form-grid{grid-template-columns:1fr;}
+table{font-size:11px;}
+thead th{padding:7px 8px;font-size:10px;}
+tbody td{padding:8px;}
+}
+@media(max-width:480px){
+.branch-grid{grid-template-columns:1fr;}
+.stat-card{min-width:calc(50% - 4px);}
+.sell-layout,.receive-layout{grid-template-columns:1fr;}
+.modal{padding:14px;}
+}
 #print-area{display:none;}
 </style>
 </head>
@@ -148,7 +177,8 @@ tbody tr:last-child td{border-bottom:none;} tbody tr:hover{background:#fafafa;}
 <div class="app">
 <div class="sidebar">
   <div class="sidebar-logo"><div class="logo-wrap"><div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="9" y1="7" x2="15" y2="7"/><circle cx="12" cy="17" r="1.2" fill="#fff" stroke="none"/></svg></div><div><div class="logo-name">iPhone 24</div><div class="logo-sub">Stock System</div></div></div></div>
-  <nav class="nav">
+  <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileNav()">☰</button>
+  <nav class="nav" id="main-nav">
     <button class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">◈</span> Dashboard</button>
     <button class="nav-item" onclick="showPage('stock')"><span class="nav-icon">▦</span> Stock<span class="nav-badge" id="stock-badge">0</span></button>
     <button class="nav-item" onclick="showPage('receive')"><span class="nav-icon">↓</span> รับเครื่องเข้า</button>
@@ -846,12 +876,17 @@ function showReviewDetail(idx){
     // ── UPLOAD SECTION ────────────────────────────────────────────
     +'<div style="margin-bottom:14px;">'
     +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">📷 รูปสัญญา → Drive</div>'
-    +'<div id="ap-dropzone" class="ap-dropzone" ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)" onclick="document.getElementById(\'ap-file-input\').click()">'
+    +'<div id="ap-dropzone" class="ap-dropzone" ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)">'
     +'<div style="font-size:22px;margin-bottom:6px;">📁</div>'
     +'<div style="font-size:13px;font-weight:500;color:#3a3a3c;">วางรูปที่นี่ หรือคลิกเพื่อเลือกไฟล์</div>'
     +'<div style="font-size:11px;color:#8e8e93;margin-top:4px;">JPG, PNG, PDF · สูงสุด 10MB/ไฟล์</div>'
     +'</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px;">'
+    +'<button class="btn btn-secondary btn-sm" onclick="document.getElementById('ap-file-input').click()">🖼 เลือกรูป/ไฟล์</button>'
+    +'<button class="btn btn-blue btn-sm" onclick="document.getElementById('ap-camera-input').click()">📷 ถ่ายรูป</button>'
+    +'</div>'
     +'<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" style="display:none;" onchange="apFilesSelected(this.files)">'
+    +'<input type="file" id="ap-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="apFilesSelected(this.files)">'
     +'<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>'
     +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">'
     +'<button id="ap-upload-btn" class="btn btn-blue btn-sm" onclick="apUploadAll()" style="display:none;">☁️ อัพโหลดรูปทั้งหมด</button>'
@@ -1029,6 +1064,24 @@ function updateChecklistSection(devtype){
   el.innerHTML=items.map(function(item,i){ return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f2f2f7;"><span style="font-size:12px;color:#8e8e93;width:20px;flex-shrink:0;">'+(i+1)+'</span><span style="flex:1;font-size:13px;">'+item+'</span><select onchange="updateCheckSummary()" style="padding:4px 8px;border-radius:6px;border:1px solid #e5e5ea;font-size:12px;outline:none;font-family:inherit;"><option value="ปกติ">✅ ปกติ</option><option value="ไม่ปกติ">❌ ไม่ปกติ</option><option value="-">- ไม่เช็ค</option></select><input type="text" placeholder="หมายเหตุ" style="width:110px;padding:4px 8px;border-radius:6px;border:1px solid #e5e5ea;font-size:12px;outline:none;font-family:inherit;"></div>'; }).join('');
   updateCheckSummary();
 }
+function toggleMobileNav(){
+  var nav=document.getElementById('main-nav');
+  var btn=document.getElementById('mobile-menu-btn');
+  if(!nav) return;
+  nav.classList.toggle('open');
+  btn.textContent=nav.classList.contains('open')?'✕':'☰';
+}
+// Show mobile menu btn on small screens
+(function(){
+  function checkMobile(){
+    var btn=document.getElementById('mobile-menu-btn');
+    if(!btn) return;
+    btn.style.display=window.innerWidth<=768?'flex':'none';
+  }
+  window.addEventListener('resize',checkMobile);
+  window.addEventListener('load',checkMobile);
+})();
+
 function updateCheckSummary(){ var sels=document.querySelectorAll('#rc-checklist select'),pass=0,fail=0; sels.forEach(function(s){ if(s.value==='ปกติ') pass++; else if(s.value==='ไม่ปกติ') fail++; }); var el=document.getElementById('rc-check-summary'); if(el) el.textContent='ผ่าน '+pass+' รายการ'+(fail?' | ไม่ปกติ '+fail+' รายการ':'')+' ✅'; }
 </script>
 </body>
