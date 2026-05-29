@@ -436,7 +436,7 @@ function api(action, payload) {
       var timer = setTimeout(function(){
         delete window[cbName];
         try{ resolve(localFallback(action,payload||{})); }catch(e){ reject(new Error('timeout')); }
-      }, 15000);
+      }, action==='approveContract'?60000:15000);
       window[cbName] = function(r){
         clearTimeout(timer);
         delete window[cbName];
@@ -919,8 +919,13 @@ function showReviewDetail(idx) {
     +'<div style="border:1px solid #e5e5ea;border-radius:10px;overflow:hidden;max-height:200px;overflow-y:auto;margin-bottom:14px;">'+devOpts+'</div>'
 
     // Upload
-    +'<div style="margin-bottom:14px;">'
-    +'<div style="font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">📷 รูปสัญญา + รูปลูกค้า → Drive</div>'
+    +'<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" style="display:none;" onchange="apFilesSelected(this.files)">'
+    +'<input type="file" id="ap-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="apFilesSelected(this.files)">'
+
+    +'</div>'
+    // Upload section — shown after approve
+    +'<div id="ap-upload-section" style="display:none;margin-bottom:14px;border:1px solid #34c759;border-radius:12px;padding:16px;background:#f0fff4;">'
+    +'<div style="font-size:12px;font-weight:600;color:#1a7f37;margin-bottom:10px;">📷 อัพโหลดรูปสัญญา + รูปลูกค้า → Drive</div>'
     +'<div id="ap-dropzone" class="ap-dropzone" ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)">'
     +'<div style="font-size:22px;margin-bottom:6px;">📁</div>'
     +'<div style="font-size:13px;font-weight:500;color:#3a3a3c;">วางรูปที่นี่</div>'
@@ -930,15 +935,11 @@ function showReviewDetail(idx) {
     +'<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ap-file-input&quot;).click()">🖼 เลือกรูป/ไฟล์</button>'
     +'<button class="btn btn-blue btn-sm" onclick="document.getElementById(&quot;ap-camera-input&quot;).click()">📷 ถ่ายรูป</button>'
     +'</div>'
-    +'<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" style="display:none;" onchange="apFilesSelected(this.files)">'
-    +'<input type="file" id="ap-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="apFilesSelected(this.files)">'
     +'<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>'
     +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">'
     +'<button id="ap-upload-btn" class="btn btn-blue btn-sm" onclick="apUploadAll()" style="display:none;">☁️ อัพโหลดรูปทั้งหมด</button>'
     +'<span id="ap-upload-status" style="font-size:12px;color:#8e8e93;"></span>'
     +'</div></div>'
-
-    +'</div>'
 
     // Status
     +'<div id="ap-status" style="font-size:13px;color:#8e8e93;min-height:18px;margin-bottom:10px;"></div>'
@@ -987,7 +988,11 @@ function confirmApprove(idx){
   api('approveContract',payload).then(function(res){
     var st=document.getElementById('ap-status');
     st.innerHTML='✅ เรียบร้อย! '+(res.contractUrl?'<a href="'+res.contractUrl+'" target="_blank" style="color:#007aff;">📄 สัญญา</a>':'')+(res.contractPdf?' · <a href="'+res.contractPdf+'" target="_blank" style="color:#34c759;font-weight:600;">PDF</a>':'');
-    showToast('อนุมัติ + สร้างสัญญาเรียบร้อย ✓'); renderDashboard(); renderSellList(); updateBadges(); loadReview();
+    showToast('อนุมัติ + สร้างสัญญาเรียบร้อย ✓');
+    // แสดง upload section หลังอนุมัติ
+    var uploadSec=document.getElementById('ap-upload-section');
+    if(uploadSec){ uploadSec.style.display='block'; uploadSec.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    renderDashboard(); renderSellList(); updateBadges(); loadReview();
   }).catch(function(e){ document.getElementById('ap-status').textContent='❌ '+e.message; d.statusKey='พร้อมขาย'; });
 }
 
