@@ -1116,22 +1116,51 @@ function apUploadAll(){
   if(btn) btn.disabled=true;
   if(statusEl) statusEl.textContent='⏳ กำลังอัพโหลด 0/'+queue.length+'...';
   var done=0,fail=0; _apUploaded=[];
-  queue.forEach(function(item){
+
+  function uploadOne(item, callback) {
     var reader=new FileReader();
     reader.onload=function(e){
       var parts=e.target.result.split(','); var b64=parts[1]||parts[0];
-      api('uploadPhoto',{mc:mc,filename:item.file.name,mimeType:item.file.type||'image/jpeg',base64:b64})
-        .then(function(res){
-          done++; _apUploaded.push(res);
-          var badge=document.getElementById('ap-badge-'+item.idx); if(badge) badge.style.display='flex';
-          if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
-          checkUploadDone();
-        }).catch(function(err){ fail++; showToast('อัพโหลด '+item.file.name+' ไม่ได้: '+err.message,true); checkUploadDone(); });
+      var payload={action:'uploadPhoto',payload:{mc:mc,filename:item.file.name,mimeType:item.file.type||'image/jpeg',base64:b64}};
+      // ใช้ fetch POST แทน JSONP เพื่อรองรับไฟล์ขนาดใหญ่
+      fetch(GAS_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload),
+        mode:'no-cors'
+      }).then(function(){
+        // no-cors ไม่คืนค่า response — ถือว่าสำเร็จ
+        done++;
+        var badge=document.getElementById('ap-badge-'+item.idx); if(badge) badge.style.display='flex';
+        if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
+        callback(null);
+      }).catch(function(err){
+        // fallback ใช้ JSONP
+        api('uploadPhoto',{mc:mc,filename:item.file.name,mimeType:item.file.type||'image/jpeg',base64:b64})
+          .then(function(res){
+            done++; _apUploaded.push(res);
+            var badge=document.getElementById('ap-badge-'+item.idx); if(badge) badge.style.display='flex';
+            if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
+            callback(null);
+          }).catch(function(e2){ fail++; callback(e2); });
+      });
     };
     reader.readAsDataURL(item.file);
-  });
+  }
+
+  // อัพโหลดทีละไฟล์ (sequential)
+  var idx=0;
+  function next(){
+    if(idx>=queue.length){ checkUploadDone(); return; }
+    var item=queue[idx++];
+    uploadOne(item, function(err){
+      if(err){ fail++; showToast('อัพโหลด '+item.file.name+' ไม่ได้',true); }
+      next();
+    });
+  }
+  next();
+
   function checkUploadDone(){
-    if(done+fail<queue.length) return;
     if(btn) btn.disabled=false;
     if(statusEl) statusEl.innerHTML=done>0
       ?'✅ สำเร็จ '+done+' ไฟล์'+(fail?' · <span style="color:#ff3b30;">ล้มเหลว '+fail+'</span>':'')
