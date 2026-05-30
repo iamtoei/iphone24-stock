@@ -831,7 +831,8 @@ function renderReview(){
   el.innerHTML=list.map(function(r){
     var i=reviewData.indexOf(r);
     var stBadge=r.status==='ผ่าน'?'<span class="badge badge-green">อนุมัติแล้ว</span>':r.status==='ยกเลิก'?'<span class="badge badge-red">ยกเลิก</span>':'<span class="badge badge-orange">รอพิจารณา</span>';
-    return '<div class="review-row" onclick="showReviewDetail('+i+')"><div class="review-avatar">👤</div><div class="review-info"><div class="review-name">'+htmlEsc(r.name||'-')+'</div><div class="review-meta">'+htmlEsc(r.phone||'')+(r.submitDate?' · '+r.submitDate:'')+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'+stBadge+(r.contractNo?'<span style="font-size:11px;font-family:monospace;color:#8e8e93;">'+htmlEsc(r.contractNo)+'</span>':'')+'</div></div>';
+    var uploadBtn=r.status==='ผ่าน'?'<button class="btn btn-blue btn-sm" onclick="event.stopPropagation();showUploadOnly('+i+')" style="margin-top:4px;">📷 อัพโหลดรูป</button>':'';
+    return '<div class="review-row" onclick="showReviewDetail('+i+')"><div class="review-avatar">👤</div><div class="review-info"><div class="review-name">'+htmlEsc(r.name||'-')+'</div><div class="review-meta">'+htmlEsc(r.phone||'')+(r.submitDate?' · '+r.submitDate:'')+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'+stBadge+(r.contractNo?'<span style="font-size:11px;font-family:monospace;color:#8e8e93;">'+htmlEsc(r.contractNo)+'</span>':'')+''+uploadBtn+'</div></div>';
   }).join('');
 }
 function showReviewDetail(idx) {
@@ -899,9 +900,7 @@ function showReviewDetail(idx) {
     +'<div style="border-top:2px solid #e5e5ea;padding-top:16px;margin-bottom:16px;">'
     +'<div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:14px;">✅ อนุมัติสัญญา</div>'
 
-    // Statement
-    +'<div class="field" style="margin-bottom:12px;"><label>STATEMENT</label>'
-    +'<input type="text" id="ap-statement" placeholder="ลิงก์ Statement..." style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e5e5ea;font-size:13px;outline:none;font-family:inherit;"></div>'
+
 
     // ราคา + งวด
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">'
@@ -971,6 +970,40 @@ function selApproveDevice(i){
     infoEl.innerHTML='✅ เลขสัญญา: <strong>'+htmlEsc(d.code||'')+'</strong> · '+htmlEsc(d.model||'')+(d.storage?' '+d.storage:'')+(d.color?' · '+d.color:'')+(d.grade?' · เกรด '+d.grade:'');
   }
 }
+function showUploadOnly(idx) {
+  _apFiles=[]; _apUploaded=[];
+  var r=reviewData[idx]; if(!r) return;
+  var mc=r.contractNo||'';
+  var modal=document.getElementById('modal-approve');
+  modal.innerHTML='<div class="modal-title">📷 อัพโหลดรูป</div>'
+    +'<div class="modal-sub">'+htmlEsc(r.name||'-')+' · <span style="font-family:monospace;">'+htmlEsc(mc)+'</span></div>'
+    +'<div style="background:#e8f8ec;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;color:#1a7f37;">✅ สัญญาอนุมัติแล้ว — อัพโหลดรูปเพิ่มเติมได้เลย</div>'
+    +'<div style="margin-bottom:14px;">'
+    +'<div id="ap-dropzone" class="ap-dropzone" ondragover="apDragOver(event)" ondragleave="apDragLeave(event)" ondrop="apDrop(event)">'
+    +'<div style="font-size:22px;margin-bottom:6px;">📁</div>'
+    +'<div style="font-size:13px;font-weight:500;color:#3a3a3c;">วางรูปที่นี่</div>'
+    +'<div style="font-size:11px;color:#8e8e93;margin-top:4px;">JPG, PNG, PDF · สูงสุด 10MB/ไฟล์</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:8px;">'
+    +'<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ap-file-input&quot;).click()">🖼 เลือกรูป/ไฟล์</button>'
+    +'<button class="btn btn-blue btn-sm" onclick="document.getElementById(&quot;ap-camera-input&quot;).click()">📷 ถ่ายรูป</button>'
+    +'</div>'
+    +'<input type="file" id="ap-file-input" multiple accept="image/*,.pdf" style="display:none;" onchange="apFilesSelected(this.files)">'
+    +'<input type="file" id="ap-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="apFilesSelected(this.files)">'
+    +'<div id="ap-file-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>'
+    +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">'
+    +'<button id="ap-upload-btn" class="btn btn-blue btn-sm" onclick="apUploadAll()" style="display:none;">☁️ อัพโหลดรูปทั้งหมด</button>'
+    +'<span id="ap-upload-status" style="font-size:12px;color:#8e8e93;"></span>'
+    +'</div></div>'
+    +'<div style="display:flex;justify-content:flex-end;padding-top:12px;border-top:1px solid #f2f2f7;">'
+    +'<button onclick="closeModal('overlay-approve')" class="btn btn-secondary">ปิด</button>'
+    +'</div>';
+  // Set mc for upload
+  window._approveDeviceIdx=null;
+  window._uploadOnlyMC=mc;
+  document.getElementById('overlay-approve').classList.add('open');
+}
+
 function cancelReview(idx){
   var r=reviewData[idx]; if(!r||!confirm('ยืนยันการยกเลิกคำขอของ '+r.name+'?')) return;
   api('updateReviewStatus',{row:r.row,status:'ยกเลิก'}).then(function(){ showToast('ยกเลิกคำขอแล้ว'); closeModal('overlay-approve'); loadReview(); }).catch(function(e){ showToast('เกิดข้อผิดพลาด: '+e.message,true); });
@@ -1031,6 +1064,83 @@ function setChip(el,group,val){
 // ============================================================
 //  MODALS
 // ============================================================
+
+// ── Upload helpers ─────────────────────────────────────────────────
+function apDragOver(e){ e.preventDefault(); var dz=document.getElementById('ap-dropzone'); if(dz) dz.classList.add('dragover'); }
+function apDragLeave(){ var dz=document.getElementById('ap-dropzone'); if(dz) dz.classList.remove('dragover'); }
+function apDrop(e){ e.preventDefault(); apDragLeave(); apFilesSelected(e.dataTransfer.files); }
+
+function apFilesSelected(fileList){
+  if(!fileList||!fileList.length) return;
+  for(var i=0;i<fileList.length;i++){
+    var f=fileList[i];
+    if(f.size>10*1024*1024){ showToast(f.name+' ใหญ่เกิน 10MB',true); continue; }
+    _apFiles.push(f); apAddPreview(f,_apFiles.length-1);
+  }
+  var btn=document.getElementById('ap-upload-btn'); if(btn) btn.style.display='inline-flex';
+}
+
+function apAddPreview(file,idx){
+  var list=document.getElementById('ap-file-list'); if(!list) return;
+  var item=document.createElement('div');
+  item.id='ap-prev-'+idx;
+  item.style.cssText='position:relative;width:80px;height:80px;border-radius:10px;border:1px solid #e5e5ea;overflow:hidden;background:#f5f5f7;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+  var rm='<button onclick="apRemoveFile('+idx+')" style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:10px;line-height:1;">✕</button>';
+  var bd='<div id="ap-badge-'+idx+'" style="display:none;position:absolute;bottom:3px;right:3px;background:#34c759;border-radius:50%;width:16px;height:16px;align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>';
+  if(file.type.startsWith('image/')){
+    var reader=new FileReader();
+    reader.onload=(function(el,r,b){ return function(ev){ el.innerHTML='<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:cover;">'+r+b; }; })(item,rm,bd);
+    reader.readAsDataURL(file);
+  } else { item.innerHTML='<div style="font-size:28px;">📄</div>'+rm+bd; }
+  list.appendChild(item);
+}
+
+function apRemoveFile(idx){
+  _apFiles[idx]=null;
+  var el=document.getElementById('ap-prev-'+idx); if(el) el.remove();
+  var btn=document.getElementById('ap-upload-btn'); if(btn) btn.style.display=_apFiles.filter(Boolean).length?'inline-flex':'none';
+}
+
+function apUploadAll(){
+  var mc='';
+  if(window._uploadOnlyMC){ mc=window._uploadOnlyMC; }
+  else {
+    var readyDevices=devices.filter(function(d){ return d.statusKey==='พร้อมขาย'; });
+    var devIdx=window._approveDeviceIdx;
+    mc=(devIdx!=null&&devIdx!==undefined&&readyDevices[devIdx])?readyDevices[devIdx].code:'';
+  }
+  if(!mc){ showToast('ไม่พบรหัสเครื่อง กรุณาเลือกเครื่องก่อน',true); return; }
+  var queue=[]; _apFiles.forEach(function(f,i){ if(f) queue.push({file:f,idx:i}); });
+  if(!queue.length){ showToast('ไม่มีไฟล์ที่เลือก',true); return; }
+  var statusEl=document.getElementById('ap-upload-status'),btn=document.getElementById('ap-upload-btn');
+  if(btn) btn.disabled=true;
+  if(statusEl) statusEl.textContent='⏳ กำลังอัพโหลด 0/'+queue.length+'...';
+  var done=0,fail=0; _apUploaded=[];
+  queue.forEach(function(item){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var parts=e.target.result.split(','); var b64=parts[1]||parts[0];
+      api('uploadPhoto',{mc:mc,filename:item.file.name,mimeType:item.file.type||'image/jpeg',base64:b64})
+        .then(function(res){
+          done++; _apUploaded.push(res);
+          var badge=document.getElementById('ap-badge-'+item.idx); if(badge) badge.style.display='flex';
+          if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
+          checkUploadDone();
+        }).catch(function(err){ fail++; showToast('อัพโหลด '+item.file.name+' ไม่ได้: '+err.message,true); checkUploadDone(); });
+    };
+    reader.readAsDataURL(item.file);
+  });
+  function checkUploadDone(){
+    if(done+fail<queue.length) return;
+    if(btn) btn.disabled=false;
+    if(statusEl) statusEl.innerHTML=done>0
+      ?'✅ สำเร็จ '+done+' ไฟล์'+(fail?' · <span style="color:#ff3b30;">ล้มเหลว '+fail+'</span>':'')
+       +' · <a href="https://drive.google.com/drive/search?q='+encodeURIComponent(mc)+'" target="_blank" style="color:#007aff;">ดูใน Drive</a>'
+      :'<span style="color:#ff3b30;">ล้มเหลวทั้งหมด</span>';
+    if(done>0) showToast('อัพโหลดรูป '+mc+' สำเร็จ '+done+' ไฟล์ ✓');
+  }
+}
+
 function closeModal(id){ document.getElementById(id).classList.remove('open'); if(id==='overlay-approve'){ _apFiles=[]; _apUploaded=[]; } }
 document.querySelectorAll('.overlay').forEach(function(o){ o.addEventListener('click',function(e){ if(e.target===o){ o.classList.remove('open'); _apFiles=[]; _apUploaded=[]; } }); });
 
