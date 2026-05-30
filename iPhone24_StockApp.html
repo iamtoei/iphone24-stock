@@ -1118,47 +1118,66 @@ function apUploadAll(){
   var done=0,fail=0; _apUploaded=[];
 
   function uploadOne(item, callback) {
-    var reader=new FileReader();
-    reader.onload=function(e){
-      var parts=e.target.result.split(','); var b64=parts[1]||parts[0];
-      var payload={action:'uploadPhoto',payload:{mc:mc,filename:item.file.name,mimeType:item.file.type||'image/jpeg',base64:b64}};
-      // ใช้ fetch POST แทน JSONP เพื่อรองรับไฟล์ขนาดใหญ่
-      fetch(GAS_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(payload),
-        mode:'no-cors'
-      }).then(function(){
-        // no-cors ไม่คืนค่า response — ถือว่าสำเร็จ
-        done++;
-        var badge=document.getElementById('ap-badge-'+item.idx); if(badge) badge.style.display='flex';
-        if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
-        callback(null);
-      }).catch(function(err){
-        // fallback ใช้ JSONP
-        api('uploadPhoto',{mc:mc,filename:item.file.name,mimeType:item.file.type||'image/jpeg',base64:b64})
-          .then(function(res){
-            done++; _apUploaded.push(res);
-            var badge=document.getElementById('ap-badge-'+item.idx); if(badge) badge.style.display='flex';
-            if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
-            callback(null);
-          }).catch(function(e2){ fail++; callback(e2); });
-      });
-    };
-    reader.readAsDataURL(item.file);
+    // compress รูปก่อนอัพโหลด
+    function compressAndUpload(file, quality) {
+      if (file.type === 'application/pdf') {
+        // PDF ไม่ compress
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var parts = e.target.result.split(','); var b64 = parts[1]||parts[0];
+          doUpload(b64, file.name, file.type, callback);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+      var img = new Image();
+      var url = URL.createObjectURL(file);
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var MAX = 1200;
+        var w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX/w); w = MAX; }
+          else { w = Math.round(w * MAX/h); h = MAX; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        var dataUrl = canvas.toDataURL('image/jpeg', quality||0.7);
+        var b64 = dataUrl.split(',')[1];
+        doUpload(b64, file.name.replace(/\.[^.]+$/, '.jpg'), 'image/jpeg', callback);
+      };
+      img.onerror = function() {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var parts = e.target.result.split(','); var b64 = parts[1]||parts[0];
+          doUpload(b64, file.name, file.type, callback);
+        };
+        reader.readAsDataURL(file);
+      };
+      img.src = url;
+    }
+
+    function doUpload(b64, fname, mime, cb) {
+      api('uploadPhoto', {mc:mc, filename:fname, mimeType:mime, base64:b64})
+        .then(function(res){
+          done++; _apUploaded.push(res);
+          var badge=document.getElementById('ap-badge-'+item.idx); if(badge) badge.style.display='flex';
+          if(statusEl) statusEl.textContent='⏳ '+done+'/'+queue.length+' เสร็จแล้ว...';
+          cb(null);
+        }).catch(function(err){ cb(err); });
+    }
+
+    compressAndUpload(item.file, 0.7);
   }
 
-  // อัพโหลดทีละไฟล์ (sequential)
-  var idx=0;
-  function next(){
-    if(idx>=queue.length){ checkUploadDone(); return; }
-    var item=queue[idx++];
+  // อัพโหลดพร้อมกันทุกไฟล์ (parallel)
+  queue.forEach(function(item){
     uploadOne(item, function(err){
       if(err){ fail++; showToast('อัพโหลด '+item.file.name+' ไม่ได้',true); }
-      next();
+      if(done+fail>=queue.length) checkUploadDone();
     });
-  }
-  next();
+  });
 
   function checkUploadDone(){
     if(btn) btn.disabled=false;
