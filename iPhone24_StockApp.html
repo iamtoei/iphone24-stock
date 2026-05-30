@@ -1016,7 +1016,7 @@ function confirmApprove(idx){
   var d=readyDevices[window._approveDeviceIdx]; if(!d){ showToast('ไม่พบเครื่องที่เลือก',true); return; }
   document.getElementById('ap-status').textContent='⏳ กำลังดำเนินการ...';
   var g=function(id){ return (document.getElementById(id)||{value:''}).value; };
-  var payload={row:r.row,contractNo:d.code,customerName:r.name,customerPhone:r.phone||'',customerIdcard:r.idcard||'',customerAge:r.age||'',customerAddr:r.addr||'',ref1Name:r.ref1Name||'',ref1Rel:r.ref1Rel||'',ref1Phone:r.ref1Phone||'',ref2Name:r.ref2Name||'',ref2Rel:r.ref2Rel||'',ref2Phone:r.ref2Phone||'',grade:d.grade||'',model:d.model||'',storage:d.storage||'',color:d.color||'',sn:d.sn||'',price:price,down:parseFloat(g('ap-down'))||0,monthly:parseFloat(g('ap-monthly'))||0,months:parseInt(g('ap-months'))||12,payDay:g('ap-payday'),startDate:g('ap-start')};
+  var payload={row:r.row,contractNo:d.code,customerName:r.name,customerPhone:r.phone||'',customerIdcard:r.idcard||'',customerAge:r.age||'',customerAddr:r.addr||'',ref1Name:r.ref1Name||'',ref1Rel:r.ref1Rel||'',ref1Phone:r.ref1Phone||'',ref2Name:r.ref2Name||'',ref2Rel:r.ref2Rel||'',ref2Phone:r.ref2Phone||'',idphoto:r.idphoto||'',grade:d.grade||'',model:d.model||'',storage:d.storage||'',color:d.color||'',sn:d.sn||'',price:price,down:parseFloat(g('ap-down'))||0,monthly:parseFloat(g('ap-monthly'))||0,months:parseInt(g('ap-months'))||12,payDay:g('ap-payday'),startDate:g('ap-start')};
   d.statusKey='ขายแล้ว';
   api('approveContract',payload).then(function(res){
     var st=document.getElementById('ap-status');
